@@ -1,0 +1,107 @@
+<h1 id="wa-fronted-wordpress-plugin">WA Fronted WordPress Plugin</h1>
+<p>Frontend editor for WordPress, an experiment with a goal to enhance usability and convenience of editing exisiting content.</p>
+<blockquote>
+<p>This plugin is intended strictly for developers, it will <strong>not</strong> work &quot;out of the box&quot;.</p>
+</blockquote>
+<p>To enable an editable area, simply add a filter function to &#39;wa_fronted_options&#39; that passes and returns a multidimensional. Note that both themes and plugins can call this filter before or after eachother and build upon or replace options.</p>
+<p>The first level of the array consists of the key &quot;defaults&quot; (optional) and &quot;post_types&quot;. In &quot;defaults&quot;, specify whatever you want to be set as default when you have not set anything else in that specific area. In &quot;post_types&quot; you create an array for each post type you want to enable frontend editing for. Inside, you set &quot;editable_areas&quot; with an array with options for each editable area on this post type.</p>
+<p>The following example will enable the regular post content on front page to be editable from frontend if logged in user has role &quot;administrator&quot;, with a toolbar consisting of only bold and italic buttons, but on posts we allow a full toolbar.</p>
+<p>In my theme&#39;s functions.php file:</p>
+<p><code>&lt;?php 
+function my_editor_options($exisiting_options){
+    //It is recommended to do an array_merge with the exisiting options to not break other settings
+    return array_merge($exisiting_options, array(
+        &quot;defaults&quot; =&gt; array(
+            &quot;permission&quot;   =&gt; &quot;default&quot;,
+            &quot;toolbar&quot;      =&gt; &quot;full&quot;,
+            &quot;media_upload&quot; =&gt; true
+        ),
+        &quot;post_types&quot; =&gt; array(
+            &quot;front_page&quot; =&gt; array(
+                &quot;editable_areas&quot; =&gt; array(
+                    array(
+                        &quot;container&quot;  =&gt; &quot;.entry-content&quot;,
+                        &quot;field_type&quot; =&gt; &quot;post_content&quot;,
+                        &quot;toolbar&quot;    =&gt; &quot;bold, italic&quot;
+                    )
+                )
+            ),
+            &quot;post&quot; =&gt; array(
+                &quot;editable_areas&quot; =&gt; array(
+                    array(
+                        &quot;container&quot;  =&gt; &quot;.entry-content&quot;,
+                        &quot;field_type&quot; =&gt; &quot;post_content&quot;,
+                        &quot;toolbar&quot;    =&gt; &quot;full&quot;
+                    )
+                )
+            )
+        )
+    )); 
+}
+add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
+?&gt;</code></p>
+<h2 id="options">Options</h2>
+<ul>
+<li><strong>container</strong> (required, string): selector of wrapping element of what you want to edit. Can be any valid jQuery selector string</li>
+<li><strong>permission</strong> (optional, string): <code>logged-in</code> (enable to all logged in users), <code>default</code> (default, enabled if user has capability <em>edit_posts</em>), <code>{USER ROLE}</code> (enable to specific user role)</li>
+<li><strong>field_type</strong> (required, string): <code>post_content</code>, <code>post_title</code>, <code>acf_{FIELD ID}</code> / <code>acf_sub_{SUBFIELD ID}</code> (if set and <strong>toolbar</strong> is not specified, <strong>toolbar</strong> will set itself based on what field it is)</li>
+<li><strong>post_id</strong> (optional, int): Insert post id to override the <code>global $post</code> variable. If used in combination with <code>acf_{FIELD ID}</code>, note that it can also be set to <em>options / taxonomies / users / etc</em></li>
+<li><strong>toolbar</strong> (optional, mixed bool/string): <code>full</code> (default, all buttons), <code>false</code> (do not show toolbar), <code>comma-separated string</code> (bold, italic, underline, anchor, header1, header2, quote, unorderedlist, orderedlist, justifyLeft, justifyCenter, justifyRight)</li>
+<li><strong>media_upload</strong> (optional, mixed bool/string): <code>true</code> (default, will allow user to insert/upload media to the editable area), <code>false</code> (disable media upload), <code>only</code> (constrain the editable area to only edit media. ie; no text, no toolbar. Will only work when options is applied directly on media)</li>
+<li><strong>output</strong> (optional, string):  <em>only applies to ACF fields with complex output</em> value to retrieve from get_field() to output as a comma separated string representing the traversing of value array, ie. for an image field that should output the thumbnail &quot;sizes,thumbnail&quot;.</li>
+<li><strong>output_to</strong> (optional, array): <em>only applies to ACF fields of type Email, Url, oEmbed, Image and File, if not specified the returned data from the get_field() function will be put directly into the container element</em> 
+  `array(<pre><code>  &quot;selector&quot; =&gt; (string) selector of element inside **container** to output content to. Can be any valid jQuery selector string,
+  &quot;attr&quot;    =&gt; (mixed bool/string) if output should be set to an attribute of **selector**, otherwise false or not set
+</code></pre>  )`</li>
+<li><strong>image_size</strong> (optional, string) if <strong>field_type</strong> is an ACF image field, you can specify what image size you want to return</li>
+</ul>
+<h2 id="action-hooks">Action hooks</h2>
+<ul>
+<li><strong>wa_fronted_init</strong> runs upon plugin initialization, after the class&#39;s __construct function</li>
+<li><strong>wa_before_fronted_scripts</strong> runs before plugin has registered all its scripts and styles (passes complete options array as argument)</li>
+<li><strong>wa_after_fronted_scripts</strong> runs after plugin has registered all its scripts and styles (passes complete options array as argument)</li>
+<li><strong>wa_fronted_save</strong> runs after regular save function (passes $data as argument)</li>
+<li><strong>wa_fronted_autosave</strong> runs after regular autosave function (passes $data as argument)</li>
+</ul>
+<h2 id="filters">Filters</h2>
+<ul>
+<li><strong>supported_acf_fields</strong> modify supported ACF fields array (1 argument)</li>
+<li><strong>compile_options</strong> modify the partially compiled options array (1 argument, called multiple times)</li>
+<li><strong>wa_fronted_options</strong> modify options array, use this to set your options (1 argument)</li>
+</ul>
+<h2 id="supported-acf-field-types">Supported ACF field types</h2>
+<ul>
+<li>Text</li>
+<li>Text Area</li>
+<li>Number</li>
+<li>Email</li>
+<li>Url</li>
+<li>Password</li>
+<li>Wysiwyg Editor</li>
+<li>oEmbed</li>
+<li>Image</li>
+<li>File</li>
+</ul>
+<h2 id="pending-features">Pending features</h2>
+<ul>
+<li>[ ] Extend plugability (hook/filter all the things! :p )</li>
+<li>[ ] Ability to edit other columns from the posts table (like post_author, post_date and so on)</li>
+<li>[ ] Native custom fields support</li>
+<li>[ ] Shortcodes support (other than gallery)</li>
+<li>[ ] Autosave</li>
+<li>[ ] WooCommerce support (other than standard WP-fields)</li>
+<li>[ ] Image upload by dropping an image into the editable area</li>
+<li>[ ] Extensions (enable to hook onto and modify js editor)</li>
+<li>[ ] Choice-based fields like dropdown-select (click on content to show dropdown and select option to insert)</li>
+<li>[ ] Multiple &quot;output_to&quot; selectors and attrs</li>
+<li>[ ] More ACF fields support</li>
+<li>[ ] Enable editing from archives/blog home</li>
+</ul>
+<h2 id="collaboration-notes">Collaboration notes</h2>
+<ul>
+<li>I&#39;m using sass for styling and PrePros for compiling (there&#39;s a free version if you wanna check it out)</li>
+<li>JS files are minified and concatenated with PrePros, so without it you&#39;ll have to load the other js files individually (se prepros-prepend comments in the beginning of scripts.js)</li>
+<li>I&#39;m using bower for keeping medium-editor up to date, right now there are no other dependancies other than jQuery but that comes with WP</li>
+<li>Features and third party add ons should be free and open source</li>
+<li>Comment your code</li>
+</ul>
