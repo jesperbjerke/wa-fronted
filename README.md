@@ -58,12 +58,12 @@ add_filter('wa_fronted_options', 'my_editor_options');
 * **media_upload** (optional, mixed bool/string): `true` (default, will allow user to insert/upload media to the editable area), `false` (disable media upload), `only` (constrain the editable area to only edit media. ie; no text, no toolbar. Will only work when options is applied directly on media)
 * **output** (optional, string):  *only applies to ACF fields with complex output* value to retrieve from get_field() to output as a comma separated string representing the traversing of value array, ie. for an image field that should output the thumbnail "sizes,thumbnail".
 * **output_to** (optional, array): *only applies to ACF fields of type Email, Url, oEmbed, Image and File, if not specified the returned data from the get_field() function will be put directly into the container element* 
-	```php
-	array(
-		"selector" => (string) selector of element inside **container** to output content to. Can be any valid jQuery selector string,
-		"attr"	=> (mixed bool/string) if output should be set to an attribute of **selector**, otherwise false or not set
-	)
-	```
+```php
+array(
+	"selector" => (string) selector of element inside **container** to output content to. Can be any valid jQuery selector string,
+	"attr"	=> (mixed bool/string) if output should be set to an attribute of **selector**, otherwise false or not set
+)
+```
 * **image_size** (optional, string) if **field_type** is an ACF image field, you can specify what image size you want to return
 
 ## Action hooks
