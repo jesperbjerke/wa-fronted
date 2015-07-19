@@ -7,7 +7,7 @@ Frontend editor for WordPress, an experiment with a goal to enhance usability an
 
 To enable an editable area, simply add a filter function to 'wa_fronted_options' that passes and returns a multidimensional array. Note that both themes and plugins can call this filter before or after eachother and build upon or replace options.
 
-The first level of the array consists of the key "defaults" (optional) and "post_types". In "defaults", specify whatever you want to be set as default when you have not set anything else in that specific area. In "post_types" you create an array for each post type you want to enable frontend editing for. Inside, you set "editable_areas" with an array with options for each editable area on this post type.
+The first level of the array consists of the key "defaults" (optional) and "post_types". In "defaults", specify whatever you want to be set as default when you have not set anything else in that specific area. In "post_types" you create an array for each post type you want to enable frontend editing for (you can also use 'front_page' if you just want to target your static front page). Inside, you set "editable_areas" with an array with options for each editable area on this post type.
 
 The following example will enable the regular post content on front page to be editable from frontend if logged in user has role "administrator", with a toolbar consisting of only bold and italic buttons, but on posts we allow a full toolbar and leaving permission to the default (current_user_can('edit_posts')).
 
@@ -50,12 +50,12 @@ add_filter('wa_fronted_options', 'my_editor_options');
 
 ## Options
 * **container** (required, string): selector of wrapping element of what you want to edit. Can be any valid jQuery selector string
-* **permission** (optional, string): `logged-in` (enable to all logged in users), `default` (default, enabled if user has capability *edit_posts*), `{USER ROLE}` (enable to specific user role)
 * **field_type** (required, string): `post_content`, `post_title`, `acf_{FIELD ID}` / `acf_sub_{SUBFIELD ID}` (if set and **toolbar** is not specified, **toolbar** will set itself based on what field it is)
+* **permission** (optional, string): `logged-in` (enable to all logged in users), `default` (default, enabled if user has capability *edit_posts*), `{USER ROLE}` (enable to specific user role)
 * **post_id** (optional, int): Insert post id to override the `global $post` variable. If used in combination with `acf_{FIELD ID}`, note that it can also be set to *options / taxonomies / users / etc*
 * **toolbar** (optional, mixed bool/string): `full` (default, all buttons), `false` (do not show toolbar), `comma-separated string` (bold, italic, underline, anchor, header1, header2, quote, unorderedlist, orderedlist, justifyLeft, justifyCenter, justifyRight)
 * **media_upload** (optional, mixed bool/string): `true` (default, will allow user to insert/upload media to the editable area), `false` (disable media upload), `only` (constrain the editable area to only edit media. ie; no text, no toolbar)
-* **output** (optional, string): *only applies to ACF fields with complex output* value to retrieve from get_field() to output as a comma separated string representing the traversing of value array, ie. for an image field that should output the thumbnail "sizes,thumbnail".
+* **output** (optional, string): *only applies to ACF fields with complex output* value to retrieve from get_field() to output as a dot separated string representing the traversing of value array, ie. for an image field that should output the thumbnail: "sizes.thumbnail".
 * **output_to** (optional, array): *if not specified, the returned data after save will be put directly into the container element* 
 ```php
 array(
@@ -93,6 +93,8 @@ array(
 * File
 
 ##Pending features
+* [ ] Ability to edit featured image
+* [ ] Show unsaved changes warning if leaving page
 * [ ] Ability to edit other columns from the posts table (like post_author, post_date and so on)
 * [ ] Native custom fields support
 * [ ] Shortcodes support (other than gallery)
@@ -103,7 +105,9 @@ array(
 * [ ] Multiple "output_to" selectors and attrs
 * [ ] Choice-based fields like dropdown-select (click on content to show dropdown and select option to insert)
 * [ ] More ACF fields support
+* [ ] Smarter outputing of value (like if it's an image field and has no output options, determine by itself)
 * [ ] Enable editing from archives/blog home
+* [ ] Make it possible to create new posts from frontend
 
 ##Collaboration notes
 * I'm using sass for styling and PrePros for compiling (there's a free version if you wanna check it out)

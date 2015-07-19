@@ -118,7 +118,11 @@ class WA_Fronted {
 						break;
 				}
 			}else{
-				trigger_error('ACF field type "' . $field_object['field_object']['type'] . '" is not yet supported', E_USER_ERROR);
+				if($field_object['field_object']['type'] == ''){
+					trigger_error('ACF field key "' . $field_type . '" not found', E_USER_ERROR);
+				}else{
+					trigger_error('ACF field type "' . $field_object['field_object']['type'] . '" is not yet supported', E_USER_ERROR);
+				}
 			}
 		}
 
@@ -400,37 +404,40 @@ class WA_Fronted {
 					));
 				}else if(strpos($field_type, 'acf_') !== false){
 
-					$field_object = $this->wa_get_acf_field_object($field_type);
+					$acf_field_key = WA_Fronted::wa_extract_acf_field_key($field_type)['field_key'];
+					$field_object  = $this->wa_get_acf_field_object($field_type);
 
 					switch($field_object['field_object']['type']){
 						case 'text':
-						case 'textarea':
 						case 'email':
 						case 'url':
 						case 'password':
+						case 'number':
+							$safe_content = trim(strip_tags($safe_content));
+						case 'textarea':
+							if($field_object['field_object']['new_lines'] == 'wpautop' || $field_object['field_object']['new_lines'] == 'br'){
+								$safe_content = str_replace('</p>', '<br/>', str_replace(array('<p>','<br/>','<br />'), '', $safe_content));
+							}else{
+								$safe_content = strip_tags($safe_content);
+							}
+							$safe_content = trim($safe_content);
 						case 'wysiwyg':
-						case 'oembed':
 							if($field_object['sub_field']){
 								update_sub_field($acf_field_key, $safe_content, $post_id);
 							}else{
 								update_field($acf_field_key, $safe_content, $post_id);
 							}
 							break;
-						case 'number':
-							if($field_object['sub_field']){
-								update_sub_field($acf_field_key, (float)$safe_content, $post_id);
-							}else{
-								update_field($acf_field_key, (float)$safe_content, $post_id);
-							}
-							break;
-						case 'image':
-						case 'file':
-							if($field_object['sub_field']){
-								update_sub_field($acf_field_key, (int)$safe_content, $post_id);
-							}else{
-								update_field($acf_field_key, (int)$safe_content, $post_id);
-							}
-							break;
+						// Saved for future use, handled by acf_form() right now
+						// case 'oembed':
+						// case 'image':
+						// case 'file':
+						// 	if($field_object['sub_field']){
+						// 		update_sub_field($acf_field_key, $safe_content, $post_id);
+						// 	}else{
+						// 		update_field($acf_field_key, $safe_content, $post_id);
+						// 	}
+						// 	break;
 					}
 				}
 			}
@@ -509,14 +516,19 @@ class WA_Fronted {
 	}
 
 	/**
-	 * Output markup for save button
+	 * Output markup for save button and loading spinner
 	 */
 	public function wa_save_button(){
 		?>
-		<button style="display:none;" id="wa-fronted-save">
-			<i class="fa fa-save"></i> 
-			<?php _e( 'Save', 'wa-fronted' ); ?>
-		</button>
+		<div id="wa-fronted-save-toolbar">
+			<button id="wa-fronted-save">
+				<i class="fa fa-save"></i> 
+				<?php _e( 'Save', 'wa-fronted' ); ?>
+			</button>
+		</div>
+		<div id="wa-fronted-spinner">
+			<img src="<?php echo includes_url(); ?>/images/spinner-2x.gif">
+		</div>
 		<?php
 	}
 
@@ -548,15 +560,9 @@ class WA_Fronted {
 		}
 
 		if(strpos($field_key, 'acf_') !== false){
-			if(strpos($field_key, 'acf_sub_') !== false){
-				$is_sub_field  = true;
-				$acf_field_key = str_replace('acf_sub_', '', $field_key);
-				$field_object  = get_field_object($acf_field_key);
-			}else{
-				$is_sub_field  = false;
-				$acf_field_key = str_replace('acf_', '', $field_key);
-				$field_object  = get_field_object($acf_field_key);				
-			}
+			
+			$acf_field_key_array = WA_Fronted::wa_extract_acf_field_key($field_key);
+			$field_object        = get_field_object($acf_field_key_array['field_key']);
 
 			if(!$field_object){
 				if($is_ajax){
@@ -571,7 +577,7 @@ class WA_Fronted {
 					wp_send_json($field_object);
 				}else{
 					return array(
-						'sub_field'    => $is_sub_field,
+						'sub_field'    => $acf_field_key_array['sub_field'],
 						'field_object' => $field_object
 					);
 				}
@@ -612,6 +618,30 @@ class WA_Fronted {
 			}else{
 				return $field_object;
 			}
+		}
+	}
+
+	/**
+	 * Extract the actual field key parts of a prefixed key string
+	 * @param  string $prefixed_key prefixed acf field key
+	 * @return array               non prefixed acf field key and bool if it is subfield
+	 */
+	public static function wa_extract_acf_field_key($prefixed_key){
+		if(strpos($prefixed_key, 'acf_') !== false){
+			if(strpos($prefixed_key, 'acf_sub_') !== false){
+				$is_sub_field  = true;
+				$acf_field_key = str_replace('acf_sub_', '', $prefixed_key);
+			}else{
+				$is_sub_field  = false;
+				$acf_field_key = str_replace('acf_', '', $prefixed_key);
+			}
+
+			return array(
+				'sub_field' => $is_sub_field,
+				'field_key' => $acf_field_key
+			);
+		}else{
+			return false;
 		}
 	}
 

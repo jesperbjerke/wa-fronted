@@ -66,7 +66,7 @@ var wa_fronted = {
 
 		if(typeof acf !== 'undefined'){
 			acf.add_action('submit', function(form){
-				self.refresh_acf_field(self.data.acf_temp.field_key, self.data.acf_temp.post_id, self.data.current_editor_options);
+				self.refresh_acf_field(self.data.acf_temp.field_key, self.data.acf_temp.post_id, self.data.current_editor_options, self.data.current_editor);
 			});
 		}
 	},
@@ -149,7 +149,9 @@ var wa_fronted = {
 					switch(field_object.type){
 						case 'file':
 						case 'image':
-							this_editor.attr('data-db-value', field_object.value.ID);		
+							if(field_object.value !== null){
+								this_editor.attr('data-db-value', field_object.value.ID);
+							}
 							break;
 					}
 					var editor_children = this_editor.children(),
@@ -176,7 +178,7 @@ var wa_fronted = {
 					this_editor.find('.edit-acf-field').click(function(e){
 						e.preventDefault();
 						e.stopPropagation();
-						self.show_acf_form(field_object.key, this_options.post_id, this_options);
+						self.show_acf_form(field_object.key, this_options.post_id, this_options, this_editor);
 					});
 
 				}else{
@@ -207,12 +209,13 @@ var wa_fronted = {
 
 	/**
 	 * Save post
-	 * @todo: add loading spinner
 	 */
 	save: function(){
 		var self = this,
 			editors = self.data.editable_areas,
 			save_this = [];
+
+		self.show_loading_spinner();
 
 		for(var i = 0; i < editors.length; i++){
 
@@ -241,12 +244,21 @@ var wa_fronted = {
 				if(response.success){
 					location.reload();
 				}
+				self.hide_loading_spinner();
 			}
 		);
 	},
 
 	show_save_button: function(){
-		jQuery('#wa-fronted-save').fadeIn('fast');
+		jQuery('#wa-fronted-save-toolbar').fadeIn('fast');
+	},
+
+	show_loading_spinner: function(){
+		jQuery('#wa-fronted-spinner').fadeIn('fast');
+	},
+	
+	hide_loading_spinner: function(){
+		jQuery('#wa-fronted-spinner').fadeOut('fast');
 	},
 
 	/**
@@ -339,14 +351,16 @@ var wa_fronted = {
 	 * Shows acf form based on field_key and post_id
 	 * @param  {string}   field_key acf field key (non prefixed)
 	 * @param  {mixed}   post_id
-	 * @param  {mixed}   this_editor current editor options
+	 * @param  {mixed}   this_options current editor options
+	 * @param  {Object}   this_editor current editor options
 	 */
-	show_acf_form: function(field_key, post_id, this_editor){
+	show_acf_form: function(field_key, post_id, this_options, this_editor){
 		var self = this;
 
 		self.data.acf_temp.field_key     = field_key;
 		self.data.acf_temp.post_id       = post_id;
-		self.data.current_editor_options = this_editor;
+		self.data.current_editor_options = this_options;
+		self.data.current_editor         = this_editor;
 
 		self.get_acf_form(field_key, post_id, function(response){
 			jQuery('#acf-dialog #acf-dialog-inner').html(response.output);
@@ -376,11 +390,27 @@ var wa_fronted = {
 	 * @param {string} field_key acf field key
 	 * @param {string} post_id
 	 * @param {string} this_options current editor options
+	 * @param {string} this_editor current editor
 	 */
-	refresh_acf_field: function(field_key, post_id, this_options){
+	refresh_acf_field: function(field_key, post_id, this_options, this_editor){
 		var self = this;
-		self.get_acf_field_contents(field_key, post_id, function(response){
-			console.log(response, this_options);
+		self.get_acf_field_contents(field_key, post_id, function(response){	
+			var output_content = '';
+			if(this_options.hasOwnProperty('output')){
+				var output_trail = this_options.output.split('.');
+				output_content = response.value;
+				for(var i = 0; i < output_trail.length; i++){
+					output_content = output_content[output_trail[i]];
+				}
+			}else{
+				output_content = response.value;
+			}
+
+			if(!self.specific_output_to(this_editor, this_options, response.value.ID, output_content)){
+				this_editor.html(output_content);
+			}
+
+			self.hide_acf_form();
 		});
 	},
 
@@ -432,7 +462,7 @@ var wa_fronted = {
 	 * @todo read output options
 	 */
 	specific_output_to: function(this_editor, this_options, db_value, output_content){
-		if(!this_options.hasOwnProperty('output_to') && !this_options.output_to.hasOwnProperty('selector')){
+		if(!this_options.hasOwnProperty('output_to') || !this_options.output_to.hasOwnProperty('selector')){
 			return false;
 		}
 
