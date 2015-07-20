@@ -270,21 +270,25 @@ class WA_Fronted {
 	 * @return string $content rerendered content
 	 */
 	public function filter_shortcodes( $content, $post_id = false, $field = false ){
-		$pattern = get_shortcode_regex();
-		preg_match_all( '/'. $pattern .'/s', $content, $matches );
-		if(array_key_exists( 0, $matches )){
-			$shortcodes = $matches[0];
-			foreach($shortcodes as $shortcode){
-				preg_match('/(?>\\[)(.*)(?>\\s)/s', $shortcode, $sub_matches);
-				$content = str_replace($shortcode, '
-					<!-- shortcode -->
-						<div 
-							class="wa-shortcode-wrap" 
-							data-shortcode-base="' . $sub_matches[1] . '" 
-							data-shortcode="' . rawurlencode($shortcode) . '">
-							' . $shortcode . '
-						</div>
-					<!-- /shortcode -->', $content);
+		$options = $this->get_options();
+
+		if(is_user_logged_in() && !is_admin() && $options !== false){
+			$pattern = get_shortcode_regex();
+			preg_match_all( '/'. $pattern .'/s', $content, $matches );
+			if(array_key_exists( 0, $matches )){
+				$shortcodes = $matches[0];
+				foreach($shortcodes as $shortcode){
+					preg_match('/(?>\\[)(.*)(?>\\s)/s', $shortcode, $sub_matches);
+					$content = str_replace($shortcode, '
+						<!-- shortcode -->
+							<div 
+								class="wa-shortcode-wrap" 
+								data-shortcode-base="' . $sub_matches[1] . '" 
+								data-shortcode="' . rawurlencode($shortcode) . '">
+								' . $shortcode . '
+							</div>
+						<!-- /shortcode -->', $content);
+				}
 			}
 		}
 		return $content;
@@ -296,16 +300,19 @@ class WA_Fronted {
 	 * @return string $content
 	 */
 	protected function unfilter_shortcodes( $content ){
+		$options = $this->get_options();
 
-		$pattern = '(?=<!--\\sshortcode\\s-->)(.*)(?<=\\<!--\\s\\/shortcode\\s-->)';
+		if(is_user_logged_in() && !is_admin() && $options !== false){
+			$pattern = '(?=<!--\\sshortcode\\s-->)(.*)(?<=\\<!--\\s\\/shortcode\\s-->)';
 
-		preg_match_all( '/'. $pattern .'/s', $content, $matches );
-		if(array_key_exists( 0, $matches )){
-			$rendered_shortcodes = $matches[0];
-			foreach($rendered_shortcodes as $rendered_shortcode){
-				preg_match('/(?<=data-shortcode=\\\\\")(.*?)(?=\\\\\".*)/s', $rendered_shortcode, $sub_matches);
-				$unrendered_shortcode = rawurldecode($sub_matches[0]);
-				$content = str_replace($rendered_shortcode, $unrendered_shortcode, $content);
+			preg_match_all( '/'. $pattern .'/s', $content, $matches );
+			if(array_key_exists( 0, $matches )){
+				$rendered_shortcodes = $matches[0];
+				foreach($rendered_shortcodes as $rendered_shortcode){
+					preg_match('/(?<=data-shortcode=\\\\\")(.*?)(?=\\\\\".*)/s', $rendered_shortcode, $sub_matches);
+					$unrendered_shortcode = rawurldecode($sub_matches[0]);
+					$content = str_replace($rendered_shortcode, $unrendered_shortcode, $content);
+				}
 			}
 		}
 		return $content;

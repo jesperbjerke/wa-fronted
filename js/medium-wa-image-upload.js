@@ -206,34 +206,7 @@ Wa_image_upload.prototype.bindings = function(instance, editor_container){
             .addClass(alignment);
     });
 
-    //Make images resizable and change img src to the closest to new size
-    editor_container.find('img[class*="wp-image-"]').resizable({
-        autoHide: true,
-        aspectRatio: true,
-        ghost: true,
-        handles: 'nw, ne, sw, se',
-        resize: function(event, ui){
-            var class_match = ui.element.context.className.match(/wp-image-\d+/);
-            if(class_match !== null){
-                var attachment_id = class_match[0].match(/\d+/)[0];
-                self.get_closest_image_size(attachment_id, ui.size.height, ui.size.width, function(response){
-                    if(response[3] === true){
-                        var size_class = ui.element.context.className.match(/size-\S+/),
-                            image_el = jQuery(ui.element.context);
-
-                        if(size_class !== null){
-                            image_el
-                                .removeClass(size_class[0])
-                                .addClass('size-' + response[4]);
-                        }
-                        image_el.attr('src', response[0]);
-                    }
-                });
-            }
-
-            wa_fronted.trigger(instance, 'editableInput');
-        }
-    });
+    self.enable_resizing(instance, editor_container);
 
     editor_container.click(function(e){
         if(jQuery(e.target).parents('.wa-shortcode-wrap').length !== 0){
@@ -286,6 +259,42 @@ Wa_image_upload.prototype.bindings = function(instance, editor_container){
         console.log(editable);
     });
 };
+
+/**
+ * Make images resizable and change img src to the closest to new size
+ * @param  {Object} instance instance of MediumEditor
+ * @param  {jQuery Object} editor_container jQuery element of editor
+ */
+Wa_image_upload.prototype.enable_resizing = function(instance, editor_container) {
+    var self = this;
+    editor_container.find('img[class*="wp-image-"]').resizable({
+        autoHide: true,
+        aspectRatio: true,
+        ghost: true,
+        handles: 'nw, ne, sw, se',
+        resize: function(event, ui){
+            var class_match = ui.element.context.className.match(/wp-image-\d+/);
+            if(class_match !== null){
+                var attachment_id = class_match[0].match(/\d+/)[0];
+                self.get_closest_image_size(attachment_id, ui.size.height, ui.size.width, function(response){
+                    if(response[3] === true){
+                        var size_class = ui.element.context.className.match(/size-\S+/),
+                            image_el = jQuery(ui.element.context);
+
+                        if(size_class !== null){
+                            image_el
+                                .removeClass(size_class[0])
+                                .addClass('size-' + response[4]);
+                        }
+                        image_el.attr('src', response[0]);
+                    }
+                });
+            }
+
+            wa_fronted.trigger(instance, 'editableInput');
+        }
+    });
+}
 
 /**
  * Gets initial gallery-edit images. Function modified from wp.media.gallery.edit
@@ -454,6 +463,7 @@ Wa_image_upload.prototype.insertImage = function(frame, replace_this){
             wa_fronted.insertHtmlAtCaret(attachment.attributes['html']);
         }
         wa_fronted.trigger(self.instance, 'editableInput');
+        self.enable_resizing(self.instance, jQuery(self.instance.elements));
     });                
 };
 
