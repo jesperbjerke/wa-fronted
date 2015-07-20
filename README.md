@@ -123,3 +123,6 @@ array(
 * I'm using bower for keeping medium-editor up to date, right now there are no other dependancies other than jQuery but that comes with WP
 * Features and third party add ons should be free and open source
 * Comment your code
+
+##License
+See the [LICENSE](LICENSE.md) file for license rights (GPLv2)
