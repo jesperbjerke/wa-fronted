@@ -5,6 +5,10 @@ Frontend editor for WordPress, an experiment with a goal to enhance usability an
 
 > This plugin is intended strictly for developers, it will **not** work "out of the box".
 
+![](https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/screenshot-1.jpg)
+![](https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/screenshot-2.jpg)
+![](https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/screenshot-3.jpg)
+
 To enable an editable area, simply add a filter function to 'wa_fronted_options' that passes and returns a multidimensional array. Note that both themes and plugins can call this filter before or after eachother and build upon or replace options.
 
 The first level of the array consists of the key "defaults" (optional) and "post_types". In "defaults", specify whatever you want to be set as default when you have not set anything else in that specific area. In "post_types" you create an array for each post type you want to enable frontend editing for (you can also use 'front_page' if you just want to target your static front page). Inside, you set "editable_areas" with an array with options for each editable area on this post type.
@@ -101,6 +105,7 @@ array(
 * [ ] Autosave
 * [ ] WooCommerce support (other than standard WP-fields)
 * [ ] Image upload by dropping an image into the editable area
+* [ ] Drag image to move it within the editable area
 * [ ] Extend plugability further and support for extensions (enable to hook onto and modify js editor)
 * [ ] Multiple "output_to" selectors and attrs
 * [ ] Choice-based fields like dropdown-select (click on content to show dropdown and select option to insert)
