@@ -2,6 +2,7 @@ WA Fronted WordPress Plugin
 ===========================
 
 [![Join the chat at https://gitter.im/jesperbjerke/wa-fronted](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/jesperbjerke/wa-fronted?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+Discuss this project at Gitter
 
 Frontend editor for WordPress, an experiment with a goal to enhance usability and convenience of editing exisiting content.
 
