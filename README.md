@@ -1,6 +1,8 @@
 WA Fronted WordPress Plugin
 ===========================
 
+[![Join the chat at https://gitter.im/jesperbjerke/wa-fronted](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/jesperbjerke/wa-fronted?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Frontend editor for WordPress, an experiment with a goal to enhance usability and convenience of editing exisiting content.
 
 > This plugin is intended strictly for developers, it will **not** work "out of the box".
