@@ -519,29 +519,37 @@ class WA_Fronted {
 	 * Output markup for save button and loading spinner
 	 */
 	public function wa_save_button(){
+		$options = $this->get_options();
+
+		if(is_user_logged_in() && !is_admin() && $options !== false):
 		?>
-		<div id="wa-fronted-save-toolbar">
-			<button id="wa-fronted-save">
-				<i class="fa fa-save"></i> 
-				<?php _e( 'Save', 'wa-fronted' ); ?>
-			</button>
-		</div>
-		<div id="wa-fronted-spinner">
-			<img src="<?php echo includes_url(); ?>/images/spinner-2x.gif">
-		</div>
+			<div id="wa-fronted-save-toolbar">
+				<button id="wa-fronted-save">
+					<i class="fa fa-save"></i> 
+					<?php _e( 'Save', 'wa-fronted' ); ?>
+				</button>
+			</div>
+			<div id="wa-fronted-spinner">
+				<img src="<?php echo includes_url(); ?>/images/spinner-2x.gif">
+			</div>
 		<?php
+		endif;
 	}
 
 	/**
 	 * Output wrapper for acf dialog/popup
 	 */
 	public function wa_acf_dialog(){
+		$options = $this->get_options();
+
+		if(is_user_logged_in() && !is_admin() && $options !== false):
 		?>
-		<div id="acf-dialog" class="wp-core-ui" style="display:none;">
-			<button id="close-acf-dialog"><i class="fa fa-close"></i></button>
-			<div id="acf-dialog-inner"></div>
-		</div>
+			<div id="acf-dialog" class="wp-core-ui" style="display:none;">
+				<button id="close-acf-dialog"><i class="fa fa-close"></i></button>
+				<div id="acf-dialog-inner"></div>
+			</div>
 		<?php
+		endif;
 	}
 
 	/**
