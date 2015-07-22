@@ -9,8 +9,11 @@
 	Author: Jesper Bjerke
 	Author URI: http://www.westart.se
 	Network: True
+	License: GPLv2
 */
 class WA_Fronted {
+
+	protected $supported_acf_fields;
 
 	/**
 	 * Add hooks and actions and registers ajax function for saving
@@ -18,6 +21,7 @@ class WA_Fronted {
 	 */
 	public function __construct(){
 		add_action( 'init', array( $this, 'wa_wp_init' ) );
+		add_action( 'wp', array( $this, 'wa_has_wp' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'scripts_and_styles' ) );
 		add_action( 'wp_footer', array( $this, 'wa_save_button' ) );
 		add_action( 'wp_footer', array( $this, 'wa_acf_dialog' ) );
@@ -28,16 +32,38 @@ class WA_Fronted {
 		add_action( 'wp_ajax_wa_get_acf_field_contents', array( $this, 'wa_get_acf_field_contents' ) );
 		add_action( 'wp_ajax_wa_get_acf_form', array( $this, 'wa_get_acf_form' ) );
 		add_filter( 'the_content', array( $this, 'filter_shortcodes' ) );
-		add_filter( 'acf/load_value/type=wysiwyg', array( $this, 'filter_shortcodes' ) );
+		add_filter( 'acf/load_value/type=wysiwyg', array( $this, 'filter_shortcodes' ), 10, 3 );
 		add_filter( 'acf/update_value', 'wp_kses_post', 10, 1 );
-
+		add_action( 'wp_logout', array( $this, 'wa_wp_logout' ) );
+		
 		do_action( 'wa_fronted_init' );
 	}
 
+	/**
+	 * On wp init, start session and create acf form head
+	 */
 	public function wa_wp_init(){
+		if(!session_id()){
+			session_start();
+		}
+
 		if(function_exists('acf_form_head')){
 			acf_form_head();
 		}
+	}
+
+	/**
+	 * After wp is fully loaded
+	 */
+	public function wa_has_wp(){
+		$_SESSION['wa_fronted_options'] = $this->get_options();
+	}
+
+	/**
+	 * Destroy session
+	 */
+	public function wa_wp_logout(){
+		session_destroy();
 	}
 
 	/**
@@ -85,8 +111,11 @@ class WA_Fronted {
 		}else if(strpos($field_type, 'acf_') !== false){
 			
 			$field_object = $this->wa_get_acf_field_object($field_type);
+			if(!isset($this->supported_acf_fields)){
+				$this->supported_acf_fields = $this->get_supported_acf_fields();
+			}
 
-			if($field_object && in_array($field_object['field_object']['type'], $this->get_supported_acf_fields())){
+			if($field_object && in_array($field_object['field_object']['type'], $this->supported_acf_fields)){
 				switch($field_object['field_object']['type']){
 					case 'text':
 					case 'textarea':
@@ -148,7 +177,7 @@ class WA_Fronted {
 	}
 
 	/**
-	 * Reads config file located in either child theme root folder or main theme root folder
+	 * Reads config array by applied filter 'wa_fronted_options'
 	 * @return mixed returns false if no areas can be edited by current user, else json object with options
 	 */
 	protected function get_options(){
@@ -159,7 +188,6 @@ class WA_Fronted {
 			trigger_error('No configuration found. Please configure by adding a filter to \'wa_fronted_options\'', E_USER_ERROR);
 		}
 
-		global $post;
 		$default_options = array(
 			'media_upload' => true,
 			'toolbar'      => 'full',
@@ -204,10 +232,12 @@ class WA_Fronted {
 	 */
 	public function scripts_and_styles() {
 
-		$options = $this->get_options();
+		if(!isset($_SESSION['wa_fronted_options'])){
+			$_SESSION['wa_fronted_options'] = $this->get_options();
+		}
 
-		if(is_user_logged_in() && !is_admin() && $options !== false){
-			do_action('wa_before_fronted_scripts', $options);
+		if(is_user_logged_in() && !is_admin() && $_SESSION['wa_fronted_options'] !== false){
+			do_action('wa_before_fronted_scripts', $_SESSION['wa_fronted_options']);
 			
 			wp_enqueue_media();
 
@@ -236,7 +266,7 @@ class WA_Fronted {
 				array(
 					'wp_lang'     => get_bloginfo('language'),
 					'ajax_url'    => admin_url('admin-ajax.php'),
-					'options'     => $options,
+					'options'     => $_SESSION['wa_fronted_options'],
 					'image_sizes' => $this->get_image_sizes()
 				)
 			);
@@ -258,7 +288,7 @@ class WA_Fronted {
 				acf_enqueue_uploader();
 			}
 
-			do_action('wa_after_fronted_scripts', $options);
+			do_action('wa_after_fronted_scripts', $_SESSION['wa_fronted_options']);
 		}
 	}
 
@@ -270,9 +300,11 @@ class WA_Fronted {
 	 * @return string $content rerendered content
 	 */
 	public function filter_shortcodes( $content, $post_id = false, $field = false ){
-		$options = $this->get_options();
+		if(!isset($_SESSION['wa_fronted_options'])){
+			$_SESSION['wa_fronted_options'] = $this->get_options();
+		}
 
-		if(is_user_logged_in() && !is_admin() && $options !== false){
+		if(is_user_logged_in() && !is_admin() && $_SESSION['wa_fronted_options'] !== false){
 			$pattern = get_shortcode_regex();
 			preg_match_all( '/'. $pattern .'/s', $content, $matches );
 			if(array_key_exists( 0, $matches )){
@@ -300,9 +332,11 @@ class WA_Fronted {
 	 * @return string $content
 	 */
 	protected function unfilter_shortcodes( $content ){
-		$options = $this->get_options();
+		if(!isset($_SESSION['wa_fronted_options'])){
+			$_SESSION['wa_fronted_options'] = $this->get_options();
+		}
 
-		if(is_user_logged_in() && !is_admin() && $options !== false){
+		if(is_user_logged_in() && !is_admin() && $_SESSION['wa_fronted_options'] !== false){
 			$pattern = '(?=<!--\\sshortcode\\s-->)(.*)(?<=\\<!--\\s\\/shortcode\\s-->)';
 
 			preg_match_all( '/'. $pattern .'/s', $content, $matches );
@@ -411,7 +445,7 @@ class WA_Fronted {
 					));
 				}else if(strpos($field_type, 'acf_') !== false){
 
-					$acf_field_key = WA_Fronted::wa_extract_acf_field_key($field_type)['field_key'];
+					$acf_field_key = $this->extract_acf_field_key($field_type)['field_key'];
 					$field_object  = $this->wa_get_acf_field_object($field_type);
 
 					switch($field_object['field_object']['type']){
@@ -526,9 +560,11 @@ class WA_Fronted {
 	 * Output markup for save button and loading spinner
 	 */
 	public function wa_save_button(){
-		$options = $this->get_options();
+		if(!isset($_SESSION['wa_fronted_options'])){
+			$_SESSION['wa_fronted_options'] = $this->get_options();
+		}
 
-		if(is_user_logged_in() && !is_admin() && $options !== false):
+		if(is_user_logged_in() && !is_admin() && $_SESSION['wa_fronted_options'] !== false):
 		?>
 			<div id="wa-fronted-save-toolbar">
 				<button id="wa-fronted-save">
@@ -547,9 +583,11 @@ class WA_Fronted {
 	 * Output wrapper for acf dialog/popup
 	 */
 	public function wa_acf_dialog(){
-		$options = $this->get_options();
+		if(!isset($_SESSION['wa_fronted_options'])){
+			$_SESSION['wa_fronted_options'] = $this->get_options();
+		}
 
-		if(is_user_logged_in() && !is_admin() && $options !== false):
+		if(is_user_logged_in() && !is_admin() && $_SESSION['wa_fronted_options'] !== false):
 		?>
 			<div id="acf-dialog" class="wp-core-ui" style="display:none;">
 				<button id="close-acf-dialog"><i class="fa fa-close"></i></button>
@@ -576,7 +614,7 @@ class WA_Fronted {
 
 		if(strpos($field_key, 'acf_') !== false){
 			
-			$acf_field_key_array = WA_Fronted::wa_extract_acf_field_key($field_key);
+			$acf_field_key_array = $this->extract_acf_field_key($field_key);
 			$field_object        = get_field_object($acf_field_key_array['field_key']);
 
 			if(!$field_object){
@@ -617,7 +655,7 @@ class WA_Fronted {
 			$post_id   = $_POST['post_id'];
 		}
 
-		$field_object  = get_field_object($field_key, $post_id);
+		$field_object = get_field_object($field_key, $post_id);
 
 		if(!$field_object){
 			if($is_ajax){
@@ -641,7 +679,7 @@ class WA_Fronted {
 	 * @param  string $prefixed_key prefixed acf field key
 	 * @return array               non prefixed acf field key and bool if it is subfield
 	 */
-	public static function wa_extract_acf_field_key($prefixed_key){
+	protected function extract_acf_field_key($prefixed_key){
 		if(strpos($prefixed_key, 'acf_') !== false){
 			if(strpos($prefixed_key, 'acf_sub_') !== false){
 				$is_sub_field  = true;

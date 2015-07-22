@@ -6,7 +6,7 @@ Discuss this project at Gitter
 
 Frontend editor for WordPress, an experiment with a goal to enhance usability and convenience of editing exisiting content.
 
-> This plugin is intended strictly for developers, it will **not** work "out of the box".
+> This plugin is intended strictly for plugin and theme developers, it will **not** work "out of the box". Are you an end-user? [Look here!](https://lasso.is/)
 
 ![](https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/screenshot-1.jpg)
 ![](https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/screenshot-2.jpg)
@@ -100,6 +100,7 @@ array(
 * File
 
 ##Pending features
+> These are features that are planned to be implemented in the near future (in no particular order)
 * [ ] Ability to edit featured image
 * [ ] Show unsaved changes warning if leaving page
 * [ ] Ability to edit other columns from the posts table (like post_author, post_date and so on)
@@ -109,19 +110,28 @@ array(
 * [ ] WooCommerce support (other than standard WP-fields)
 * [ ] Image upload by dropping an image into the editable area
 * [ ] Drag image to move it within the editable area
-* [ ] Extend plugability further and support for extensions (enable to hook onto and modify js editor)
+* [ ] Extend pluggability further and support for extensions (enable to hook onto and modify js editor)
 * [ ] Multiple "output_to" selectors and attrs
 * [ ] Choice-based fields like dropdown-select (click on content to show dropdown and select option to insert)
 * [ ] More ACF fields support
-* [ ] Smarter outputing of value (like if it's an image field and has no output options, determine by itself)
+* [ ] Smarter outputting of value (like if it's an image field and has no output options, determine by itself)
 * [ ] Enable editing from archives/blog home
+* [ ] Post revisions
+* [ ] Edit taxonomies (and native tags and categories)
 * [ ] Make it possible to create new posts from frontend
+* [ ] oEmbed support in wysiwyg
+* [ ] Updates
+* [ ] Automatic updates
+
+##Proposed features
+> These features requires further discussion, not yet set to be implemented
+* [ ] Column-maker
 
 ##Collaboration notes
-* I'm using sass for styling and PrePros for compiling (there's a free version if you wanna check it out)
-* JS files are minified and concatenated with PrePros, so without it you'll have to load the other js files individually (see prepros-prepend comments in the beginning of scripts.js)
-* I'm using bower for keeping medium-editor up to date, right now there are no other dependancies other than jQuery but that comes with WP
-* Features and third party add ons should be free and open source
+* I'm using sass for styling and [PrePros](https://prepros.io/) for compiling (there's a free version if you wanna check it out)
+* JS files are minified and concatenated with [PrePros](https://prepros.io/), so without it you'll have to load the other js files individually (see prepros-prepend comments in the beginning of scripts.js)
+* I'm using [Bower](http://bower.io/) for keeping medium-editor up to date, right now there are no other dependancies other than jQuery but that comes with WP
+* Core features should be free and open source
 * Comment your code
 
 ##License
