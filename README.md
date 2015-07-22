@@ -101,6 +101,7 @@ array(
 
 ##Pending features
 > These are features that are planned to be implemented in the near future (in no particular order)
+
 * [ ] Ability to edit featured image
 * [ ] Show unsaved changes warning if leaving page
 * [ ] Ability to edit other columns from the posts table (like post_author, post_date and so on)
@@ -125,6 +126,7 @@ array(
 
 ##Proposed features
 > These features requires further discussion, not yet set to be implemented
+
 * [ ] Column-maker
 
 ##Collaboration notes
