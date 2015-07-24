@@ -1,8 +1,13 @@
 <h1 id="wa-fronted-wordpress-plugin">WA Fronted WordPress Plugin</h1>
+<p><a href="https://gitter.im/jesperbjerke/wa-fronted?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img src="https://badges.gitter.im/Join%20Chat.svg" alt="Join the chat at https://gitter.im/jesperbjerke/wa-fronted"></a>
+Discuss this project at Gitter</p>
 <p>Frontend editor for WordPress, an experiment with a goal to enhance usability and convenience of editing exisiting content.</p>
 <blockquote>
-<p>This plugin is intended strictly for developers, it will <strong>not</strong> work &quot;out of the box&quot;.</p>
+<p>This plugin is intended strictly for plugin and theme developers, it will <strong>not</strong> work &quot;out of the box&quot;. Are you an end-user? <a href="https://lasso.is/">Look here!</a></p>
 </blockquote>
+<p><img src="https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/screenshot-1.jpg" alt="">
+<img src="https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/screenshot-2.jpg" alt="">
+<img src="https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/screenshot-3.jpg" alt=""></p>
 <p>To enable an editable area, simply add a filter function to &#39;wa_fronted_options&#39; that passes and returns a multidimensional array. Note that both themes and plugins can call this filter before or after eachother and build upon or replace options.</p>
 <p>The first level of the array consists of the key &quot;defaults&quot; (optional) and &quot;post_types&quot;. In &quot;defaults&quot;, specify whatever you want to be set as default when you have not set anything else in that specific area. In &quot;post_types&quot; you create an array for each post type you want to enable frontend editing for (you can also use &#39;front_page&#39; if you just want to target your static front page). Inside, you set &quot;editable_areas&quot; with an array with options for each editable area on this post type.</p>
 <p>The following example will enable the regular post content on front page to be editable from frontend if logged in user has role &quot;administrator&quot;, with a toolbar consisting of only bold and italic buttons, but on posts we allow a full toolbar and leaving permission to the default (current_user_can(&#39;edit_posts&#39;)).</p>
@@ -87,6 +92,9 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <li>File</li>
 </ul>
 <h2 id="pending-features">Pending features</h2>
+<blockquote>
+<p>These are features that are planned to be implemented in the near future (in no particular order)</p>
+</blockquote>
 <ul>
 <li>[ ] Ability to edit featured image</li>
 <li>[ ] Show unsaved changes warning if leaving page</li>
@@ -96,19 +104,37 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <li>[ ] Autosave</li>
 <li>[ ] WooCommerce support (other than standard WP-fields)</li>
 <li>[ ] Image upload by dropping an image into the editable area</li>
-<li>[ ] Extend plugability further and support for extensions (enable to hook onto and modify js editor)</li>
+<li>[ ] Drag image to move it within the editable area</li>
+<li>[ ] Extend pluggability further and support for extensions (enable to hook onto and modify js editor)</li>
 <li>[ ] Multiple &quot;output_to&quot; selectors and attrs</li>
 <li>[ ] Choice-based fields like dropdown-select (click on content to show dropdown and select option to insert)</li>
 <li>[ ] More ACF fields support</li>
-<li>[ ] Smarter outputing of value (like if it&#39;s an image field and has no output options, determine by itself)</li>
+<li>[ ] Smarter outputting of value (like if it&#39;s an image field and has no output options, determine by itself)</li>
 <li>[ ] Enable editing from archives/blog home</li>
+<li>[ ] Post revisions</li>
+<li>[ ] Edit taxonomies (and native tags and categories)</li>
 <li>[ ] Make it possible to create new posts from frontend</li>
+<li>[ ] How-to guide for integration and extensions</li>
+<li>[x] oEmbed support in wysiwyg</li>
+<li>[x] Updates</li>
+<li>[x] Automatic updates</li>
+</ul>
+<h2 id="proposed-features">Proposed features</h2>
+<blockquote>
+<p>These features requires further discussion, not yet set to be implemented</p>
+</blockquote>
+<ul>
+<li>[ ] Spellchecking and wordsuggestion, autocorrection</li>
+<li>[ ] Ability to update widget contents</li>
+<li>[ ] Column-maker</li>
 </ul>
 <h2 id="collaboration-notes">Collaboration notes</h2>
 <ul>
-<li>I&#39;m using sass for styling and PrePros for compiling (there&#39;s a free version if you wanna check it out)</li>
-<li>JS files are minified and concatenated with PrePros, so without it you&#39;ll have to load the other js files individually (see prepros-prepend comments in the beginning of scripts.js)</li>
-<li>I&#39;m using bower for keeping medium-editor up to date, right now there are no other dependancies other than jQuery but that comes with WP</li>
-<li>Features and third party add ons should be free and open source</li>
+<li>I&#39;m using sass for styling and <a href="https://prepros.io/">PrePros</a> for compiling (there&#39;s a free version if you wanna check it out)</li>
+<li>JS files are minified and concatenated with <a href="https://prepros.io/">PrePros</a>, so without it you&#39;ll have to load the other js files individually (see prepros-prepend comments in the beginning of scripts.js)</li>
+<li>I&#39;m using <a href="http://bower.io/">Bower</a> for keeping medium-editor up to date, right now there are no other dependancies other than jQuery but that comes with WP</li>
+<li>Core features should be free and open source</li>
 <li>Comment your code</li>
 </ul>
+<h2 id="license">License</h2>
+<p>See the <a href="LICENSE.md">LICENSE</a> file for license rights (GPLv2)</p>

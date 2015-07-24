@@ -120,13 +120,16 @@ array(
 * [ ] Post revisions
 * [ ] Edit taxonomies (and native tags and categories)
 * [ ] Make it possible to create new posts from frontend
-* [ ] oEmbed support in wysiwyg
-* [ ] Updates
-* [ ] Automatic updates
+* [ ] How-to guide for integration and extensions
+* [x] oEmbed support in wysiwyg
+* [x] Updates
+* [x] Automatic updates
 
 ##Proposed features
 > These features requires further discussion, not yet set to be implemented
 
+* [ ] Spellchecking and wordsuggestion, autocorrection
+* [ ] Ability to update widget contents
 * [ ] Column-maker
 
 ##Collaboration notes

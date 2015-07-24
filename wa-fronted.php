@@ -3,7 +3,7 @@
 	Plugin Name: WA-Fronted
 	Plugin URI: http://github.com/jesperbjerke/wa-fronted
 	Description: Edit content directly from fronted in the contents actual place
-	Version: 0.1
+	Version: 0.1.1
 	Text Domain: wa-fronted
 	Domain Path: /lang
 	Author: Jesper Bjerke
@@ -11,6 +11,34 @@
 	Network: True
 	License: GPLv2
 */
+
+/**
+ * Plugin updater curtesy of @link https://github.com/YahnisElsts
+ */
+require_once 'plugin-update-checker/plugin-update-checker.php';
+$Plugin_Updater = PucFactory::getLatestClassVersion('PucGitHubChecker');
+$WA_Fronted_Updater = new $Plugin_Updater(
+    'https://github.com/jesperbjerke/wa-fronted/',
+    __FILE__,
+    'master'
+);
+
+/**
+ * Enable automatic background updates for this plugin
+ */
+function auto_update_wa_fronted ( $update, $item ) {
+    // Array of plugin slugs to always auto-update
+    $plugins = array ( 
+        'wa-fronted'
+    );
+    if ( in_array( $item->slug, $plugins ) ) {
+        return true; // Always update plugins in this array
+    } else {
+        return $update; // Else, use the normal API response to decide whether to update or not
+    }
+}
+add_filter( 'auto_update_plugin', 'auto_update_wa_fronted', 10, 2 );
+
 class WA_Fronted {
 
 	protected $supported_acf_fields;
@@ -31,6 +59,7 @@ class WA_Fronted {
 		add_action( 'wp_ajax_wa_get_acf_field_object', array( $this, 'wa_get_acf_field_object' ) );
 		add_action( 'wp_ajax_wa_get_acf_field_contents', array( $this, 'wa_get_acf_field_contents' ) );
 		add_action( 'wp_ajax_wa_get_acf_form', array( $this, 'wa_get_acf_form' ) );
+		add_action( 'wp_ajax_wa_get_oembed', array( $this, 'wa_get_oembed' ) );
 		add_filter( 'the_content', array( $this, 'filter_shortcodes' ) );
 		add_filter( 'acf/load_value/type=wysiwyg', array( $this, 'filter_shortcodes' ), 10, 3 );
 		add_filter( 'acf/update_value', 'wp_kses_post', 10, 1 );
@@ -744,6 +773,29 @@ class WA_Fronted {
 		}
 
 	}
+
+	/**
+	 * Check link against WP oEmbed
+	 * @param  string $link
+	 * @return mixed       false if not valid oEmbed or html
+	 */
+	public function wa_get_oembed($link = false){
+		$is_ajax = false;
+		if(!$link){
+			$link    = $_POST['link'];
+			$is_ajax = true;
+		}
+		
+		$embed_code = wp_oembed_get($link);
+		
+		if($is_ajax){
+			wp_send_json(array(
+				'oembed' => $embed_code
+			));
+		}else{
+			return $embed_code;
+		}
+	}
 }
 
 /**
@@ -757,4 +809,3 @@ if(!function_exists('wa_fronted_init')){
 }
 
 add_action('plugins_loaded', 'wa_fronted_init', 999);
-?>

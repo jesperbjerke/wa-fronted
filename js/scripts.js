@@ -134,6 +134,34 @@ var wa_fronted = {
 
 			var editor = new MediumEditor(this_editor, editor_options);
 
+			//Hook onto paste event and determine if pasted content is valid oEmbed
+			editor.subscribe('editablePaste', function (event, editable) {
+				event.preventDefault();
+				var clipboardData = event.clipboardData.getData('text/plain');
+				if(clipboardData && (clipboardData.indexOf('http://') !== -1 || clipboardData.indexOf('https://') !== -1)){
+					self.show_loading_spinner();
+					jQuery.post(
+						global_vars.ajax_url,
+						{
+							'action' : 'wa_get_oembed',
+							'link'	 : clipboardData
+						}, 
+						function(response){
+							if(response.oembed !== false){
+								var current_content = this_editor.html(),
+									regex_str	= escape_regexp(clipboardData),
+									regex       = new RegExp(regex_str, 'm'),
+									new_content = current_content.replace(regex, response.oembed);
+								console.log(regex, new_content);
+								this_editor.html(new_content);
+							}
+							self.hide_loading_spinner();
+						}
+					);
+				}
+			});
+
+			//Register changes to the editor and show savebutton
 			editor.subscribe('editableInput', function (event, editable) {
 				clearTimeout(self.data.timers[editor.id]);
 				self.data.timers[editor.id] = setTimeout(function(){
@@ -539,3 +567,7 @@ jQuery(document).ready(function(){
 		wa_fronted.initialize();
 	}
 });
+
+function escape_regexp(s) {
+    return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+};
