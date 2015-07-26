@@ -3,7 +3,7 @@
 	Plugin Name: WA-Fronted
 	Plugin URI: http://github.com/jesperbjerke/wa-fronted
 	Description: Edit content directly from fronted in the contents actual place
-	Version: 0.1.2
+	Version: 0.2
 	Text Domain: wa-fronted
 	Domain Path: /lang
 	Author: Jesper Bjerke
@@ -51,7 +51,7 @@ class WA_Fronted {
 		add_action( 'init', array( $this, 'wa_wp_init' ) );
 		add_action( 'wp', array( $this, 'wa_has_wp' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'scripts_and_styles' ) );
-		add_action( 'wp_footer', array( $this, 'wa_save_button' ) );
+		add_action( 'wp_footer', array( $this, 'wa_fronted_toolbar' ) );
 		add_action( 'wp_footer', array( $this, 'wa_acf_dialog' ) );
 		add_action( 'wp_ajax_wa_fronted_save', array( $this, 'wa_fronted_save' ) );
 		add_action( 'wp_ajax_wa_render_shortcode', array( $this, 'wa_render_shortcode' ) );
@@ -60,6 +60,8 @@ class WA_Fronted {
 		add_action( 'wp_ajax_wa_get_acf_field_contents', array( $this, 'wa_get_acf_field_contents' ) );
 		add_action( 'wp_ajax_wa_get_acf_form', array( $this, 'wa_get_acf_form' ) );
 		add_action( 'wp_ajax_wa_get_oembed', array( $this, 'wa_get_oembed' ) );
+		add_action( 'wp_ajax_wa_get_thumbnail_id', array( $this, 'wa_get_thumbnail_id' ) );
+		add_action( 'wp_ajax_wa_set_thumbnail', array( $this, 'wa_set_thumbnail' ) );
 		add_filter( 'the_content', array( $this, 'filter_shortcodes' ) );
 		add_filter( 'acf/load_value/type=wysiwyg', array( $this, 'filter_shortcodes' ), 10, 3 );
 		add_filter( 'acf/update_value', 'wp_kses_post', 10, 1 );
@@ -69,23 +71,30 @@ class WA_Fronted {
 	}
 
 	/**
-	 * On wp init, start session and create acf form head
+	 * On wp init, start session
 	 */
 	public function wa_wp_init(){
 		if(!session_id()){
 			session_start();
 		}
 
-		if(function_exists('acf_form_head')){
-			acf_form_head();
-		}
 	}
 
 	/**
-	 * After wp is fully loaded
+	 * After wp is fully loaded, get options if on frontend and logged in
+	 * Create acf form head
 	 */
 	public function wa_has_wp(){
-		$_SESSION['wa_fronted_options'] = $this->get_options();
+		if(is_user_logged_in() && !is_admin()){
+			$_SESSION['wa_fronted_options'] = $this->get_options();
+			
+			if(function_exists('acf_form_head') && $_SESSION['wa_fronted_options'] !== false){
+				acf_form_head();
+			}
+
+		}else{
+			$_SESSION['wa_fronted_options'] = false;
+		}
 	}
 
 	/**
@@ -136,6 +145,10 @@ class WA_Fronted {
 		if($field_type == 'post_title'){
 			if(!array_key_exists('toolbar', $new_options)){
 				$options['toolbar'] = false;
+			}
+		}else if($field_type == 'post_thumbnail'){
+			if(!array_key_exists('media_upload', $new_options)){
+				$options['media_upload'] = 'only';
 			}
 		}else if(strpos($field_type, 'acf_') !== false){
 			
@@ -217,12 +230,15 @@ class WA_Fronted {
 			trigger_error('No configuration found. Please configure by adding a filter to \'wa_fronted_options\'', E_USER_ERROR);
 		}
 
+		global $post;
+
 		$default_options = array(
 			'media_upload' => true,
 			'toolbar'      => 'full',
 			'post_id'      => $post->ID,
 			'field_type'   => false,
-			'permission'   => 'default'
+			'permission'   => 'default',
+			'image_size'   => 'post-thumbnail'
 		);
 
 		if(is_front_page() && !is_home()){
@@ -261,11 +277,7 @@ class WA_Fronted {
 	 */
 	public function scripts_and_styles() {
 
-		if(!isset($_SESSION['wa_fronted_options'])){
-			$_SESSION['wa_fronted_options'] = $this->get_options();
-		}
-
-		if(is_user_logged_in() && !is_admin() && $_SESSION['wa_fronted_options'] !== false){
+		if($_SESSION['wa_fronted_options'] !== false){
 			do_action('wa_before_fronted_scripts', $_SESSION['wa_fronted_options']);
 			
 			wp_enqueue_media();
@@ -329,11 +341,7 @@ class WA_Fronted {
 	 * @return string $content rerendered content
 	 */
 	public function filter_shortcodes( $content, $post_id = false, $field = false ){
-		if(!isset($_SESSION['wa_fronted_options'])){
-			$_SESSION['wa_fronted_options'] = $this->get_options();
-		}
-
-		if(is_user_logged_in() && !is_admin() && $_SESSION['wa_fronted_options'] !== false){
+		if($_SESSION['wa_fronted_options'] !== false){
 			$pattern = get_shortcode_regex();
 			preg_match_all( '/'. $pattern .'/s', $content, $matches );
 			if(array_key_exists( 0, $matches )){
@@ -361,11 +369,7 @@ class WA_Fronted {
 	 * @return string $content
 	 */
 	protected function unfilter_shortcodes( $content ){
-		if(!isset($_SESSION['wa_fronted_options'])){
-			$_SESSION['wa_fronted_options'] = $this->get_options();
-		}
-
-		if(is_user_logged_in() && !is_admin() && $_SESSION['wa_fronted_options'] !== false){
+		if($_SESSION['wa_fronted_options'] !== false){
 			$pattern = '(?=<!--\\sshortcode\\s-->)(.*)(?<=\\<!--\\s\\/shortcode\\s-->)';
 
 			preg_match_all( '/'. $pattern .'/s', $content, $matches );
@@ -548,7 +552,7 @@ class WA_Fronted {
                     $sizes[ $_size ] = array( 
 						'width'  => $_wp_additional_image_sizes[ $_size ]['width'],
 						'height' => $_wp_additional_image_sizes[ $_size ]['height'],
-						'crop'   =>  $_wp_additional_image_sizes[ $_size ]['crop']
+						'crop'   => $_wp_additional_image_sizes[ $_size ]['crop']
                     );
 
                 }
@@ -588,19 +592,22 @@ class WA_Fronted {
 	/**
 	 * Output markup for save button and loading spinner
 	 */
-	public function wa_save_button(){
-		if(!isset($_SESSION['wa_fronted_options'])){
-			$_SESSION['wa_fronted_options'] = $this->get_options();
-		}
-
-		if(is_user_logged_in() && !is_admin() && $_SESSION['wa_fronted_options'] !== false):
+	public function wa_fronted_toolbar(){
+		if($_SESSION['wa_fronted_options'] !== false):
 		?>
-			<div id="wa-fronted-save-toolbar">
-				<button id="wa-fronted-save">
-					<i class="fa fa-save"></i> 
-					<?php _e( 'Save', 'wa-fronted' ); ?>
+			<div id="wa-fronted-toolbar">
+				<button id="wa-fronted-save" title="<?php _e('Save', 'wa-fronted'); ?>">
+					<i class="fa fa-save"></i>
+					<?php _e('Save', 'wa-fronted'); ?>
 				</button>
+
+				<!-- <button id="wa-fronted-settings" title="<?php _e('Post settings', 'wa-fronted'); ?>">
+					<i class="dashicons dashicons-admin-settings"></i> 
+				</button> -->
+
+				<?php do_action('wa_fronted_toolbar', $_SESSION['wa_fronted_options']); ?>
 			</div>
+
 			<div id="wa-fronted-spinner">
 				<img src="<?php echo includes_url(); ?>/images/spinner-2x.gif">
 			</div>
@@ -612,11 +619,7 @@ class WA_Fronted {
 	 * Output wrapper for acf dialog/popup
 	 */
 	public function wa_acf_dialog(){
-		if(!isset($_SESSION['wa_fronted_options'])){
-			$_SESSION['wa_fronted_options'] = $this->get_options();
-		}
-
-		if(is_user_logged_in() && !is_admin() && $_SESSION['wa_fronted_options'] !== false):
+		if($_SESSION['wa_fronted_options'] !== false):
 		?>
 			<div id="acf-dialog" class="wp-core-ui" style="display:none;">
 				<button id="close-acf-dialog"><i class="fa fa-close"></i></button>
@@ -663,6 +666,16 @@ class WA_Fronted {
 						'field_object' => $field_object
 					);
 				}
+			}
+		}else{
+			$return = array(
+				'error' => true
+			);
+			
+			if($is_ajax){
+				wp_send_json($return);
+			}else{
+				return $return;
 			}
 		}
 	}
@@ -795,6 +808,65 @@ class WA_Fronted {
 		}else{
 			return $embed_code;
 		}
+	}
+
+	/**
+	 * Retrieve featured image attachment id
+	 * @param  int $post_id
+	 * @return int           attachment id
+	 */
+	public function wa_get_thumbnail_id($post_id = false){
+		$is_ajax = false;
+		if(!$post_id){
+			$post_id = $_POST['post_id'];
+			$is_ajax = true;
+		}
+		
+		$attachment_id = get_post_thumbnail_id($post_id);
+		
+		if($is_ajax){
+			wp_send_json(array(
+				'post_id' => $post_id,
+				'attachment_id' => $attachment_id
+			));
+		}else{
+			return $attachment_id;
+		}	
+	}
+
+	/**
+	 * Sets post thumbnail and returns img element with new thumbnail
+	 * @param  int $attachment_id 
+	 * @param  string $image_size 
+	 * @param  int $post_id       
+	 * @return array                 either an array with html img or error
+	 */
+	public function wa_set_thumbnail($attachment_id = false, $image_size = false, $post_id = false){
+		$is_ajax = false;
+		if(!$attachment_id){
+			$attachment_id = $_POST['attachment_id'];
+			$post_id       = $_POST['post_id'];
+			$image_size    = $_POST['image_size'];
+			$is_ajax       = true;
+		}
+		
+		$meta_id = set_post_thumbnail($post_id, $attachment_id);
+		
+		if($meta_id){
+			$return = array(
+				'html' => get_the_post_thumbnail($post_id, $image_size)
+			);
+		}else{
+			$return = array(
+				'error' => true
+			);
+		}
+
+		if($is_ajax){
+			wp_send_json($return);
+		}else{
+			return $return;
+		}	
 	}
 }
 

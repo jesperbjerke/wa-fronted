@@ -6484,7 +6484,7 @@ body .ui-tooltip {
   border-radius: 8px;
 }
 
-.medium-editor-toolbar ul li button, .medium-wa-image-upload-action, .edit-acf-field, #wa-fronted-save-toolbar #wa-fronted-save, #acf-dialog #close-acf-dialog {
+.medium-editor-toolbar ul li button, .medium-wa-image-upload-action, .edit-acf-field, #wa-fronted-toolbar > button, #acf-dialog #close-acf-dialog {
   box-shadow: none !important;
   text-shadow: none !important;
   border-radius: 0;
@@ -6499,14 +6499,14 @@ body .ui-tooltip {
 .medium-editor-toolbar ul li button.medium-editor-button-active,
 .medium-editor-button-active.medium-wa-image-upload-action,
 .medium-editor-button-active.edit-acf-field,
-#wa-fronted-save-toolbar .medium-editor-button-active#wa-fronted-save,
+#wa-fronted-toolbar > button.medium-editor-button-active,
 #acf-dialog .medium-editor-button-active#close-acf-dialog,
 .medium-editor-toolbar ul li button.active,
 .active.medium-wa-image-upload-action,
 .active.edit-acf-field,
-#wa-fronted-save-toolbar .active#wa-fronted-save,
+#wa-fronted-toolbar > button.active,
 #acf-dialog .active#close-acf-dialog,
-.medium-editor-toolbar ul li button:hover, .medium-wa-image-upload-action:hover, .edit-acf-field:hover, #wa-fronted-save-toolbar #wa-fronted-save:hover, #acf-dialog #close-acf-dialog:hover {
+.medium-editor-toolbar ul li button:hover, .medium-wa-image-upload-action:hover, .edit-acf-field:hover, #wa-fronted-toolbar > button:hover, #acf-dialog #close-acf-dialog:hover {
   background: #333;
   color: #45bbe6;
 }
@@ -6669,26 +6669,36 @@ body .ui-tooltip {
   box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.2);
 }
 
+.wa-fronted-editor img.wp-post-image,
 .wa-fronted-editor img[class*="wp-image"] {
   cursor: pointer;
 }
 
-#wa-fronted-save-toolbar {
+#wa-fronted-toolbar {
   position: fixed;
   bottom: 0;
   left: 0;
   display: block;
-  background-color: #222;
   width: 100%;
   text-align: center;
-  display: none;
+  font: 400 13px/32px "Open Sans", sans-serif;
 }
 
-#wa-fronted-save-toolbar #wa-fronted-save {
+#wa-fronted-toolbar > button {
+  background-color: #222;
   padding: 5px 10px;
   text-transform: uppercase;
   font-size: 14px;
   line-height: 2;
+}
+
+#wa-fronted-toolbar > button i {
+  vertical-align: middle;
+  margin-top: -5px;
+}
+
+#wa-fronted-toolbar #wa-fronted-save {
+  display: none;
 }
 
 #wa-fronted-spinner {

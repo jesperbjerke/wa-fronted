@@ -12,6 +12,7 @@ Frontend editor for WordPress, an experiment with a goal to enhance usability an
 ![](https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/screenshot-2.jpg)
 ![](https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/screenshot-3.jpg)
 
+##Configuration
 To enable an editable area, simply add a filter function to 'wa_fronted_options' that passes and returns a multidimensional array. Note that both themes and plugins can call this filter before or after eachother and build upon or replace options.
 
 The first level of the array consists of the key "defaults" (optional) and "post_types". In "defaults", specify whatever you want to be set as default when you have not set anything else in that specific area. In "post_types" you create an array for each post type you want to enable frontend editing for (you can also use 'front_page' if you just want to target your static front page). Inside, you set "editable_areas" with an array with options for each editable area on this post type.
@@ -57,12 +58,13 @@ add_filter('wa_fronted_options', 'my_editor_options');
 
 ## Options
 * **container** (required, string): selector of wrapping element of what you want to edit. Can be any valid jQuery selector string
-* **field_type** (required, string): `post_content`, `post_title`, `acf_{FIELD ID}` / `acf_sub_{SUBFIELD ID}` (if set and **toolbar** is not specified, **toolbar** will set itself based on what field it is)
+* **field_type** (required, string): `post_content`, `post_title`, `post_thumbnail` (note that if you don't use the_post_thumbnail() function, the image has to have the class 'attachment-post-thumbnail'), `acf_{FIELD ID}` / `acf_sub_{SUBFIELD ID}` (if set and **toolbar** is not specified, **toolbar** will set itself based on what field it is)
 * **permission** (optional, string): `logged-in` (enable to all logged in users), `default` (default, enabled if user has capability *edit_posts*), `{USER ROLE}` (enable to specific user role)
 * **post_id** (optional, int): Insert post id to override the `global $post` variable. If used in combination with `acf_{FIELD ID}`, note that it can also be set to *options / taxonomies / users / etc*
 * **toolbar** (optional, mixed bool/string): `full` (default, all buttons), `false` (do not show toolbar), `comma-separated string` (bold, italic, underline, anchor, header1, header2, quote, unorderedlist, orderedlist, justifyLeft, justifyCenter, justifyRight)
 * **media_upload** (optional, mixed bool/string): `true` (default, will allow user to insert/upload media to the editable area), `false` (disable media upload), `only` (constrain the editable area to only edit media. ie; no text, no toolbar)
-* **output** (optional, string): *only applies to ACF fields with complex output* value to retrieve from get_field() to output as a dot separated string representing the traversing of value array, ie. for an image field that should output the thumbnail: "sizes.thumbnail".
+* **image_size** (optional, string): any registered image size *(only applicable if **field_type** is set and you want another image size than WP default, which is 'post-thumbnail')*
+* **output** (optional, string): alue to retrieve from get_field() to output as a dot separated string representing the traversing of value array, ie. for an image field that should output the thumbnail: "sizes.thumbnail" *(only applicable to ACF fields with complex output)*
 * **output_to** (optional, array): *if not specified, the returned data after save will be put directly into the container element* 
 ```php
 array(
@@ -77,6 +79,7 @@ array(
 * **wa_after_fronted_scripts** runs after plugin has registered all its scripts and styles (passes complete options array as argument)
 * **wa_fronted_save** runs after regular save function (passes $data as argument)
 * **wa_fronted_autosave** runs after regular autosave function (passes $data as argument)
+* **wa_fronted_toolbar** runs when bottom toolbar renders (before ending </div>) (passes complete options array as argument)
 
 *I'll try to add hooks where I see it could be useful, but if you are missing one, please post an issue requesting it*
 
@@ -99,15 +102,21 @@ array(
 * Image
 * File
 
-##Pending features
-> These are features that are planned to be implemented in the near future (in no particular order)
+##Features
+> Unchecked boxes are features that are planned to be implemented in the near future (in no particular order)
 
-* [ ] Ability to edit featured image
-* [ ] Show unsaved changes warning if leaving page
-* [ ] Ability to edit other columns from the posts table (like post_author, post_date and so on)
+* [x] Automatic changing of image size to load when changing size of image in content
+* [x] Gallery shortcode editing
+* [x] Advanced Custom Fields support (see supported ACF fields for more details)
+* [x] Automatic oEmbed conversion upon paste
+* [x] Automatic url to link conversion
+* [x] Automatic updates
+* [x] Ability to edit featured image
+* [x] Show unsaved changes warning if leaving page
+* [ ] Ability to edit other columns from the posts table (like post_author, post_date, post_status and so on)
 * [ ] Native custom fields support
 * [ ] Shortcodes support (other than gallery)
-* [ ] Autosave
+* [ ] Autosave (need some discussion on how to best implement this)
 * [ ] WooCommerce support (other than standard WP-fields)
 * [ ] Image upload by dropping an image into the editable area
 * [ ] Drag image to move it within the editable area
@@ -116,21 +125,23 @@ array(
 * [ ] Choice-based fields like dropdown-select (click on content to show dropdown and select option to insert)
 * [ ] More ACF fields support
 * [ ] Smarter outputting of value (like if it's an image field and has no output options, determine by itself)
-* [ ] Enable editing from archives/blog home
 * [ ] Post revisions
 * [ ] Edit taxonomies (and native tags and categories)
-* [ ] Make it possible to create new posts from frontend
 * [ ] How-to guide for integration and extensions
-* [x] oEmbed support in wysiwyg
-* [x] Updates
-* [x] Automatic updates
+* [ ] Translation
+* [ ] Mirror style of current WP admin theme
 
 ##Proposed features
 > These features requires further discussion, not yet set to be implemented
 
-* [ ] Spellchecking and wordsuggestion, autocorrection
+* [ ] Enhance UX by visualizing which area you are editing
+* [ ] Make it possible to create new posts from frontend
+* [ ] Change common ajax functions to make use of WP Rest API instead (when implemented into core)
+* [ ] Spellchecking and word suggestion, auto correction
 * [ ] Ability to update widget contents
-* [ ] Column-maker
+* [ ] Editing from archives/blog home
+* [ ] Markdown parser
+* [ ] Column-maker (made as an add-on?)
 
 ##Collaboration notes
 * I'm using sass for styling and [PrePros](https://prepros.io/) for compiling (there's a free version if you wanna check it out)

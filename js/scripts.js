@@ -16,6 +16,7 @@ var wa_fronted = {
 		current_selection      : false,
 		current_range          : false,
 		current_editor_options : false,
+		has_changes            : false,
 		acf_temp               : {
 			field_key : false,
 			post_id   : false
@@ -69,6 +70,16 @@ var wa_fronted = {
 				self.refresh_acf_field(self.data.acf_temp.field_key, self.data.acf_temp.post_id, self.data.current_editor_options, self.data.current_editor);
 			});
 		}
+
+		jQuery('#wa-post-status').click(function(){
+
+		});
+
+		window.onbeforeunload = function(){
+			if(self.data.has_changes){
+		  		return 'The changes you have made will be lost if you navigate away from this page.';
+			}
+		};
 	},
 
 	/**
@@ -124,6 +135,8 @@ var wa_fronted = {
 			}
 		});
 
+		var editor = false;
+
 		if(this_options.media_upload !== 'only'){
 
 			if(this_options.media_upload === true){
@@ -132,7 +145,7 @@ var wa_fronted = {
 			    }
 			}
 
-			var editor = new MediumEditor(this_editor, editor_options);
+			editor = new MediumEditor(this_editor, editor_options);
 
 			//Hook onto paste event and determine if pasted content is valid oEmbed
 			editor.subscribe('editablePaste', function (event, editable) {
@@ -161,19 +174,12 @@ var wa_fronted = {
 				}
 			});
 
-			//Register changes to the editor and show savebutton
-			editor.subscribe('editableInput', function (event, editable) {
-				clearTimeout(self.data.timers[editor.id]);
-				self.data.timers[editor.id] = setTimeout(function(){
-					self.auto_save(this_editor, this_options);
-					self.show_save_button();
-				}, 1000);
-			});
-
 		}else{
 
+			//Send field_type to server and validate it against ACF
 			self.get_acf_field_object(this_options.field_type, function(field_object){
 				if(!field_object.hasOwnProperty('error')){
+					//field_type is a valid ACF field
 					switch(field_object.type){
 						case 'file':
 						case 'image':
@@ -184,8 +190,8 @@ var wa_fronted = {
 					}
 					var editor_children = this_editor.children(),
 						editor_contents = jQuery(editor_children[0]),
-						content_width = editor_contents.width(),
-						content_pos = editor_contents.position();
+						content_width   = editor_contents.width(),
+						content_pos     = editor_contents.position();
 
 					this_editor.prepend('<button title="Edit ' + field_object.type + '" class="edit-acf-field" style="left: ' + (content_pos.left + ((content_width / 2) - 13)) + 'px;"><i class="fa fa-edit"></i></button>');
 					this_editor.hover(
@@ -210,10 +216,30 @@ var wa_fronted = {
 					});
 
 				}else{
-					//@todo: handle custom media upload function
+					//field_type is not an ACF field
+					editor_options.toolbar    = false;
+					editor_options.spellcheck = false;
+					editor_options.extensions = {
+				    	'image_upload' : new Wa_image_upload(this_options)
+				    }
+
+					editor = new MediumEditor(this_editor, editor_options);
 				}
 			});
 
+		}
+
+		//If editor exists
+		if(editor !== false){
+			//Register changes to the editor and show savebutton
+			editor.subscribe('editableInput', function (event, editable) {
+				clearTimeout(self.data.timers[editor.id]);
+				self.data.timers[editor.id] = setTimeout(function(){
+					self.data.has_changes = true;
+					self.auto_save(this_editor, this_options);
+					self.show_save_button();
+				}, 1000);
+			});
 		}
 	},
 
@@ -278,7 +304,7 @@ var wa_fronted = {
 	},
 
 	show_save_button: function(){
-		jQuery('#wa-fronted-save-toolbar').fadeIn('fast');
+		jQuery('#wa-fronted-save').fadeIn('fast');
 	},
 
 	show_loading_spinner: function(){
