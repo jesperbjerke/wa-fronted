@@ -1,9 +1,20 @@
 CHANGELOG
 =========
+## 0.3
+* Updated Plugin Update Checker to 2.2
+* Changed action hooks `wa_before_fronted_scripts`, `wa_after_fronted_scripts` to `wa_fronted_before_scripts`, `wa_fronted_after_scripts` (to respect a more uniform naming standard of hooks)
+* Added settings modal with options to change different post settings
+* Added nonce validation to ajax post save
+* Added action hook `wa_fronted_settings_form`
+* Added action hook `wa_fronted_settings_modal_footer`
+* Added action hook `wa_fronted_settings_form_save`
+* Added filter `wa_fronted_settings_values`
+
 ## 0.2
 * Added support for featured image
 * Disabled and moved unnecessary functions if not logged in and not on frontend
 * Added unsaved changes warning if leaving page
+* Added action hook `wa_fronted_toolbar`
 
 ## 0.1.2
 * Removed submodule link of plugin updater

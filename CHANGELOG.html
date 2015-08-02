@@ -1,9 +1,21 @@
 <h1 id="changelog">CHANGELOG</h1>
+<h2 id="0-3">0.3</h2>
+<ul>
+<li>Updated Plugin Update Checker to 2.2</li>
+<li>Changed action hooks <code>wa_before_fronted_scripts</code>, <code>wa_after_fronted_scripts</code> to <code>wa_fronted_before_scripts</code>, <code>wa_fronted_after_scripts</code> (to respect a more uniform naming standard of hooks)</li>
+<li>Added settings modal with options to change different post settings</li>
+<li>Added nonce validation to ajax post save</li>
+<li>Added action hook <code>wa_fronted_settings_form</code></li>
+<li>Added action hook <code>wa_fronted_settings_modal_footer</code></li>
+<li>Added action hook <code>wa_fronted_settings_form_save</code></li>
+<li>Added filter <code>wa_fronted_settings_values</code></li>
+</ul>
 <h2 id="0-2">0.2</h2>
 <ul>
 <li>Added support for featured image</li>
 <li>Disabled and moved unnecessary functions if not logged in and not on frontend</li>
 <li>Added unsaved changes warning if leaving page</li>
+<li>Added action hook <code>wa_fronted_toolbar</code></li>
 </ul>
 <h2 id="0-1-2">0.1.2</h2>
 <ul>

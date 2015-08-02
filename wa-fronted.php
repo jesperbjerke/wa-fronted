@@ -48,11 +48,21 @@ class WA_Fronted {
 	 * Also adds filters for rendering shortcodes
 	 */
 	public function __construct(){
-		add_action( 'init', array( $this, 'wa_wp_init' ) );
-		add_action( 'wp', array( $this, 'wa_has_wp' ) );
-		add_action( 'wp_enqueue_scripts', array( $this, 'scripts_and_styles' ) );
-		add_action( 'wp_footer', array( $this, 'wa_fronted_toolbar' ) );
-		add_action( 'wp_footer', array( $this, 'wa_acf_dialog' ) );
+		if(is_user_logged_in() && !is_admin()){
+			add_action( 'init', array( $this, 'wa_wp_init' ) );
+			add_action( 'wp', array( $this, 'wa_has_wp' ) );
+			add_action( 'wp_enqueue_scripts', array( $this, 'scripts_and_styles' ) );
+			add_action( 'wp_footer', array( $this, 'wa_fronted_toolbar' ) );
+			add_action( 'wp_footer', array( $this, 'wa_acf_dialog' ) );
+			add_action( 'wp_footer', array( $this, 'wa_fronted_footer' ) );
+			add_filter( 'the_content', array( $this, 'filter_shortcodes' ) );
+			add_filter( 'acf/load_value/type=wysiwyg', array( $this, 'filter_shortcodes' ), 10, 3 );
+			add_filter( 'acf/update_value', 'wp_kses_post', 10, 1 );
+			add_action( 'wp_logout', array( $this, 'wa_wp_logout' ) );
+
+			do_action( 'wa_fronted_init' );
+		}
+
 		add_action( 'wp_ajax_wa_fronted_save', array( $this, 'wa_fronted_save' ) );
 		add_action( 'wp_ajax_wa_render_shortcode', array( $this, 'wa_render_shortcode' ) );
 		add_action( 'wp_ajax_wa_get_image_src', array( $this, 'wa_get_image_src' ) );
@@ -62,22 +72,18 @@ class WA_Fronted {
 		add_action( 'wp_ajax_wa_get_oembed', array( $this, 'wa_get_oembed' ) );
 		add_action( 'wp_ajax_wa_get_thumbnail_id', array( $this, 'wa_get_thumbnail_id' ) );
 		add_action( 'wp_ajax_wa_set_thumbnail', array( $this, 'wa_set_thumbnail' ) );
-		add_filter( 'the_content', array( $this, 'filter_shortcodes' ) );
-		add_filter( 'acf/load_value/type=wysiwyg', array( $this, 'filter_shortcodes' ), 10, 3 );
-		add_filter( 'acf/update_value', 'wp_kses_post', 10, 1 );
-		add_action( 'wp_logout', array( $this, 'wa_wp_logout' ) );
-		
-		do_action( 'wa_fronted_init' );
 	}
 
 	/**
-	 * On wp init, start session
+	 * On wp init, start session and check for posted data
 	 */
 	public function wa_wp_init(){
-		if(!session_id()){
-			session_start();
-		}
+		session_start();
 
+		//Check post data and validate form nonce
+		if(isset($_POST['wa_fronted_settings_nonce']) && wp_verify_nonce($_POST['wa_fronted_settings_nonce'], 'wa_fronted_settings_save')){
+			$this->settings_form_save();
+		}
 	}
 
 	/**
@@ -85,16 +91,13 @@ class WA_Fronted {
 	 * Create acf form head
 	 */
 	public function wa_has_wp(){
-		if(is_user_logged_in() && !is_admin()){
-			$_SESSION['wa_fronted_options'] = $this->get_options();
-			
-			if(function_exists('acf_form_head') && $_SESSION['wa_fronted_options'] !== false){
-				acf_form_head();
-			}
-
-		}else{
-			$_SESSION['wa_fronted_options'] = false;
+		$_SESSION['wa_fronted_options'] = $this->get_options();
+		
+		if(function_exists('acf_form_head') && $_SESSION['wa_fronted_options'] !== false){
+			acf_form_head();
 		}
+
+		do_action( 'wa_fronted_after_init', $_SESSION['wa_fronted_options'] );
 	}
 
 	/**
@@ -220,7 +223,7 @@ class WA_Fronted {
 
 	/**
 	 * Reads config array by applied filter 'wa_fronted_options'
-	 * @return mixed returns false if no areas can be edited by current user, else json object with options
+	 * @return mixed 	returns false if no areas can be edited by current user, else json object with options
 	 */
 	protected function get_options(){
 
@@ -278,7 +281,7 @@ class WA_Fronted {
 	public function scripts_and_styles() {
 
 		if($_SESSION['wa_fronted_options'] !== false){
-			do_action('wa_before_fronted_scripts', $_SESSION['wa_fronted_options']);
+			do_action('wa_fronted_before_scripts', $_SESSION['wa_fronted_options']);
 			
 			wp_enqueue_media();
 
@@ -286,6 +289,22 @@ class WA_Fronted {
 			wp_enqueue_script('jquery-ui-draggable');
 			wp_enqueue_script('jquery-ui-droppable');
 			wp_enqueue_script('jquery-ui-resizable');
+			wp_enqueue_script('jquery-ui-datepicker');
+			wp_enqueue_script('jquery-ui-slider');
+			wp_enqueue_script('jquery-ui-selectmenu');
+
+			wp_enqueue_script(
+				'jqueryui-timepicker-addon',
+				plugins_url( '/bower_components/jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js', __FILE__ ),
+				array( 
+					'jquery', 
+					'jquery-ui-core',
+					'jquery-ui-datepicker',
+					'jquery-ui-slider'
+				),
+				'1.5.5',
+				true
+			);
 
 			wp_enqueue_script(
 				'wa-fronted-scripts',
@@ -295,7 +314,11 @@ class WA_Fronted {
 					'jquery-ui-core', 
 					'jquery-ui-draggable',
 					'jquery-ui-droppable', 
-					'jquery-ui-resizable' 
+					'jquery-ui-resizable',
+					'jquery-ui-datepicker',
+					'jquery-ui-slider',
+					'jquery-ui-selectmenu',
+					'jqueryui-timepicker-addon'
 				),
 				'0.1',
 				true
@@ -308,7 +331,8 @@ class WA_Fronted {
 					'wp_lang'     => get_bloginfo('language'),
 					'ajax_url'    => admin_url('admin-ajax.php'),
 					'options'     => $_SESSION['wa_fronted_options'],
-					'image_sizes' => $this->get_image_sizes()
+					'image_sizes' => $this->get_image_sizes(),
+					'nonce'       => wp_create_nonce('wa_fronted_save_nonce')
 				)
 			);
 
@@ -321,6 +345,10 @@ class WA_Fronted {
 				plugins_url( '/bower_components/medium-editor/dist/css/themes/bootstrap.min.css', __FILE__ )
 			);
 			wp_enqueue_style( 
+				'wa-fronted-timepicker-addon', 
+				plugins_url( '/bower_components/jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.css', __FILE__ )
+			);
+			wp_enqueue_style( 
 				'wa-fronted-style', 
 				plugins_url( '/css/style.css', __FILE__ )
 			);
@@ -329,7 +357,7 @@ class WA_Fronted {
 				acf_enqueue_uploader();
 			}
 
-			do_action('wa_after_fronted_scripts', $_SESSION['wa_fronted_options']);
+			do_action('wa_fronted_after_scripts', $_SESSION['wa_fronted_options']);
 		}
 	}
 
@@ -463,7 +491,7 @@ class WA_Fronted {
 			'success' => true
 		);
 
-		if(isset($_POST['data'])){
+		if(isset($_POST['data']) && wp_verify_nonce( $_POST['wa_fronted_save_nonce'], 'wa_fronted_save_nonce' )){
 			$data = $_POST['data'];
 
 			foreach($data as $this_data){
@@ -520,7 +548,7 @@ class WA_Fronted {
 
 		}else{
 			$return['success'] = false;
-			$return['error'] = 'No post data sent';
+			$return['error']   = 'Sent data not valid';
 		}
 		
 		wp_send_json($return);
@@ -536,16 +564,15 @@ class WA_Fronted {
         global $_wp_additional_image_sizes;
 
         $sizes = array();
-        $get_intermediate_image_sizes = get_intermediate_image_sizes();
 
         // Create the full array with sizes and crop info
-        foreach( $get_intermediate_image_sizes as $_size ) {
+        foreach( get_intermediate_image_sizes() as $_size ) {
 
                 if ( in_array( $_size, array( 'thumbnail', 'medium', 'large' ) ) ) {
 
-                    $sizes[ $_size ]['width'] = get_option( $_size . '_size_w' );
-                    $sizes[ $_size ]['height'] = get_option( $_size . '_size_h' );
-                    $sizes[ $_size ]['crop'] = (bool) get_option( $_size . '_crop' );
+					$sizes[ $_size ]['width']  = get_option( $_size . '_size_w' );
+					$sizes[ $_size ]['height'] = get_option( $_size . '_size_h' );
+					$sizes[ $_size ]['crop']   = (bool) get_option( $_size . '_crop' );
 
                 } elseif ( isset( $_wp_additional_image_sizes[ $_size ] ) ) {
 
@@ -601,11 +628,76 @@ class WA_Fronted {
 					<?php _e('Save', 'wa-fronted'); ?>
 				</button>
 
-				<!-- <button id="wa-fronted-settings" title="<?php _e('Post settings', 'wa-fronted'); ?>">
+				<button id="wa-fronted-settings" title="<?php _e('Post settings', 'wa-fronted'); ?>">
 					<i class="dashicons dashicons-admin-settings"></i> 
-				</button> -->
+				</button>
 
 				<?php do_action('wa_fronted_toolbar', $_SESSION['wa_fronted_options']); ?>
+			</div>
+		<?php
+		endif;
+	}
+
+	/**
+	 * Runs in wp_footer, adds spinner and settings modal
+	 */
+	public function wa_fronted_footer(){
+		if($_SESSION['wa_fronted_options'] !== false):
+			global $post;
+			$all_statuses = array_diff_key(
+				get_post_stati('', 'objects'),
+				array_flip(
+					array(
+						'auto-draft',
+						'future',
+						'inherit',
+						'trash'
+					)
+				)
+			);
+			$current_post_status = get_post_status( $post->ID );
+			$field_prefix = 'wa_fronted_';
+		?>
+			<div id="wa-fronted-settings-modal">
+				<div class="wa-fronted-modal-inner">
+					<button class="close-wa-fronted-modal"><i class="fa fa-close"></i></button>
+
+					<form id="wa-fronted-settings" method="POST">
+
+						<div class="fieldgroup">
+							<label for="<?php echo $field_prefix; ?>post_name"><?php _e('Post slug', 'wa-fronted'); ?></label>
+							<input type="text" name="<?php echo $field_prefix; ?>post_name" id="<?php echo $field_prefix; ?>post_name" value="<?php echo $post->post_name; ?>">
+						</div>
+
+						<div class="fieldgroup">
+							<label for="<?php echo $field_prefix; ?>post_status"><?php _e('Post status', 'wa-fronted'); ?></label>
+							<select name="<?php echo $field_prefix; ?>post_status" id="<?php echo $field_prefix; ?>post_status">
+								<?php foreach($all_statuses as $status): ?>
+									<option value="<?php echo $status->name; ?>" <?php echo ($current_post_status == $status->name) ? 'selected' : ''; ?>>
+										<?php echo $status->label; ?>
+									</option>
+								<?php endforeach; ?>
+							</select>
+						</div>
+
+						<div class="fieldgroup">
+							<label for="<?php echo $field_prefix; ?>post_date"><?php _e('Post date', 'wa-fronted'); ?></label>
+							<input type="text" name="<?php echo $field_prefix; ?>post_date" id="<?php echo $field_prefix; ?>post_date" class="wa_fronted_datepicker" value="<?php echo $post->post_date; ?>">
+						</div>
+
+						<?php 
+							do_action('wa_fronted_settings_form', $_SESSION['wa_fronted_options']); 
+							wp_nonce_field('wa_fronted_settings_save', 'wa_fronted_settings_nonce');
+						?>
+
+						<input type="hidden" name="<?php echo $field_prefix; ?>post_id" id="<?php echo $field_prefix; ?>post_id" value="<?php echo $post->ID; ?>">
+
+						<div class="wa-fronted-modal-footer">
+							<button type="submit" class="button button-primary button-large submit-wa-fronted-modal"><i class="dashicons dashicons-yes"></i> Update</button>
+							<?php do_action('wa_fronted_settings_modal_footer', $_SESSION['wa_fronted_options']); ?>
+						</div>
+					</form>
+				</div>
 			</div>
 
 			<div id="wa-fronted-spinner">
@@ -635,8 +727,9 @@ class WA_Fronted {
 	 * @return array             if not Ajax, returns an array with field object and boolean if it is sub field
 	 */
 	public function wa_get_acf_field_object($field_key = false){
-		if(!function_exists('get_field_object'))
+		if(!function_exists('get_field_object')){
 			return false;
+		}
 
 		$is_ajax = false;
 		if(isset($_POST['field_key'])){
@@ -687,8 +780,9 @@ class WA_Fronted {
 	 * @return array             if not Ajax, returns an array with field object and contents
 	 */
 	public function wa_get_acf_field_contents($field_key = false, $post_id = false){
-		if(!function_exists('get_field_object'))
+		if(!function_exists('get_field_object')){
 			return false;
+		}
 
 		$is_ajax = false;
 		if(isset($_POST['field_key'])){
@@ -757,7 +851,7 @@ class WA_Fronted {
 			}
 		}
 
-		$form_id = 'acf-form-' . $field_key;
+		$form_id      = 'acf-form-' . $field_key;
 		$redirect_uri = (isset($_POST['redirect'])) ? $_POST['redirect'] : $_SERVER['REQUEST_URI'];
 
 		$options = array(
@@ -771,7 +865,6 @@ class WA_Fronted {
 
 		ob_start();
 		acf_form($options);
-
 		$output = ob_get_clean();
 		
 		$return = array(
@@ -785,6 +878,42 @@ class WA_Fronted {
 			return $return;
 		}
 
+	}
+
+	protected function settings_form_save(){
+		if($_SESSION['wa_fronted_options'] !== false){
+
+			$field_prefix = 'wa_fronted_';
+			$update_this  = array();
+
+			foreach($_POST as $key => $value){
+				switch($key){
+					case $field_prefix . 'post_id':
+						$update_this['ID'] = $value;
+						break;
+					case $field_prefix . 'post_status':
+						$update_this['post_status'] = $value;
+						break;
+					case $field_prefix . 'post_name':
+						$update_this['post_name'] = sanitize_title($value);
+						break;
+					case $field_prefix . 'post_date':
+						$update_this['post_date'] = $value;
+						break;
+				}
+			}
+			
+			if(!empty($update_this)){
+				$current_post = get_post($update_this['ID']);
+				$update       = wp_update_post(apply_filters('wa_fronted_settings_values', $update_this), true);
+				
+				do_action('wa_fronted_settings_form_save');
+				
+				wp_safe_redirect( get_permalink($update_this['ID']) );
+				exit;
+			}
+
+		}
 	}
 
 	/**
@@ -826,7 +955,7 @@ class WA_Fronted {
 		
 		if($is_ajax){
 			wp_send_json(array(
-				'post_id' => $post_id,
+				'post_id'       => $post_id,
 				'attachment_id' => $attachment_id
 			));
 		}else{

@@ -9,9 +9,9 @@ Discuss this project at Gitter</p>
 <img src="https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/screenshot-2.jpg" alt="">
 <img src="https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/screenshot-3.jpg" alt=""></p>
 <h2 id="configuration">Configuration</h2>
-<p>To enable an editable area, simply add a filter function to &#39;wa_fronted_options&#39; that passes and returns a multidimensional array. Note that both themes and plugins can call this filter before or after eachother and build upon or replace options.</p>
-<p>The first level of the array consists of the key &quot;defaults&quot; (optional) and &quot;post_types&quot;. In &quot;defaults&quot;, specify whatever you want to be set as default when you have not set anything else in that specific area. In &quot;post_types&quot; you create an array for each post type you want to enable frontend editing for (you can also use &#39;front_page&#39; if you just want to target your static front page). Inside, you set &quot;editable_areas&quot; with an array with options for each editable area on this post type.</p>
-<p>The following example will enable the regular post content on front page to be editable from frontend if logged in user has role &quot;administrator&quot;, with a toolbar consisting of only bold and italic buttons, but on posts we allow a full toolbar and leaving permission to the default (current_user_can(&#39;edit_posts&#39;)).</p>
+<p>To enable an editable area, simply add a filter function to <code>wa_fronted_options</code> that passes and returns a multidimensional array. Note that both themes and plugins can call this filter before or after eachother and build upon or replace options.</p>
+<p>The first level of the array consists of the key <code>defaults</code> (optional) and <code>post_types</code>. In <code>defaults</code>, specify whatever you want to be set as default when you have not set anything else in that specific area. In <code>post_types</code> you create an array for each post type you want to enable frontend editing for (you can also use <code>front_page</code> if you just want to target your static front page). Inside, you set <code>editable_areas</code> with an array with options for each editable area on this post type.</p>
+<p>The following example will enable the regular post content on front page to be editable from frontend if logged in user has role <code>administrator</code>, with a toolbar consisting of only bold and italic buttons, but on posts we allow a full toolbar and leaving permission to the default (<code>current_user_can(&#39;edit_posts&#39;)</code>).</p>
 <pre><code class="lang-php">&lt;?php 
 function my_editor_options($exisiting_options){
     //It is recommended to do an array_merge with the exisiting options to not break other settings
@@ -53,10 +53,10 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <li><strong>field_type</strong> (required, string): <code>post_content</code>, <code>post_title</code>, <code>post_thumbnail</code> (note that if you don&#39;t use the<em>post_thumbnail() function, the image has to have the class &#39;attachment-post-thumbnail&#39;), `acf</em>{FIELD ID}<code>/</code>acf<em>sub</em>{SUBFIELD ID}` (if set and <strong>toolbar</strong> is not specified, <strong>toolbar</strong> will set itself based on what field it is)</li>
 <li><strong>permission</strong> (optional, string): <code>logged-in</code> (enable to all logged in users), <code>default</code> (default, enabled if user has capability <em>edit_posts</em>), <code>{USER ROLE}</code> (enable to specific user role)</li>
 <li><strong>post_id</strong> (optional, int): Insert post id to override the <code>global $post</code> variable. If used in combination with <code>acf_{FIELD ID}</code>, note that it can also be set to <em>options / taxonomies / users / etc</em></li>
-<li><strong>toolbar</strong> (optional, mixed bool/string): <code>full</code> (default, all buttons), <code>false</code> (do not show toolbar), <code>comma-separated string</code> (bold, italic, underline, anchor, header1, header2, quote, unorderedlist, orderedlist, justifyLeft, justifyCenter, justifyRight)</li>
+<li><strong>toolbar</strong> (optional, mixed bool/string): <code>full</code> (default, all buttons), <code>false</code> (do not show toolbar), <code>comma-separated string</code> (<code>bold</code>, <code>italic</code>, <code>underline</code>, <code>anchor</code>, <code>header1</code>, <code>header2</code>, <code>quote</code>, <code>unorderedlist</code>, <code>orderedlist</code>, <code>justifyLeft</code>, <code>justifyCenter</code>, <code>justifyRight</code>)</li>
 <li><strong>media_upload</strong> (optional, mixed bool/string): <code>true</code> (default, will allow user to insert/upload media to the editable area), <code>false</code> (disable media upload), <code>only</code> (constrain the editable area to only edit media. ie; no text, no toolbar)</li>
-<li><strong>image_size</strong> (optional, string): any registered image size <em>(only applicable if <strong>field_type</strong> is set and you want another image size than WP default, which is &#39;post-thumbnail&#39;)</em></li>
-<li><strong>output</strong> (optional, string): alue to retrieve from get_field() to output as a dot separated string representing the traversing of value array, ie. for an image field that should output the thumbnail: &quot;sizes.thumbnail&quot; <em>(only applicable to ACF fields with complex output)</em></li>
+<li><strong>image_size</strong> (optional, string): any registered image size <em>(only applicable if <strong>field_type</strong> is set and you want another image size than WP default, which is <code>post-thumbnail</code>)</em></li>
+<li><strong>output</strong> (optional, string): alue to retrieve from <code>get_field()</code> to output as a dot separated string representing the traversing of value array, ie. for an image field that should output the thumbnail: <code>sizes.thumbnail</code> <em>(only applicable to ACF fields with complex output)</em></li>
 <li><strong>output_to</strong> (optional, array): <em>if not specified, the returned data after save will be put directly into the container element</em> <pre><code class="lang-php">array(
   &quot;selector&quot; =&gt; (string) selector of element inside **container** to output content to. Can be any valid jQuery selector string,
   &quot;attr&quot;    =&gt; (mixed bool/string) if output should be set to an attribute of **selector**, otherwise false or not set
@@ -66,12 +66,16 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 </ul>
 <h2 id="action-hooks">Action hooks</h2>
 <ul>
-<li><strong>wa_fronted_init</strong> runs upon plugin initialization, after the class&#39;s __construct function</li>
-<li><strong>wa_before_fronted_scripts</strong> runs before plugin has registered all its scripts and styles (passes complete options array as argument)</li>
-<li><strong>wa_after_fronted_scripts</strong> runs after plugin has registered all its scripts and styles (passes complete options array as argument)</li>
+<li><strong>wa_fronted_init</strong> runs upon plugin initialization, before the options array has been set</li>
+<li><strong>wa_fronted_after_init</strong> runs after the options array has been set (passes complete JSON encoded options as argument)</li>
+<li><strong>wa_fronted_before_scripts</strong> runs before plugin has registered all its scripts and styles (passes complete JSON encoded options as argument)</li>
+<li><strong>wa_fronted_after_scripts</strong> runs after plugin has registered all its scripts and styles (passes complete JSON encoded options as argument)</li>
 <li><strong>wa_fronted_save</strong> runs after regular save function (passes $data as argument)</li>
 <li><strong>wa_fronted_autosave</strong> runs after regular autosave function (passes $data as argument)</li>
-<li><strong>wa_fronted_toolbar</strong> runs when bottom toolbar renders (before ending </div>) (passes complete options array as argument)</li>
+<li><strong>wa_fronted_toolbar</strong> runs when bottom toolbar renders (before ending <code>&lt;/div&gt;</code>) (passes complete JSON encoded options as argument)</li>
+<li><strong>wa_fronted_settings_form</strong> runs within the settings modal form element (passes complete JSON encoded options as argument)</li>
+<li><strong>wa_fronted_settings_modal_footer</strong> runs when settings modal footer renders (the container where the update button is, still inside the settings form element) (passes complete options array as argument)</li>
+<li><strong>wa_fronted_settings_form_save</strong> runs after the post has been updated with the new values but before user has been redirected to the new permalink</li>
 </ul>
 <p><em>I&#39;ll try to add hooks where I see it could be useful, but if you are missing one, please post an issue requesting it</em></p>
 <h2 id="filters">Filters</h2>
@@ -79,6 +83,7 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <li><strong>supported_acf_fields</strong> modify supported ACF fields array (1 argument)</li>
 <li><strong>compile_options</strong> modify the partially compiled options array (1 argument, called multiple times)</li>
 <li><strong>wa_fronted_options</strong> modify options array, use this to set your options (1 argument)</li>
+<li><strong>wa_fronted_settings_values</strong> modify values before they&#39;re sent to the <code>wp_update_post</code> function array, use this to set your options (1 argument)</li>
 </ul>
 <p><em>I&#39;ll try to add filters where I see it could be useful, but if you are missing one, please post an issue requesting it</em></p>
 <h2 id="supported-acf-field-types">Supported ACF field types</h2>
@@ -107,15 +112,15 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <li>[x] Automatic updates</li>
 <li>[x] Ability to edit featured image</li>
 <li>[x] Show unsaved changes warning if leaving page</li>
-<li>[ ] Ability to edit other columns from the posts table (like post_author, post_date, post_status and so on)</li>
+<li>[x] Ability to edit other columns from the posts table (<code>post_name</code>, <code>post_date</code> and <code>post_status</code>)</li>
 <li>[ ] Native custom fields support</li>
 <li>[ ] Shortcodes support (other than gallery)</li>
 <li>[ ] Autosave (need some discussion on how to best implement this)</li>
-<li>[ ] WooCommerce support (other than standard WP-fields)</li>
+<li>[ ] WooCommerce support (other than standard WP fields)</li>
 <li>[ ] Image upload by dropping an image into the editable area</li>
 <li>[ ] Drag image to move it within the editable area</li>
 <li>[ ] Extend pluggability further and support for extensions (enable to hook onto and modify js editor)</li>
-<li>[ ] Multiple &quot;output_to&quot; selectors and attrs</li>
+<li>[ ] Multiple <code>output_to</code> selectors and attrs</li>
 <li>[ ] Choice-based fields like dropdown-select (click on content to show dropdown and select option to insert)</li>
 <li>[ ] More ACF fields support</li>
 <li>[ ] Smarter outputting of value (like if it&#39;s an image field and has no output options, determine by itself)</li>
@@ -143,7 +148,7 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <ul>
 <li>I&#39;m using sass for styling and <a href="https://prepros.io/">PrePros</a> for compiling (there&#39;s a free version if you wanna check it out)</li>
 <li>JS files are minified and concatenated with <a href="https://prepros.io/">PrePros</a>, so without it you&#39;ll have to load the other js files individually (see prepros-prepend comments in the beginning of scripts.js)</li>
-<li>I&#39;m using <a href="http://bower.io/">Bower</a> for keeping medium-editor up to date, right now there are no other dependancies other than jQuery but that comes with WP</li>
+<li>I&#39;m using <a href="http://bower.io/">Bower</a> for keeping <a href="https://github.com/yabwe/medium-editor">Medium Editor</a> and <a href="https://github.com/trentrichardson/jQuery-Timepicker-Addon">jQuery Timepicker Addon</a> up to date, right now there are no other dependancies other than jQuery but that comes with WP</li>
 <li>Core features should be free and open source</li>
 <li>Comment your code</li>
 </ul>

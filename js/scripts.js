@@ -71,9 +71,22 @@ var wa_fronted = {
 			});
 		}
 
-		jQuery('#wa-post-status').click(function(){
-
+		jQuery('#wa-fronted-settings').click(function(){
+			jQuery('#wa-fronted-settings-modal').fadeIn('fast');
 		});
+
+		jQuery('.close-wa-fronted-modal').click(function(){
+			jQuery('#wa-fronted-settings-modal').fadeOut('fast');
+		});
+
+		var wa_datepicker = jQuery('.wa_fronted_datepicker');
+		wa_datepicker.datetimepicker({
+			dateFormat : 'yy-mm-dd',
+			timeFormat : 'HH:mm:ss'
+		});
+		wa_datepicker.datetimepicker('setDate', wa_datepicker.val());
+
+		jQuery('#wa-fronted-settings-modal select').selectmenu();
 
 		window.onbeforeunload = function(){
 			if(self.data.has_changes){
@@ -215,7 +228,7 @@ var wa_fronted = {
 						self.show_acf_form(field_object.key, this_options.post_id, this_options, this_editor);
 					});
 
-				}else{
+				}else if(field_object.hasOwnProperty('error')){
 					//field_type is not an ACF field
 					editor_options.toolbar    = false;
 					editor_options.spellcheck = false;
@@ -291,8 +304,9 @@ var wa_fronted = {
 		jQuery.post(
 			global_vars.ajax_url,
 			{
-				'action' : 'wa_fronted_save',
-				'data'	 : save_this
+				'action'                : 'wa_fronted_save',
+				'data'                  : save_this,
+				'wa_fronted_save_nonce' : self.options.nonce
 			}, 
 			function(response){
 				if(response.success){
@@ -589,7 +603,7 @@ var wa_fronted = {
 };
 
 jQuery(document).ready(function(){
-	if((typeof options !== undefined) && Modernizr.contenteditable){
+	if((typeof global_vars.options !== 'undefined') && Modernizr.contenteditable){
 		wa_fronted.initialize();
 	}
 });
