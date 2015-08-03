@@ -36,14 +36,15 @@
     "README.md",
     "CHANGES.md"
   ],
-  "version": "5.5.1",
-  "_release": "5.5.1",
+  "version": "5.5.3",
+  "_release": "5.5.3",
   "_resolution": {
     "type": "version",
-    "tag": "5.5.1",
-    "commit": "63d7a06663de8a539cfaf8dd740f9fbac12bf861"
+    "tag": "5.5.3",
+    "commit": "24fc2ecf07eebeba41c1ca424ab87badaec30f12"
   },
   "_source": "git://github.com/daviferreira/medium-editor.git",
-  "_target": "~5.5.0",
-  "_originalSource": "medium-editor"
+  "_target": "~5.5.3",
+  "_originalSource": "medium-editor",
+  "_direct": true
 }

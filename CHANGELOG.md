@@ -1,5 +1,8 @@
 CHANGELOG
 =========
+## 0.3.1
+* Updated Medium Editor to 5.5.3
+
 ## 0.3
 * Updated Plugin Update Checker to 2.2
 * Changed action hooks `wa_before_fronted_scripts`, `wa_after_fronted_scripts` to `wa_fronted_before_scripts`, `wa_fronted_after_scripts` (to respect a more uniform naming standard of hooks)
