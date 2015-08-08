@@ -22,7 +22,7 @@ function Wa_image_upload(this_options) {
  */
 Wa_image_upload.prototype.setup_wp_media = function(type, shortcode_string, shortcode_wrap) {
     shortcode_string = shortcode_string || false;
-    shortcode_wrap = shortcode_wrap || false;
+    shortcode_wrap   = shortcode_wrap || false;
 
     var self = this;
 
@@ -37,35 +37,35 @@ Wa_image_upload.prototype.setup_wp_media = function(type, shortcode_string, shor
 
     if(type === 'insert'){
         this.frame = wp.media({
-            frame: 'post',
-            editing: true,
-            multiple: false
+            frame    : 'post',
+            editing  : true,
+            multiple : false
         });   
     }else if(type === 'gallery-edit' && shortcode_string !== false){
         var selection = this.select(shortcode_string);
         if(selection !== false){
             this.frame = wp.media({
-                frame: 'post',
-                state: 'gallery-edit',
-                title: wp.media.view.l10n.editGalleryTitle,
-                editing: true,
-                multiple: true,
-                selection: selection
+                frame     : 'post',
+                state     : 'gallery-edit',
+                title     : wp.media.view.l10n.editGalleryTitle,
+                editing   : true,
+                multiple  : true,
+                selection : selection
             });
         }else{
             this.frame = wp.media({
-                frame: 'post',
-                state: 'gallery-edit',
-                title: wp.media.view.l10n.editGalleryTitle,
-                editing: true,
-                multiple: true
+                frame    : 'post',
+                state    : 'gallery-edit',
+                title    : wp.media.view.l10n.editGalleryTitle,
+                editing  : true,
+                multiple : true
             });
         }
     }else if(type === 'featured-image'){
         this.frame = wp.media({
-            frame: 'post',
-            state: 'featured-image',
-            states: [ new wp.media.controller.FeaturedImage() , new wp.media.controller.EditImage() ],
+            frame  : 'post',
+            state  : 'featured-image',
+            states : [ new wp.media.controller.FeaturedImage() , new wp.media.controller.EditImage() ],
             // editing: true,
             // multiple: false
         });   
@@ -142,11 +142,11 @@ Wa_image_upload.prototype.get_closest_image_size = function(attachment_id, heigh
         width      = Math.round(width),
         image_type = false,
         closest    = {
-            diff : null,
+            diff      : null,
             size_name : null,
-            height : null,
-            width : null,
-            crop : null
+            height    : null,
+            width     : null,
+            crop      : null
         },
         aspect_ratio = this.round(this.aspect_ratio(width, height), 2);
 
@@ -188,9 +188,9 @@ Wa_image_upload.prototype.get_closest_image_size = function(attachment_id, heigh
             jQuery.post(
                 global_vars.ajax_url,
                 {
-                    'action' : 'wa_get_image_src',
+                    'action'        : 'wa_get_image_src',
                     'attachment_id' : attachment_id,
-                    'size' : closest.size_name
+                    'size'          : closest.size_name
                 }, 
                 function(response){
                     callback(response);
@@ -220,7 +220,7 @@ Wa_image_upload.prototype.bindings = function(instance, editor_container){
         jQuery(event.target)
             .css({
                 'overflow' : 'visible',
-                'margin' : ''
+                'margin'   : ''
             })
             .addClass(alignment);
     });
@@ -304,11 +304,11 @@ Wa_image_upload.prototype.bindings = function(instance, editor_container){
 Wa_image_upload.prototype.enable_resizing = function(instance, editor_container) {
     var self = this;
     editor_container.find('img[class*="wp-image-"]').resizable({
-        autoHide: true,
-        aspectRatio: true,
-        ghost: true,
-        handles: 'nw, ne, sw, se',
-        resize: function(event, ui){
+        autoHide    : true,
+        aspectRatio : true,
+        ghost       : true,
+        handles     : 'nw, ne, sw, se',
+        resize      : function(event, ui){
             var class_match = ui.element.context.className.match(/wp-image-\d+/);
             if(class_match !== null){
                 var attachment_id = class_match[0].match(/\d+/)[0];
@@ -466,9 +466,9 @@ Wa_image_upload.prototype.insertImage = function(frame, replace_this){
                 html = wp.media.string.image( display );
 
                 _.each({
-                    align: 'align',
-                    size:  'image-size',
-                    alt:   'image_alt'
+                    align : 'align',
+                    size  : 'image-size',
+                    alt   : 'image_alt'
                 }, function( option, prop ) {
                     if ( display[ prop ] )
                         options[ option ] = display[ prop ];

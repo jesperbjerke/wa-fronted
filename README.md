@@ -12,7 +12,7 @@ Frontend editor for WordPress, an experiment with a goal to enhance usability an
 ![](https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/screenshot-2.jpg)
 ![](https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/screenshot-3.jpg)
 
-##Configuration
+## Configuration
 To enable an editable area, simply add a filter function to `wa_fronted_options` that passes and returns a multidimensional array. Note that both themes and plugins can call this filter before or after eachother and build upon or replace options.
 
 The first level of the array consists of the key `defaults` (optional) and `post_types`. In `defaults`, specify whatever you want to be set as default when you have not set anything else in that specific area. In `post_types` you create an array for each post type you want to enable frontend editing for (you can also use `front_page` if you just want to target your static front page). Inside, you set `editable_areas` with an array with options for each editable area on this post type.
@@ -57,6 +57,7 @@ add_filter('wa_fronted_options', 'my_editor_options');
 ```
 
 ## Options
+* **native** (optional, bool): `true` (default, setup the native editor), `false` (utilize the do_action function instead)
 * **container** (required, string): selector of wrapping element of what you want to edit. Can be any valid jQuery selector string
 * **field_type** (required, string): `post_content`, `post_title`, `post_thumbnail` (note that if you don't use the_post_thumbnail() function, the image has to have the class 'attachment-post-thumbnail'), `acf_{FIELD ID}` / `acf_sub_{SUBFIELD ID}` (if set and **toolbar** is not specified, **toolbar** will set itself based on what field it is)
 * **permission** (optional, string): `logged-in` (enable to all logged in users), `default` (default, enabled if user has capability *edit_posts*), `{USER ROLE}` (enable to specific user role)
@@ -74,7 +75,9 @@ array(
 ```
 
 ## Action hooks
-* **wa_fronted_init** runs upon plugin initialization, before the options array has been set
+
+# PHP
+* **wa_fronted_inited** runs upon plugin initialization, before the options array has been set
 * **wa_fronted_after_init** runs after the options array has been set (passes complete JSON encoded options as argument)
 * **wa_fronted_before_scripts** runs before plugin has registered all its scripts and styles (passes complete JSON encoded options as argument)
 * **wa_fronted_after_scripts** runs after plugin has registered all its scripts and styles (passes complete JSON encoded options as argument)
@@ -85,17 +88,33 @@ array(
 * **wa_fronted_settings_modal_footer** runs when settings modal footer renders (the container where the update button is, still inside the settings form element) (passes complete options array as argument)
 * **wa_fronted_settings_form_save** runs after the post has been updated with the new values but before user has been redirected to the new permalink
 
+# Javascript
+> The javascript action hooks functions very similarly to their native PHP counterparts. Only difference is that these functions resides within the `wa_fronted` object, so to call the `add_action` function, you type like so: `wa_fronted.add_action('action_name', function);`
+
+* **on_init** runs within the wa_fronted.initialize function
+* **on_bind** runs within the wa_fronted.bind function
+* **on_setup_editor** if the option `native` is true, this action will run instead of the regular editor setup, passes 3 arguments, jQuery object of editor container, current editor options and full options object
+
 *I'll try to add hooks where I see it could be useful, but if you are missing one, please post an issue requesting it*
 
 ## Filters
+
+# PHP
 * **supported_acf_fields** modify supported ACF fields array (1 argument)
-* **compile_options** modify the partially compiled options array (1 argument, called multiple times)
+* **compile_options** modify the partially compiled options array (3 arguments, $compiled_options, $default_options, $new_options, called multiple times)
 * **wa_fronted_options** modify options array, use this to set your options (1 argument)
 * **wa_fronted_settings_values** modify values before they're sent to the `wp_update_post` function array, use this to set your options (1 argument)
 
+
+# Javascript
+> The javascript filters functions very similarly to their native PHP counterparts. Only difference is that these functions resides within the `wa_fronted` object, so to call the `add_filter` function, you type like so: `wa_fronted.add_filter('filter_name', function(value){ return value; });`
+
+* **toolbar_buttons** modify the buttons available to the editor toolbar, passes an array of strings as the first argument *(which should be returned)* and current editor options as second
+* **medium_extensions** modify extensions of the Medium Editor, passes an object with active extensions as the first argument *(which should be returned)*, and current editor options as second. Want to make a toolbar extension? [Look here](https://github.com/yabwe/medium-editor/tree/master/src/js/extensions)
+
 *I'll try to add filters where I see it could be useful, but if you are missing one, please post an issue requesting it*
 
-##Supported ACF field types
+## Supported ACF field types
 * Text
 * Text Area
 * Number
@@ -107,7 +126,7 @@ array(
 * Image
 * File
 
-##Features
+## Features
 > Unchecked boxes are features that are planned to be implemented in the near future (in no particular order)
 
 * [x] Automatic changing of image size to load when changing size of image in content
@@ -119,13 +138,13 @@ array(
 * [x] Ability to edit featured image
 * [x] Show unsaved changes warning if leaving page
 * [x] Ability to edit other columns from the posts table (`post_name`, `post_date` and `post_status`)
+* [x] Extend pluggability further and support for extensions (enable to hook onto and modify js editor)
+* [ ] WooCommerce support (other than standard WP fields)
 * [ ] Native custom fields support
 * [ ] Shortcodes support (other than gallery)
 * [ ] Autosave (need some discussion on how to best implement this)
-* [ ] WooCommerce support (other than standard WP fields)
 * [ ] Image upload by dropping an image into the editable area
 * [ ] Drag image to move it within the editable area
-* [ ] Extend pluggability further and support for extensions (enable to hook onto and modify js editor)
 * [ ] Multiple `output_to` selectors and attrs
 * [ ] Choice-based fields like dropdown-select (click on content to show dropdown and select option to insert)
 * [ ] More ACF fields support
@@ -136,7 +155,7 @@ array(
 * [ ] Translation
 * [ ] Mirror style of current WP admin theme
 
-##Proposed features
+## Proposed features
 > These features requires further discussion, not yet set to be implemented
 
 * [ ] Enhance UX by visualizing which area you are editing
@@ -148,12 +167,15 @@ array(
 * [ ] Markdown parser
 * [ ] Column-maker (made as an add-on?)
 
-##Collaboration notes
+## Extending
+There will be a proper how-to guide here, but for now, you can look in the `extensions` folder on how to create an extension
+
+## Collaboration notes
 * I'm using sass for styling and [PrePros](https://prepros.io/) for compiling (there's a free version if you wanna check it out)
 * JS files are minified and concatenated with [PrePros](https://prepros.io/), so without it you'll have to load the other js files individually (see prepros-prepend comments in the beginning of scripts.js)
 * I'm using [Bower](http://bower.io/) for keeping [Medium Editor](https://github.com/yabwe/medium-editor) and [jQuery Timepicker Addon](https://github.com/trentrichardson/jQuery-Timepicker-Addon) up to date, right now there are no other dependancies other than jQuery but that comes with WP
 * Core features should be free and open source
 * Comment your code
 
-##License
+## License
 See the [LICENSE](LICENSE.md) file for license rights (GPLv2)

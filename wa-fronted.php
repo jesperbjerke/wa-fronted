@@ -3,7 +3,7 @@
 	Plugin Name: WA-Fronted
 	Plugin URI: http://github.com/jesperbjerke/wa-fronted
 	Description: Edit content directly from fronted in the contents actual place
-	Version: 0.3.1
+	Version: 0.4
 	Text Domain: wa-fronted
 	Domain Path: /lang
 	Author: Jesper Bjerke
@@ -41,8 +41,6 @@ add_filter( 'auto_update_plugin', 'auto_update_wa_fronted', 10, 2 );
 
 class WA_Fronted {
 
-	protected $supported_acf_fields;
-
 	/**
 	 * Add hooks and actions and registers ajax function for saving
 	 * Also adds filters for rendering shortcodes
@@ -53,22 +51,16 @@ class WA_Fronted {
 			add_action( 'wp', array( $this, 'wa_has_wp' ) );
 			add_action( 'wp_enqueue_scripts', array( $this, 'scripts_and_styles' ) );
 			add_action( 'wp_footer', array( $this, 'wa_fronted_toolbar' ) );
-			add_action( 'wp_footer', array( $this, 'wa_acf_dialog' ) );
 			add_action( 'wp_footer', array( $this, 'wa_fronted_footer' ) );
 			add_filter( 'the_content', array( $this, 'filter_shortcodes' ) );
-			add_filter( 'acf/load_value/type=wysiwyg', array( $this, 'filter_shortcodes' ), 10, 3 );
-			add_filter( 'acf/update_value', 'wp_kses_post', 10, 1 );
 			add_action( 'wp_logout', array( $this, 'wa_wp_logout' ) );
 
-			do_action( 'wa_fronted_init' );
+			do_action( 'wa_fronted_inited' );
 		}
 
 		add_action( 'wp_ajax_wa_fronted_save', array( $this, 'wa_fronted_save' ) );
 		add_action( 'wp_ajax_wa_render_shortcode', array( $this, 'wa_render_shortcode' ) );
 		add_action( 'wp_ajax_wa_get_image_src', array( $this, 'wa_get_image_src' ) );
-		add_action( 'wp_ajax_wa_get_acf_field_object', array( $this, 'wa_get_acf_field_object' ) );
-		add_action( 'wp_ajax_wa_get_acf_field_contents', array( $this, 'wa_get_acf_field_contents' ) );
-		add_action( 'wp_ajax_wa_get_acf_form', array( $this, 'wa_get_acf_form' ) );
 		add_action( 'wp_ajax_wa_get_oembed', array( $this, 'wa_get_oembed' ) );
 		add_action( 'wp_ajax_wa_get_thumbnail_id', array( $this, 'wa_get_thumbnail_id' ) );
 		add_action( 'wp_ajax_wa_set_thumbnail', array( $this, 'wa_set_thumbnail' ) );
@@ -88,14 +80,9 @@ class WA_Fronted {
 
 	/**
 	 * After wp is fully loaded, get options if on frontend and logged in
-	 * Create acf form head
 	 */
 	public function wa_has_wp(){
 		$_SESSION['wa_fronted_options'] = $this->get_options();
-		
-		if(function_exists('acf_form_head') && $_SESSION['wa_fronted_options'] !== false){
-			acf_form_head();
-		}
 
 		do_action( 'wa_fronted_after_init', $_SESSION['wa_fronted_options'] );
 	}
@@ -108,28 +95,7 @@ class WA_Fronted {
 	}
 
 	/**
-	 * Defines supported ACF fields, hookable through filter 'supported_acf_fields'
-	 */
-	protected function get_supported_acf_fields(){
-		$supported_acf_fields = array(
-			'text',
-			'textarea',
-			'email',
-			'url',
-			'password',
-			'number',
-			'wysiwyg',
-			'image',
-			'file',
-			'oembed'
-		);
-
-		return apply_filters('supported_acf_fields', $supported_acf_fields);
-	}
-
-	/**
-	 * Compiles and merges the default options with user defined options so that no fields are empty. 
-	 * In case it is an ACF-field and some options are not set, it will determine these based on field type
+	 * Compiles and merges the default options with user defined options so that no fields are empty
 	 * @param  array $default_options
 	 * @param  array $new_options
 	 * @return array $options filtered through 'compile_options' filter
@@ -153,54 +119,9 @@ class WA_Fronted {
 			if(!array_key_exists('media_upload', $new_options)){
 				$options['media_upload'] = 'only';
 			}
-		}else if(strpos($field_type, 'acf_') !== false){
-			
-			$field_object = $this->wa_get_acf_field_object($field_type);
-			if(!isset($this->supported_acf_fields)){
-				$this->supported_acf_fields = $this->get_supported_acf_fields();
-			}
-
-			if($field_object && in_array($field_object['field_object']['type'], $this->supported_acf_fields)){
-				switch($field_object['field_object']['type']){
-					case 'text':
-					case 'textarea':
-					case 'email':
-					case 'url':
-					case 'password':
-					case 'number':
-						if(!array_key_exists('toolbar', $new_options)){
-							$options['toolbar'] = false;
-						}
-						$options['media_upload'] = false;
-						break;			
-					case 'wysiwyg':
-						if(!array_key_exists('toolbar', $new_options)){
-							$options['toolbar'] = 'full';
-						}
-
-						if($field_object['field_object']['media_upload']){
-							$options['media_upload'] = true;
-						}else{
-							$options['media_upload'] = false;
-						}
-						break;	
-					case 'image':
-					case 'file':
-					case 'oembed':
-						$options['toolbar']      = false;
-						$options['media_upload'] = 'only';
-						break;
-				}
-			}else{
-				if($field_object['field_object']['type'] == ''){
-					trigger_error('ACF field key "' . $field_type . '" not found', E_USER_ERROR);
-				}else{
-					trigger_error('ACF field type "' . $field_object['field_object']['type'] . '" is not yet supported', E_USER_ERROR);
-				}
-			}
 		}
 
-		return apply_filters('compile_options', $options);
+		return apply_filters('compile_options', $options, $default_options, $new_options);
 	}
 
 	/**
@@ -236,6 +157,7 @@ class WA_Fronted {
 		global $post;
 
 		$default_options = array(
+			'native'       => true,
 			'media_upload' => true,
 			'toolbar'      => 'full',
 			'post_id'      => $post->ID,
@@ -353,10 +275,6 @@ class WA_Fronted {
 				plugins_url( '/css/style.css', __FILE__ )
 			);
 
-			if(function_exists('acf_enqueue_uploader')){
-				acf_enqueue_uploader();
-			}
-
 			do_action('wa_fronted_after_scripts', $_SESSION['wa_fronted_options']);
 		}
 	}
@@ -469,7 +387,6 @@ class WA_Fronted {
 				$safe_content = wp_kses_stripslashes($this->unfilter_shortcodes($this_data['content']));
 				$field_type   = $this_data['options']['field_type'];
 				$post_id      = (int)$this_data['options']['post_id'];
-
 			}
 			
 			do_action('wa_fronted_autosave', $data);
@@ -504,43 +421,6 @@ class WA_Fronted {
 						'ID'        => $post_id,
 						$field_type => $safe_content
 					));
-				}else if(strpos($field_type, 'acf_') !== false){
-
-					$acf_field_key = $this->extract_acf_field_key($field_type)['field_key'];
-					$field_object  = $this->wa_get_acf_field_object($field_type);
-
-					switch($field_object['field_object']['type']){
-						case 'text':
-						case 'email':
-						case 'url':
-						case 'password':
-						case 'number':
-							$safe_content = trim(strip_tags($safe_content));
-						case 'textarea':
-							if($field_object['field_object']['new_lines'] == 'wpautop' || $field_object['field_object']['new_lines'] == 'br'){
-								$safe_content = str_replace('</p>', '<br/>', str_replace(array('<p>','<br/>','<br />'), '', $safe_content));
-							}else{
-								$safe_content = strip_tags($safe_content);
-							}
-							$safe_content = trim($safe_content);
-						case 'wysiwyg':
-							if($field_object['sub_field']){
-								update_sub_field($acf_field_key, $safe_content, $post_id);
-							}else{
-								update_field($acf_field_key, $safe_content, $post_id);
-							}
-							break;
-						// Saved for future use, handled by acf_form() right now
-						// case 'oembed':
-						// case 'image':
-						// case 'file':
-						// 	if($field_object['sub_field']){
-						// 		update_sub_field($acf_field_key, $safe_content, $post_id);
-						// 	}else{
-						// 		update_field($acf_field_key, $safe_content, $post_id);
-						// 	}
-						// 	break;
-					}
 				}
 			}
 
@@ -708,178 +588,8 @@ class WA_Fronted {
 	}
 
 	/**
-	 * Output wrapper for acf dialog/popup
+	 * AJAX function for saving settings form
 	 */
-	public function wa_acf_dialog(){
-		if($_SESSION['wa_fronted_options'] !== false):
-		?>
-			<div id="acf-dialog" class="wp-core-ui" style="display:none;">
-				<button id="close-acf-dialog"><i class="fa fa-close"></i></button>
-				<div id="acf-dialog-inner"></div>
-			</div>
-		<?php
-		endif;
-	}
-
-	/**
-	 * Get ACF field object based on prefixed field key
-	 * @param  string $field_key prefixed ACF field key
-	 * @return array             if not Ajax, returns an array with field object and boolean if it is sub field
-	 */
-	public function wa_get_acf_field_object($field_key = false){
-		if(!function_exists('get_field_object')){
-			return false;
-		}
-
-		$is_ajax = false;
-		if(isset($_POST['field_key'])){
-			$is_ajax   = true;
-			$field_key = $_POST['field_key'];
-		}
-
-		if(strpos($field_key, 'acf_') !== false){
-			
-			$acf_field_key_array = $this->extract_acf_field_key($field_key);
-			$field_object        = get_field_object($acf_field_key_array['field_key']);
-
-			if(!$field_object){
-				if($is_ajax){
-					wp_send_json(array(
-						'error' => 'Invalid ACF field'
-					));
-				}else{
-					trigger_error('ACF field key is not valid', E_USER_ERROR);
-				}
-			}else{
-				if($is_ajax){
-					wp_send_json($field_object);
-				}else{
-					return array(
-						'sub_field'    => $acf_field_key_array['sub_field'],
-						'field_object' => $field_object
-					);
-				}
-			}
-		}else{
-			$return = array(
-				'error' => true
-			);
-			
-			if($is_ajax){
-				wp_send_json($return);
-			}else{
-				return $return;
-			}
-		}
-	}
-
-	/**
-	 * Get ACF field object with value based on non prefixed field key
-	 * @param  string $field_key ACF field key (non prefixed)
-	 * @param  mixed $post_id
-	 * @return array             if not Ajax, returns an array with field object and contents
-	 */
-	public function wa_get_acf_field_contents($field_key = false, $post_id = false){
-		if(!function_exists('get_field_object')){
-			return false;
-		}
-
-		$is_ajax = false;
-		if(isset($_POST['field_key'])){
-			$is_ajax   = true;
-			$field_key = $_POST['field_key'];
-			$post_id   = $_POST['post_id'];
-		}
-
-		$field_object = get_field_object($field_key, $post_id);
-
-		if(!$field_object){
-			if($is_ajax){
-				wp_send_json(array(
-					'error' => 'Invalid ACF field'
-				));
-			}else{
-				trigger_error('ACF field key is not valid', E_USER_ERROR);
-			}
-		}else{
-			if($is_ajax){
-				wp_send_json($field_object);
-			}else{
-				return $field_object;
-			}
-		}
-	}
-
-	/**
-	 * Extract the actual field key parts of a prefixed key string
-	 * @param  string $prefixed_key prefixed acf field key
-	 * @return array               non prefixed acf field key and bool if it is subfield
-	 */
-	protected function extract_acf_field_key($prefixed_key){
-		if(strpos($prefixed_key, 'acf_') !== false){
-			if(strpos($prefixed_key, 'acf_sub_') !== false){
-				$is_sub_field  = true;
-				$acf_field_key = str_replace('acf_sub_', '', $prefixed_key);
-			}else{
-				$is_sub_field  = false;
-				$acf_field_key = str_replace('acf_', '', $prefixed_key);
-			}
-
-			return array(
-				'sub_field' => $is_sub_field,
-				'field_key' => $acf_field_key
-			);
-		}else{
-			return false;
-		}
-	}
-
-	/**
-	 * Get html for acf field form
-	 * @param  string $field_key acf field key (non prefixed)
-	 * @param  mixed $post_id
-	 * @return string             html
-	 */
-	public function wa_get_acf_form($field_key = false, $post_id = false){
-		$is_ajax = false;
-		if(isset($_POST['field_key'])){
-			$is_ajax   = true;
-			$field_key = $_POST['field_key'];
-			$post_id   = $_POST['post_id'];
-			if(intval($post_id)){
-				$post_id = intval($post_id);
-			}
-		}
-
-		$form_id      = 'acf-form-' . $field_key;
-		$redirect_uri = (isset($_POST['redirect'])) ? $_POST['redirect'] : $_SERVER['REQUEST_URI'];
-
-		$options = array(
-			'id'      => $form_id,
-			'post_id' => $post_id,
-			'fields'  => array(
-				$field_key
-			),
-			'return'  => $redirect_uri
-		);
-
-		ob_start();
-		acf_form($options);
-		$output = ob_get_clean();
-		
-		$return = array(
-			'form_id' => $form_id,
-			'output'  => $output
-		);
-
-		if($is_ajax){
-			wp_send_json($return);
-		}else{
-			return $return;
-		}
-
-	}
-
 	protected function settings_form_save(){
 		if($_SESSION['wa_fronted_options'] !== false){
 
@@ -1005,6 +715,11 @@ class WA_Fronted {
  */
 if(!function_exists('wa_fronted_init')){
 	function wa_fronted_init(){
+		//Checks if ACF is installed
+		if(function_exists('get_field')){
+			include_once('extensions/acf/acf.php');
+		}
+
 		$WA_Fronted = new WA_Fronted();
 	}
 }

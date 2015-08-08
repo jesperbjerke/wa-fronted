@@ -1,5 +1,14 @@
 CHANGELOG
 =========
+## 0.4
+* Updated Medium Editor to 5.6.0
+* Refactored `wa-fronted.php` and `scripts.js`, separating ACF functions into a core extension
+* Added extendability to the javascript object, curtesy of ACF, (mimics wp hooks in PHP like `add_action` and `add_filter`)
+* Added editor option `native`
+* Changed how acf_form() would save since it stopped submitting through Ajax
+* Fixed issue where editor toolbar would not respect options since Medium Editor changed disableToolbar
+* Fixed issue where specific output_to would not search within the container element
+
 ## 0.3.1
 * Updated Medium Editor to 5.5.3
 
