@@ -76,7 +76,7 @@ array(
 
 ## Action hooks
 
-# PHP
+### PHP
 * **wa_fronted_inited** runs upon plugin initialization, before the options array has been set
 * **wa_fronted_after_init** runs after the options array has been set (passes complete JSON encoded options as argument)
 * **wa_fronted_before_scripts** runs before plugin has registered all its scripts and styles (passes complete JSON encoded options as argument)
@@ -88,7 +88,7 @@ array(
 * **wa_fronted_settings_modal_footer** runs when settings modal footer renders (the container where the update button is, still inside the settings form element) (passes complete options array as argument)
 * **wa_fronted_settings_form_save** runs after the post has been updated with the new values but before user has been redirected to the new permalink
 
-# Javascript
+### Javascript
 > The javascript action hooks functions very similarly to their native PHP counterparts. Only difference is that these functions resides within the `wa_fronted` object, so to call the `add_action` function, you type like so: `wa_fronted.add_action('action_name', function);`
 
 * **on_init** runs within the wa_fronted.initialize function
@@ -99,14 +99,14 @@ array(
 
 ## Filters
 
-# PHP
+### PHP
 * **supported_acf_fields** modify supported ACF fields array (1 argument)
 * **compile_options** modify the partially compiled options array (3 arguments, $compiled_options, $default_options, $new_options, called multiple times)
 * **wa_fronted_options** modify options array, use this to set your options (1 argument)
 * **wa_fronted_settings_values** modify values before they're sent to the `wp_update_post` function array, use this to set your options (1 argument)
 
 
-# Javascript
+### Javascript
 > The javascript filters functions very similarly to their native PHP counterparts. Only difference is that these functions resides within the `wa_fronted` object, so to call the `add_filter` function, you type like so: `wa_fronted.add_filter('filter_name', function(value){ return value; });`
 
 * **toolbar_buttons** modify the buttons available to the editor toolbar, passes an array of strings as the first argument *(which should be returned)* and current editor options as second
