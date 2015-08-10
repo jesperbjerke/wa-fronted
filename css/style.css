@@ -6910,6 +6910,12 @@ body .ui-tooltip {
   clear: both;
 }
 
+#wa-fronted-settings-modal .wa-fronted-modal-inner #wa-fronted-settings .fieldgroup.half {
+  width: 50%;
+  float: left;
+  clear: none;
+}
+
 @media only screen and (max-width: 700px) {
   #wa-fronted-settings-modal .wa-fronted-modal-inner #wa-fronted-settings .fieldgroup {
     padding: 10px;
@@ -7110,11 +7116,17 @@ body .ui-tooltip {
 
 #ui-datepicker-div .ui-datepicker-calendar tbody tr td a.ui-state-highlight {
   color: #222;
+  background-color: #E6E6E6;
 }
 
 #ui-datepicker-div .ui-datepicker-calendar tbody tr td a.ui-state-active {
   font-weight: bold;
   color: #222;
+  background-color: #E6E6E6;
+}
+
+#ui-datepicker-div .ui-datepicker-calendar tbody tr td a:hover {
+  background-color: #ECECEC;
 }
 
 #ui-datepicker-div .ui-timepicker-div {

@@ -374,7 +374,7 @@ var wa_fronted;
 				{
 					'action'                : 'wa_fronted_save',
 					'data'                  : save_this,
-					'wa_fronted_save_nonce' : self.options.nonce
+					'wa_fronted_save_nonce' : global_vars.nonce
 				}, 
 				function(response){
 					if(response.success){
@@ -477,7 +477,7 @@ var wa_fronted;
 				return false;
 			}
 
-			var selector = $(this_editor).find(this_options.output_to.selector);
+			var selector = this_editor.find(this_options.output_to.selector);
 			if(selector.length === 0){
 				return false;
 			}

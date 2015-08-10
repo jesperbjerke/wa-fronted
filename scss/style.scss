@@ -443,6 +443,12 @@
 				display: block;
 				clear: both;
 
+				&.half{
+					width: 50%;
+					float: left;
+					clear: none;
+				}
+
 				@include breakpoint(max, 700px){
 					padding: 10px;
 				}
@@ -624,11 +630,17 @@
 
 						&.ui-state-highlight{
 							color: #222;
+							background-color: #E6E6E6;
 						}
 
 						&.ui-state-active{
 							font-weight: bold;
 							color: #222;
+							background-color: #E6E6E6;
+						}
+
+						&:hover{
+							background-color: #ECECEC;
 						}
 					}
 				}

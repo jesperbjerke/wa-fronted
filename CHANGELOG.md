@@ -1,5 +1,14 @@
 CHANGELOG
 =========
+## 0.4.5
+* Updated Medium Editor to 5.6.1
+* Added WooCommerce support (as another core extension)
+* Added filter `supported_woo_fields`
+* Added filter `wa_fronted_settings_fields`
+* Added ability to set post as featured
+* Added ability allow/disable comments
+* Fixed faulty nonce sent through Ajax
+
 ## 0.4
 * Updated Medium Editor to 5.6.0
 * Refactored `wa-fronted.php` and `scripts.js`, separating ACF functions into a core extension

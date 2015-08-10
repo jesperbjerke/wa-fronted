@@ -64,7 +64,7 @@ add_filter('wa_fronted_options', 'my_editor_options');
 * **post_id** (optional, int): Insert post id to override the `global $post` variable. If used in combination with `acf_{FIELD ID}`, note that it can also be set to *options / taxonomies / users / etc*
 * **toolbar** (optional, mixed bool/string): `full` (default, all buttons), `false` (do not show toolbar), `comma-separated string` (`bold`, `italic`, `underline`, `anchor`, `header1`, `header2`, `quote`, `unorderedlist`, `orderedlist`, `justifyLeft`, `justifyCenter`, `justifyRight`)
 * **media_upload** (optional, mixed bool/string): `true` (default, will allow user to insert/upload media to the editable area), `false` (disable media upload), `only` (constrain the editable area to only edit media. ie; no text, no toolbar)
-* **image_size** (optional, string): any registered image size *(only applicable if **field_type** is set and you want another image size than WP default, which is `post-thumbnail`)*
+* **image_size** (optional, string): any registered image size (only applicable if **field_type** is set and you want another image size than WP default, which is `post-thumbnail`)
 * **output** (optional, string): alue to retrieve from `get_field()` to output as a dot separated string representing the traversing of value array, ie. for an image field that should output the thumbnail: `sizes.thumbnail` *(only applicable to ACF fields with complex output)*
 * **output_to** (optional, array): *if not specified, the returned data after save will be put directly into the container element* 
 ```php
@@ -100,11 +100,12 @@ array(
 ## Filters
 
 ### PHP
-* **supported_acf_fields** modify supported ACF fields array (1 argument)
 * **compile_options** modify the partially compiled options array (3 arguments, $compiled_options, $default_options, $new_options, called multiple times)
 * **wa_fronted_options** modify options array, use this to set your options (1 argument)
+* **wa_fronted_settings_fields** modify default settings fields to render into form (1 argument, array of field keys)
 * **wa_fronted_settings_values** modify values before they're sent to the `wp_update_post` function array, use this to set your options (1 argument)
-
+* **supported_acf_fields** modify supported ACF fields array (1 argument)
+* **supported_woo_fields** modify supported WooCommerce fields/values array (1 argument)
 
 ### Javascript
 > The javascript filters functions very similarly to their native PHP counterparts. Only difference is that these functions resides within the `wa_fronted` object, so to call the `add_filter` function, you type like so: `wa_fronted.add_filter('filter_name', function(value){ return value; });`
@@ -113,18 +114,6 @@ array(
 * **medium_extensions** modify extensions of the Medium Editor, passes an object with active extensions as the first argument *(which should be returned)*, and current editor options as second. Want to make a toolbar extension? [Look here](https://github.com/yabwe/medium-editor/tree/master/src/js/extensions)
 
 *I'll try to add filters where I see it could be useful, but if you are missing one, please post an issue requesting it*
-
-## Supported ACF field types
-* Text
-* Text Area
-* Number
-* Email
-* Url
-* Password
-* Wysiwyg Editor
-* oEmbed
-* Image
-* File
 
 ## Features
 > Unchecked boxes are features that are planned to be implemented in the near future (in no particular order)
@@ -139,7 +128,9 @@ array(
 * [x] Show unsaved changes warning if leaving page
 * [x] Ability to edit other columns from the posts table (`post_name`, `post_date` and `post_status`)
 * [x] Extend pluggability further and support for extensions (enable to hook onto and modify js editor)
-* [ ] WooCommerce support (other than standard WP fields)
+* [x] Ability to set post as featured
+* [x] Allow/Disable comments
+* [x] WooCommerce support for simple product types (see supported WooCommerce fields for more details)
 * [ ] Native custom fields support
 * [ ] Shortcodes support (other than gallery)
 * [ ] Autosave (need some discussion on how to best implement this)
@@ -154,6 +145,9 @@ array(
 * [ ] How-to guide for integration and extensions
 * [ ] Translation
 * [ ] Mirror style of current WP admin theme
+* [ ] Extended WooCommerce support
+* [ ] Ability to set default options on posttype level of array
+* [ ] Live value validation
 
 ## Proposed features
 > These features requires further discussion, not yet set to be implemented
@@ -167,11 +161,35 @@ array(
 * [ ] Markdown parser
 * [ ] Column-maker (made as an add-on?)
 
+### Supported ACF field types
+* Text
+* Text Area
+* Number
+* Email
+* Url
+* Password
+* Wysiwyg Editor
+* oEmbed
+* Image
+* File
+
+### Supported WooCommerce fields (for simple product types)
+* SKU
+* Price
+* Sale Price
+  * Scheduling
+* Short Description
+* Inventory (through settings modal)
+  * Stock Quantitiy (if manage stock is enabled)
+  * Stock Status
+* Catalog visibility (through settings modal)
+* Featured product (through settings modal)
+
 ## Extending
-There will be a proper how-to guide here, but for now, you can look in the `extensions` folder on how to create an extension
+There will be a proper how-to guide here, but for now, you can look in the `extensions` folder for examples on how to create an extension
 
 ## Collaboration notes
-* I'm using sass for styling and [PrePros](https://prepros.io/) for compiling (there's a free version if you wanna check it out)
+* I'm using Sass for styling and [PrePros](https://prepros.io/) for compiling (there's a free version if you wanna check it out)
 * JS files are minified and concatenated with [PrePros](https://prepros.io/), so without it you'll have to load the other js files individually (see prepros-prepend comments in the beginning of scripts.js)
 * I'm using [Bower](http://bower.io/) for keeping [Medium Editor](https://github.com/yabwe/medium-editor) and [jQuery Timepicker Addon](https://github.com/trentrichardson/jQuery-Timepicker-Addon) up to date, right now there are no other dependancies other than jQuery but that comes with WP
 * Core features should be free and open source

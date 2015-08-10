@@ -98,7 +98,6 @@ class WA_Fronted_ACF extends WA_Fronted{
 					case 'url':
 					case 'password':
 					case 'number':
-						$compiled_options['native']       = false;
 					case 'text':
 					case 'textarea':
 						if(!array_key_exists('toolbar', $new_options)){
@@ -316,8 +315,12 @@ class WA_Fronted_ACF extends WA_Fronted{
 	 */
 	public function acf_save( $data ){
 		foreach( $data as $this_data ){
+			$field_type = $this_data['options']['field_type'];
+			
 			if(strpos($field_type, 'acf_') !== false){
 
+				$safe_content  = wp_kses_stripslashes($this->unfilter_shortcodes($this_data['content']));
+				$post_id       = (int)$this_data['options']['post_id'];
 				$acf_field_key = $this->extract_acf_field_key($field_type)['field_key'];
 				$field_object  = $this->wa_get_acf_field_object($field_type);
 

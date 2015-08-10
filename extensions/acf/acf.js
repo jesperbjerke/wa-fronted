@@ -29,7 +29,12 @@ var wa_fronted_acf;
 					 * since the returned data is not valuable to us in that format, 
 					 * we need to fetch the new data separately
 					 */
-					wa_fronted_acf.refresh_acf_field(wa_fronted_acf.data.acf_temp.field_key, wa_fronted_acf.data.acf_temp.post_id, wa_fronted.data.current_editor_options, wa_fronted.data.current_editor);
+					wa_fronted_acf.refresh_acf_field(
+						wa_fronted_acf.data.acf_temp.field_key, 
+						wa_fronted_acf.data.acf_temp.post_id, 
+						wa_fronted.data.current_editor_options, 
+						wa_fronted.data.current_editor
+					);
 				});
 			});
 		}
@@ -48,6 +53,7 @@ var wa_fronted_acf;
 						}
 						break;
 				}
+
 				var editor_children = this_editor.children(),
 					editor_contents = $(editor_children[0]),
 					content_width   = editor_contents.width(),
@@ -72,7 +78,13 @@ var wa_fronted_acf;
 				this_editor.find('.edit-acf-field').click(function(e){
 					e.preventDefault();
 					e.stopPropagation();
-					wa_fronted_acf.show_acf_form(field_object.key, this_options.post_id, this_options, this_editor);
+					
+					wa_fronted_acf.show_acf_form(
+						field_object.key, 
+						this_options.post_id, 
+						this_options, 
+						this_editor
+					);
 				});
 
 			}

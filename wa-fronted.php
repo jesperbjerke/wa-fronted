@@ -3,7 +3,7 @@
 	Plugin Name: WA-Fronted
 	Plugin URI: http://github.com/jesperbjerke/wa-fronted
 	Description: Edit content directly from fronted in the contents actual place
-	Version: 0.4
+	Version: 0.4.5
 	Text Domain: wa-fronted
 	Domain Path: /lang
 	Author: Jesper Bjerke
@@ -71,11 +71,6 @@ class WA_Fronted {
 	 */
 	public function wa_wp_init(){
 		session_start();
-
-		//Check post data and validate form nonce
-		if(isset($_POST['wa_fronted_settings_nonce']) && wp_verify_nonce($_POST['wa_fronted_settings_nonce'], 'wa_fronted_settings_save')){
-			$this->settings_form_save();
-		}
 	}
 
 	/**
@@ -83,6 +78,11 @@ class WA_Fronted {
 	 */
 	public function wa_has_wp(){
 		$_SESSION['wa_fronted_options'] = $this->get_options();
+
+		//Check post data and validate form nonce
+		if(isset($_POST['wa_fronted_settings_nonce']) && wp_verify_nonce($_POST['wa_fronted_settings_nonce'], 'wa_fronted_settings_save')){
+			$this->settings_form_save();
+		}
 
 		do_action( 'wa_fronted_after_init', $_SESSION['wa_fronted_options'] );
 	}
@@ -524,48 +524,92 @@ class WA_Fronted {
 	public function wa_fronted_footer(){
 		if($_SESSION['wa_fronted_options'] !== false):
 			global $post;
-			$all_statuses = array_diff_key(
-				get_post_stati('', 'objects'),
-				array_flip(
-					array(
-						'auto-draft',
-						'future',
-						'inherit',
-						'trash'
-					)
-				)
-			);
-			$current_post_status = get_post_status( $post->ID );
 			$field_prefix = 'wa_fronted_';
+
+			$default_fieldgroups = array(
+				'post_slug',
+				'post_status',
+				'post_date',
+				'sticky',
+				'comment_status'
+			);
+
+			$field_groups = apply_filters('wa_fronted_settings_fields', $default_fieldgroups);
 		?>
 			<div id="wa-fronted-settings-modal">
 				<div class="wa-fronted-modal-inner">
 					<button class="close-wa-fronted-modal"><i class="fa fa-close"></i></button>
 
 					<form id="wa-fronted-settings" method="POST">
-
-						<div class="fieldgroup">
-							<label for="<?php echo $field_prefix; ?>post_name"><?php _e('Post slug', 'wa-fronted'); ?></label>
-							<input type="text" name="<?php echo $field_prefix; ?>post_name" id="<?php echo $field_prefix; ?>post_name" value="<?php echo $post->post_name; ?>">
-						</div>
-
-						<div class="fieldgroup">
-							<label for="<?php echo $field_prefix; ?>post_status"><?php _e('Post status', 'wa-fronted'); ?></label>
-							<select name="<?php echo $field_prefix; ?>post_status" id="<?php echo $field_prefix; ?>post_status">
-								<?php foreach($all_statuses as $status): ?>
-									<option value="<?php echo $status->name; ?>" <?php echo ($current_post_status == $status->name) ? 'selected' : ''; ?>>
-										<?php echo $status->label; ?>
-									</option>
-								<?php endforeach; ?>
-							</select>
-						</div>
-
-						<div class="fieldgroup">
-							<label for="<?php echo $field_prefix; ?>post_date"><?php _e('Post date', 'wa-fronted'); ?></label>
-							<input type="text" name="<?php echo $field_prefix; ?>post_date" id="<?php echo $field_prefix; ?>post_date" class="wa_fronted_datepicker" value="<?php echo $post->post_date; ?>">
-						</div>
-
 						<?php 
+							if(is_array($field_groups) && !empty($field_groups)): 
+								foreach($field_groups as $field_group):
+									switch($field_group):
+										case 'post_slug':
+											?>
+											<div class="fieldgroup">
+												<label for="<?php echo $field_prefix; ?>post_name"><?php _e('Post slug', 'wa-fronted'); ?></label>
+												<input type="text" name="<?php echo $field_prefix; ?>post_name" id="<?php echo $field_prefix; ?>post_name" value="<?php echo $post->post_name; ?>">
+											</div>
+											<?php
+											break;
+										case 'post_status':
+											$all_statuses        = get_post_statuses();
+											$current_post_status = get_post_status( $post->ID );
+											?>
+											<div class="fieldgroup">
+												<label for="<?php echo $field_prefix; ?>post_status"><?php _e('Post status', 'wa-fronted'); ?></label>
+												<select name="<?php echo $field_prefix; ?>post_status" id="<?php echo $field_prefix; ?>post_status">
+													<?php foreach($all_statuses as $status_key => $status_label): ?>
+														<option value="<?php echo $status_key; ?>" <?php echo ($current_post_status == $status_key) ? 'selected' : ''; ?>>
+															<?php echo $status_label; ?>
+														</option>
+													<?php endforeach; ?>
+												</select>
+											</div>
+											<?php
+											break;
+										case 'post_date':
+											?>
+											<div class="fieldgroup">
+												<label for="<?php echo $field_prefix; ?>post_date"><?php _e('Post date', 'wa-fronted'); ?></label>
+												<input type="text" name="<?php echo $field_prefix; ?>post_date" id="<?php echo $field_prefix; ?>post_date" class="wa_fronted_datepicker" value="<?php echo $post->post_date; ?>">
+											</div>
+											<?php
+											break;
+										case 'sticky':
+										case 'comment_status':
+											if(get_post_type($post) == 'post'){
+
+												if($field_group == 'comment_status'){
+													$field_label = __('Allow comments','wa-fronted');
+													$is_checked  = ($post->comment_status == 'open');
+												}else{
+													$field_label = __('Set post as sticky','wa-fronted');
+													$is_checked  = is_sticky($post->ID);
+												}
+
+												//If both values are to be displayed, allow for them to be on the same row
+												$target = array(
+													'sticky',
+													'comment_status'
+												);
+												$extra_class = '';
+												if(count(array_intersect($field_groups, $target)) == count($target)){
+													$extra_class = 'half';
+												}
+												?>
+													<div class="fieldgroup <?php echo $extra_class; ?>">
+														<label for="<?php echo $field_prefix . $field_group; ?>"><?php echo $field_label; ?></label>
+														<input type="checkbox" name="<?php echo $field_prefix . $field_group; ?>" id="<?php echo $field_prefix . $field_group; ?>" value="1" <?php echo ($is_checked) ? 'checked' : ''; ?>>
+													</div>
+												<?php
+											}
+											break;
+									endswitch;
+								endforeach;
+							endif;
+
 							do_action('wa_fronted_settings_form', $_SESSION['wa_fronted_options']); 
 							wp_nonce_field('wa_fronted_settings_save', 'wa_fronted_settings_nonce');
 						?>
@@ -594,7 +638,9 @@ class WA_Fronted {
 		if($_SESSION['wa_fronted_options'] !== false){
 
 			$field_prefix = 'wa_fronted_';
-			$update_this  = array();
+			$update_this  = array(
+				'comment_status' => 'closed'
+			);
 
 			foreach($_POST as $key => $value){
 				switch($key){
@@ -610,12 +656,39 @@ class WA_Fronted {
 					case $field_prefix . 'post_date':
 						$update_this['post_date'] = $value;
 						break;
+					case $field_prefix . 'comment_status':
+						$update_this['comment_status'] = 'open';
+						break;
+				}
+			}
+
+			if(get_post_type($update_this['ID']) == 'post'){
+				$is_sticky = is_sticky($update_this['ID']);
+				if(isset($_POST[$field_prefix . 'sticky']) && !$is_sticky){
+					//Add sticky
+					$sticky_posts = get_option('sticky_posts');
+					if(!is_array($sticky_posts)){
+						$sticky_posts = array();
+					}
+
+					if(!in_array((int)$update_this['ID'], $sticky_posts)){
+						$sticky_posts[] = (int)$update_this['ID'];
+						update_option('sticky_posts', $sticky_posts);
+					}
+					
+				}else if(!isset($_POST[$field_prefix . 'sticky']) && $is_sticky){
+					//Remove sticky
+					$sticky_posts = get_option('sticky_posts');
+					if(($key = array_search((int)$update_this['ID'], $sticky_posts)) !== false) {
+					    unset($sticky_posts[$key]);
+					}
+
+					update_option('sticky_posts', $sticky_posts);
 				}
 			}
 			
 			if(!empty($update_this)){
-				$current_post = get_post($update_this['ID']);
-				$update       = wp_update_post(apply_filters('wa_fronted_settings_values', $update_this), true);
+				$update = wp_update_post(apply_filters('wa_fronted_settings_values', $update_this), true);
 				
 				do_action('wa_fronted_settings_form_save');
 				
@@ -716,12 +789,18 @@ class WA_Fronted {
 if(!function_exists('wa_fronted_init')){
 	function wa_fronted_init(){
 		//Checks if ACF is installed
-		if(function_exists('get_field')){
+		if(class_exists('acf')){
 			include_once('extensions/acf/acf.php');
 		}
 
+		//Checks if WooCommerce is installed				
+		if(class_exists('WooCommerce')){
+			include_once('extensions/woocommerce/woocommerce.php');
+		}
+
+
 		$WA_Fronted = new WA_Fronted();
-	}
+	}	
 }
 
 add_action('plugins_loaded', 'wa_fronted_init', 999);
