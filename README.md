@@ -177,7 +177,7 @@ array(
 * SKU
 * Price
 * Sale Price
-  * Scheduling
+  * Scheduling (coming soon)
 * Short Description
 * Inventory (through settings modal)
   * Stock Quantitiy (if manage stock is enabled)
