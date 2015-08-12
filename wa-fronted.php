@@ -3,7 +3,7 @@
 	Plugin Name: WA-Fronted
 	Plugin URI: http://github.com/jesperbjerke/wa-fronted
 	Description: Edit content directly from fronted in the contents actual place
-	Version: 0.4.5
+	Version: 0.5
 	Text Domain: wa-fronted
 	Domain Path: /lang
 	Author: Jesper Bjerke
@@ -163,7 +163,9 @@ class WA_Fronted {
 			'post_id'      => $post->ID,
 			'field_type'   => false,
 			'permission'   => 'default',
-			'image_size'   => 'post-thumbnail'
+			'image_size'   => 'post-thumbnail',
+			'paragraphs'   => true,
+			'validation'   => false
 		);
 
 		if(is_front_page() && !is_home()){

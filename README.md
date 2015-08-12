@@ -64,7 +64,7 @@ add_filter('wa_fronted_options', 'my_editor_options');
 * **post_id** (optional, int): Insert post id to override the `global $post` variable. If used in combination with `acf_{FIELD ID}`, note that it can also be set to *options / taxonomies / users / etc*
 * **toolbar** (optional, mixed bool/string): `full` (default, all buttons), `false` (do not show toolbar), `comma-separated string` (`bold`, `italic`, `underline`, `anchor`, `header1`, `header2`, `quote`, `unorderedlist`, `orderedlist`, `justifyLeft`, `justifyCenter`, `justifyRight`)
 * **media_upload** (optional, mixed bool/string): `true` (default, will allow user to insert/upload media to the editable area), `false` (disable media upload), `only` (constrain the editable area to only edit media. ie; no text, no toolbar)
-* **image_size** (optional, string): any registered image size (only applicable if **field_type** is set and you want another image size than WP default, which is `post-thumbnail`)
+* **image_size** (optional, string): any registered image size (only applicable if **field_type** is `post_thumbnail` and you want another image size than WP default, which is `post-thumbnail`)
 * **output** (optional, string): alue to retrieve from `get_field()` to output as a dot separated string representing the traversing of value array, ie. for an image field that should output the thumbnail: `sizes.thumbnail` *(only applicable to ACF fields with complex output)*
 * **output_to** (optional, array): *if not specified, the returned data after save will be put directly into the container element* 
 ```php
@@ -73,6 +73,33 @@ array(
 	"attr"	=> (mixed bool/string) if output should be set to an attribute of **selector**, otherwise false or not set
 )
 ```
+* **paragraphs** (optional, bool): `true` (default, allow linebreaks/paragraphs when pressing the enter key), `false` (prevent enter key) 
+* **validation** (optional, mixed bool/array): `false` (default, do not validate)
+```php
+array(
+	"type" => (string) validation type to check against, see validation types below,
+	"compare" => (mixed) if needed, pass value to compare against
+)
+```
+
+#### Validation types
+> Some validation types requires you to pass a comparison value. ACF field validation will be read from the field object
+
+* **not_blank** (string is not empty or null)
+* **is_date**
+* **is_email**
+* **is_num**
+* **contains_num**
+* **is_alphanum**
+* **is_url**
+* **is_tel** 
+* **min_length** (string length is greater)
+* **max_length** (string length is less)
+* **is_length** (string length equals)
+* **min** (number is greater)
+* **max** (number is less)
+* **between** (number is between two array values)
+* **equal_to** (number equals)
 
 ## Action hooks
 
@@ -110,8 +137,10 @@ array(
 ### Javascript
 > The javascript filters functions very similarly to their native PHP counterparts. Only difference is that these functions resides within the `wa_fronted` object, so to call the `add_filter` function, you type like so: `wa_fronted.add_filter('filter_name', function(value){ return value; });`
 
-* **toolbar_buttons** modify the buttons available to the editor toolbar, passes an array of strings as the first argument *(which should be returned)* and current editor options as second
-* **medium_extensions** modify extensions of the Medium Editor, passes an object with active extensions as the first argument *(which should be returned)*, and current editor options as second. Want to make a toolbar extension? [Look here](https://github.com/yabwe/medium-editor/tree/master/src/js/extensions)
+* **toolbar_buttons** modify the buttons available to the editor toolbar (2 arguments), passes an array of strings as the first argument *(which should be returned)* and current editor options as second
+* **medium_extensions** modify extensions of the Medium Editor (2 arguments), passes an object with active extensions as the first argument *(which should be returned)*, and current editor options as second. Want to make a toolbar extension? [Look here](https://github.com/yabwe/medium-editor/tree/master/src/js/extensions)
+* **validate** add a custom validation method should only return true or false (4 arguments), `bool` (result), `value to validate`, `validation method called`, `comparison value`
+* **validation_msg** add a custom validation error message (3 arguments), `message`, `validation method`, `comparison value`
 
 *I'll try to add filters where I see it could be useful, but if you are missing one, please post an issue requesting it*
 
@@ -131,6 +160,8 @@ array(
 * [x] Ability to set post as featured
 * [x] Allow/Disable comments
 * [x] WooCommerce support for simple product types (see supported WooCommerce fields for more details)
+* [x] Live value validation
+* [ ] Validate on server-side before save
 * [ ] Native custom fields support
 * [ ] Shortcodes support (other than gallery)
 * [ ] Autosave (need some discussion on how to best implement this)
@@ -147,7 +178,6 @@ array(
 * [ ] Mirror style of current WP admin theme
 * [ ] Extended WooCommerce support
 * [ ] Ability to set default options on posttype level of array
-* [ ] Live value validation
 
 ## Proposed features
 > These features requires further discussion, not yet set to be implemented
@@ -177,7 +207,7 @@ array(
 * SKU
 * Price
 * Sale Price
-  * Scheduling (coming soon)
+  * Scheduling
 * Short Description
 * Inventory (through settings modal)
   * Stock Quantitiy (if manage stock is enabled)
@@ -191,7 +221,11 @@ There will be a proper how-to guide here, but for now, you can look in the `exte
 ## Collaboration notes
 * I'm using Sass for styling and [PrePros](https://prepros.io/) for compiling (there's a free version if you wanna check it out)
 * JS files are minified and concatenated with [PrePros](https://prepros.io/), so without it you'll have to load the other js files individually (see prepros-prepend comments in the beginning of scripts.js)
-* I'm using [Bower](http://bower.io/) for keeping [Medium Editor](https://github.com/yabwe/medium-editor) and [jQuery Timepicker Addon](https://github.com/trentrichardson/jQuery-Timepicker-Addon) up to date, right now there are no other dependancies other than jQuery but that comes with WP
+* I'm using [Bower](http://bower.io/) for keeping the following librarires up to date:
+  * [Medium Editor](https://github.com/yabwe/medium-editor)
+  * [jQuery Timepicker Addon](https://github.com/trentrichardson/jQuery-Timepicker-Addon)
+  * [tipso](https://github.com/object505/tipso)
+  * [toastr](https://github.com/CodeSeven/toastr)
 * Core features should be free and open source
 * Comment your code
 

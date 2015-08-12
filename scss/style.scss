@@ -6,6 +6,8 @@
 @import 'normalize';
 @import 'toggle-switch';
 @import 'fontawesome/font-awesome';
+@import '../bower_components/tipso/src/tipso.min.css';
+@import '../bower_components/toastr/toastr.scss';
 @import 'functions';
 
 //jQuery UI
@@ -323,6 +325,7 @@
 	min-height: 360px;
 	background: rgba(#000, 0.7);
 	z-index: 159900;
+	font-family: 'Open Sans', sans-serif !important;
 
 	#close-acf-dialog{
 		position: absolute;
@@ -398,6 +401,7 @@
 	background: rgba(#000, 0.7);
 	z-index: 159900;
 	display: none;
+	font-family: 'Open Sans', sans-serif !important;
 
 	.close-wa-fronted-modal{
 		position: absolute;
@@ -720,4 +724,9 @@
 			}
 		}
 	}
+}
+
+.tipso_bubble{
+	border-radius: 0 !important;
+	font-family: 'Open Sans', sans-serif !important;
 }

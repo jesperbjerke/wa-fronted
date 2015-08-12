@@ -51,12 +51,12 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <ul>
 <li><strong>native</strong> (optional, bool): <code>true</code> (default, setup the native editor), <code>false</code> (utilize the do_action function instead)</li>
 <li><strong>container</strong> (required, string): selector of wrapping element of what you want to edit. Can be any valid jQuery selector string</li>
-<li><strong>field_type</strong> (required, string): <code>post_content</code>, <code>post_title</code>, <code>post_thumbnail</code> (note that if you don&#39;t use the<em>post_thumbnail() function, the image has to have the class &#39;attachment-post-thumbnail&#39;), `acf</em>{FIELD ID}<code>/</code>acf<em>sub</em>{SUBFIELD ID}` (if set and <strong>toolbar</strong> is not specified, <strong>toolbar</strong> will set itself based on what field it is)</li>
+<li><strong>field_type</strong> (required, string): <code>post_content</code>, <code>post_title</code>, <code>post_thumbnail</code> (note that if you don&#39;t use the<em>post_thumbnail() function, the image has to have the class &#39;attachment-post-thumbnail&#39;), `acf</em>{FIELD ID}<code>/</code>acf<em>sub</em>{SUBFIELD ID}<code>(if set and **toolbar** is not specified, **toolbar** will set itself based on what field it is),</code>woo_sku<code>,</code>woo_price<code>,</code>woo_sale_price<code>,</code>woo_short_description`</li>
 <li><strong>permission</strong> (optional, string): <code>logged-in</code> (enable to all logged in users), <code>default</code> (default, enabled if user has capability <em>edit_posts</em>), <code>{USER ROLE}</code> (enable to specific user role)</li>
 <li><strong>post_id</strong> (optional, int): Insert post id to override the <code>global $post</code> variable. If used in combination with <code>acf_{FIELD ID}</code>, note that it can also be set to <em>options / taxonomies / users / etc</em></li>
 <li><strong>toolbar</strong> (optional, mixed bool/string): <code>full</code> (default, all buttons), <code>false</code> (do not show toolbar), <code>comma-separated string</code> (<code>bold</code>, <code>italic</code>, <code>underline</code>, <code>anchor</code>, <code>header1</code>, <code>header2</code>, <code>quote</code>, <code>unorderedlist</code>, <code>orderedlist</code>, <code>justifyLeft</code>, <code>justifyCenter</code>, <code>justifyRight</code>)</li>
 <li><strong>media_upload</strong> (optional, mixed bool/string): <code>true</code> (default, will allow user to insert/upload media to the editable area), <code>false</code> (disable media upload), <code>only</code> (constrain the editable area to only edit media. ie; no text, no toolbar)</li>
-<li><strong>image_size</strong> (optional, string): any registered image size (only applicable if <strong>field_type</strong> is set and you want another image size than WP default, which is <code>post-thumbnail</code>)</li>
+<li><strong>image_size</strong> (optional, string): any registered image size (only applicable if <strong>field_type</strong> is <code>post_thumbnail</code> and you want another image size than WP default, which is <code>post-thumbnail</code>)</li>
 <li><strong>output</strong> (optional, string): alue to retrieve from <code>get_field()</code> to output as a dot separated string representing the traversing of value array, ie. for an image field that should output the thumbnail: <code>sizes.thumbnail</code> <em>(only applicable to ACF fields with complex output)</em></li>
 <li><strong>output_to</strong> (optional, array): <em>if not specified, the returned data after save will be put directly into the container element</em> <pre><code class="lang-php">array(
   &quot;selector&quot; =&gt; (string) selector of element inside **container** to output content to. Can be any valid jQuery selector string,
@@ -64,6 +64,34 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 )
 </code></pre>
 </li>
+<li><strong>paragraphs</strong> (optional, bool): <code>true</code> (default, allow linebreaks/paragraphs when pressing the enter key), <code>false</code> (prevent enter key) </li>
+<li><strong>validation</strong> (optional, mixed bool/array): <code>false</code> (default, do not validate)<pre><code class="lang-php">array(
+  &quot;type&quot; =&gt; (string) validation type to check against, see validation types below,
+  &quot;compare&quot; =&gt; (mixed) if needed, pass value to compare against
+)
+</code></pre>
+</li>
+</ul>
+<h4 id="validation-types">Validation types</h4>
+<blockquote>
+<p>Some validation types requires you to pass a comparison value. ACF field validation will be read from the field object</p>
+</blockquote>
+<ul>
+<li><strong>not_blank</strong> (string is not empty or null)</li>
+<li><strong>is_date</strong></li>
+<li><strong>is_email</strong></li>
+<li><strong>is_num</strong></li>
+<li><strong>contains_num</strong></li>
+<li><strong>is_alphanum</strong></li>
+<li><strong>is_url</strong></li>
+<li><strong>is_tel</strong> </li>
+<li><strong>min_length</strong> (string length is greater)</li>
+<li><strong>max_length</strong> (string length is less)</li>
+<li><strong>is_length</strong> (string length equals)</li>
+<li><strong>min</strong> (number is greater)</li>
+<li><strong>max</strong> (number is less)</li>
+<li><strong>between</strong> (number is between two array values)</li>
+<li><strong>equal_to</strong> (number equals)</li>
 </ul>
 <h2 id="action-hooks">Action hooks</h2>
 <h3 id="php">PHP</h3>
@@ -104,8 +132,10 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <p>The javascript filters functions very similarly to their native PHP counterparts. Only difference is that these functions resides within the <code>wa_fronted</code> object, so to call the <code>add_filter</code> function, you type like so: <code>wa_fronted.add_filter(&#39;filter_name&#39;, function(value){ return value; });</code></p>
 </blockquote>
 <ul>
-<li><strong>toolbar_buttons</strong> modify the buttons available to the editor toolbar, passes an array of strings as the first argument <em>(which should be returned)</em> and current editor options as second</li>
-<li><strong>medium_extensions</strong> modify extensions of the Medium Editor, passes an object with active extensions as the first argument <em>(which should be returned)</em>, and current editor options as second. Want to make a toolbar extension? <a href="https://github.com/yabwe/medium-editor/tree/master/src/js/extensions">Look here</a></li>
+<li><strong>toolbar_buttons</strong> modify the buttons available to the editor toolbar (2 arguments), passes an array of strings as the first argument <em>(which should be returned)</em> and current editor options as second</li>
+<li><strong>medium_extensions</strong> modify extensions of the Medium Editor (2 arguments), passes an object with active extensions as the first argument <em>(which should be returned)</em>, and current editor options as second. Want to make a toolbar extension? <a href="https://github.com/yabwe/medium-editor/tree/master/src/js/extensions">Look here</a></li>
+<li><strong>validate</strong> add a custom validation method should only return true or false (4 arguments), <code>bool</code> (result), <code>value to validate</code>, <code>validation method called</code>, <code>comparison value</code></li>
+<li><strong>validation_msg</strong> add a custom validation error message (3 arguments), <code>message</code>, <code>validation method</code>, <code>comparison value</code></li>
 </ul>
 <p><em>I&#39;ll try to add filters where I see it could be useful, but if you are missing one, please post an issue requesting it</em></p>
 <h2 id="features">Features</h2>
@@ -126,6 +156,8 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <li>[x] Ability to set post as featured</li>
 <li>[x] Allow/Disable comments</li>
 <li>[x] WooCommerce support for simple product types (see supported WooCommerce fields for more details)</li>
+<li>[x] Live value validation</li>
+<li>[ ] Validate on server-side before save</li>
 <li>[ ] Native custom fields support</li>
 <li>[ ] Shortcodes support (other than gallery)</li>
 <li>[ ] Autosave (need some discussion on how to best implement this)</li>
@@ -142,7 +174,6 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <li>[ ] Mirror style of current WP admin theme</li>
 <li>[ ] Extended WooCommerce support</li>
 <li>[ ] Ability to set default options on posttype level of array</li>
-<li>[ ] Live value validation</li>
 </ul>
 <h2 id="proposed-features">Proposed features</h2>
 <blockquote>
@@ -194,7 +225,13 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <ul>
 <li>I&#39;m using Sass for styling and <a href="https://prepros.io/">PrePros</a> for compiling (there&#39;s a free version if you wanna check it out)</li>
 <li>JS files are minified and concatenated with <a href="https://prepros.io/">PrePros</a>, so without it you&#39;ll have to load the other js files individually (see prepros-prepend comments in the beginning of scripts.js)</li>
-<li>I&#39;m using <a href="http://bower.io/">Bower</a> for keeping <a href="https://github.com/yabwe/medium-editor">Medium Editor</a> and <a href="https://github.com/trentrichardson/jQuery-Timepicker-Addon">jQuery Timepicker Addon</a> up to date, right now there are no other dependancies other than jQuery but that comes with WP</li>
+<li>I&#39;m using <a href="http://bower.io/">Bower</a> for keeping the following librarires up to date:<ul>
+<li><a href="https://github.com/yabwe/medium-editor">Medium Editor</a></li>
+<li><a href="https://github.com/trentrichardson/jQuery-Timepicker-Addon">jQuery Timepicker Addon</a></li>
+<li><a href="https://github.com/object505/tipso">tipso</a></li>
+<li><a href="https://github.com/CodeSeven/toastr">toastr</a></li>
+</ul>
+</li>
 <li>Core features should be free and open source</li>
 <li>Comment your code</li>
 </ul>

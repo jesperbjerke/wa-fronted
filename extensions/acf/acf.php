@@ -93,16 +93,66 @@ class WA_Fronted_ACF extends WA_Fronted{
 			}
 
 			if($field_object && in_array($field_object['field_object']['type'], $this->supported_acf_fields)){
+				if(!array_key_exists('validation', $new_options) && $field_object['field_object']['required']){
+					$compiled_options['validation'] = array(
+						'type' => 'not_blank'
+					);
+				}
+
 				switch($field_object['field_object']['type']){
 					case 'email':
+						$compiled_options['validation'] = array(
+							'type' => 'is_email'
+						);
 					case 'url':
+						$compiled_options['validation'] = array(
+							'type' => 'is_url'
+						);
 					case 'password':
+						$compiled_options['validation'] = false;
 					case 'number':
+						if(($field_object['field_object']['min'] || $field_object['field_object']['min'] === 0) && ($field_object['field_object']['max'] || $field_object['field_object']['max'] === 0)){
+							$compiled_options['validation'] = array(
+								'type'    => 'between',
+								'compare' => array(
+									$field_object['field_object']['min'],
+									$field_object['field_object']['max']
+								)
+							);
+						}else if($field_object['field_object']['min'] || $field_object['field_object']['min'] === 0){
+							$compiled_options['validation'] = array(
+								'type'    => 'min',
+								'compare' => $field_object['field_object']['min']
+							);
+						}else if($field_object['field_object']['max'] || $field_object['field_object']['max'] === 0){
+							$compiled_options['validation'] = array(
+								'type'    => 'max',
+								'compare' => $field_object['field_object']['max']
+							);
+						}else{
+							$compiled_options['validation'] = array(
+								'type' => 'is_num'
+							);
+						}
 					case 'text':
 					case 'textarea':
+						if($field_object['field_object']['type'] == 'textarea' && $field_object['field_object']['newlines'] == 'wpautop'){
+							$compiled_options['paragraphs'] = true;
+						}else{
+							$compiled_options['paragraphs'] = false;
+						}
+
 						if(!array_key_exists('toolbar', $new_options)){
 							$compiled_options['toolbar'] = false;
 						}
+						
+						if($field_object['field_object']['maxlength']){
+							$compiled_options['validation'] = array(
+								'type'    => 'max_length',
+								'compare' => $field_object['field_object']['maxlength']
+							);
+						}
+
 						$compiled_options['media_upload'] = false;
 						break;		
 					case 'wysiwyg':

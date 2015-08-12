@@ -1,7 +1,10 @@
 //@prepros-prepend 'modernizr.custom.js'
 //@prepros-prepend '../bower_components/medium-editor/dist/js/medium-editor.min.js'
+//@prepros-prepend '../bower_components/tipso/src/tipso.min.js'
+//@prepros-prepend '../bower_components/toastr/toastr.js'
 //@prepros-prepend 'eventmanager.js'
 //@prepros-prepend 'medium-wa-image-upload.js'
+//@prepros-append 'validate.js'
 
 function escape_regexp(s) {
     return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
@@ -25,7 +28,8 @@ var wa_fronted;
 			current_selection      : false,
 			current_range          : false,
 			current_editor_options : false,
-			has_changes            : false
+			has_changes            : false,
+			has_errors             : false
 		},
 
 		/*
@@ -158,6 +162,10 @@ var wa_fronted;
 					}
 				}
 
+				//Setup toastr options
+				toastr.options.timeOut       = "7000";
+				toastr.options.positionClass = "toast-bottom-right";
+
 				self.do_action('on_init');
 				self.bind();
 			}
@@ -182,11 +190,23 @@ var wa_fronted;
 			});
 
 			var wa_datepicker = $('.wa_fronted_datepicker');
-			wa_datepicker.datetimepicker({
-				dateFormat : 'yy-mm-dd',
-				timeFormat : 'HH:mm:ss'
+			wa_datepicker.each(function(index, el){
+
+				var this_dp = $(el),
+					opts = {
+						dateFormat : 'yy-mm-dd'
+					};
+
+				if(this_dp.attr('data-time') !== 'false'){
+					opts.timeFormat = 'HH:mm:ss';
+				}else{
+					opts.showTimepicker = false;
+				}
+
+				this_dp.datetimepicker(opts);
+
+				this_dp.datetimepicker('setDate', this_dp.val());
 			});
-			wa_datepicker.datetimepicker('setDate', wa_datepicker.val());
 
 			$('#wa-fronted-settings-modal select').selectmenu();
 
@@ -262,7 +282,6 @@ var wa_fronted;
 					editor_options.extensions = {
 				    	'image_upload' : new Wa_image_upload(this_options)
 				    }
-
 				}
 				
 				editor_options.extensions = self.apply_filters('medium_extensions', editor_options.extensions, this_options);
@@ -295,6 +314,15 @@ var wa_fronted;
 					}
 				});
 
+				if(this_options.paragraphs === false){
+					this_editor.keypress(function(e){
+						return e.which != 13; 
+					});
+					this_editor.on('focusout', function(e){
+						this_editor.html(this_editor.text());
+					});
+				}
+
 			}else if(this_options.media_upload === 'only' && this_options.native){
 				editor_options.toolbar    = false;
 				editor_options.spellcheck = false;
@@ -317,6 +345,7 @@ var wa_fronted;
 					clearTimeout(self.data.timers[editor.id]);
 					self.data.timers[editor.id] = setTimeout(function(){
 						self.data.has_changes = true;
+						self.validate(this_editor, this_options);
 						self.auto_save(this_editor, this_options);
 						self.show_save_button();
 					}, 1000);
@@ -351,38 +380,55 @@ var wa_fronted;
 				save_this = [];
 
 			self.show_loading_spinner();
+			
+			if(!self.data.has_errors){
 
-			for(var i = 0; i < editors.length; i++){
+				for(var i = 0; i < editors.length; i++){
 
-				var db_value = editors[i].editor.attr('data-db-value'),
-					content = '';
+					var db_value = editors[i].editor.attr('data-db-value'),
+						content = '';
 
-				if(typeof db_value !== typeof undefined && db_value !== false){
-					content = db_value;
-				}else{
-					content = editors[i].editor.html();
-				}
-
-				save_this.push({
-					'content' : content,
-					'options' : editors[i].options
-				});
-			}
-
-			$.post(
-				global_vars.ajax_url,
-				{
-					'action'                : 'wa_fronted_save',
-					'data'                  : save_this,
-					'wa_fronted_save_nonce' : global_vars.nonce
-				}, 
-				function(response){
-					if(response.success){
-						location.reload();
+					if(typeof db_value !== typeof undefined && db_value !== false){
+						content = db_value;
+					}else{
+						content = editors[i].editor.html();
 					}
-					self.hide_loading_spinner();
+
+					save_this.push({
+						'content' : content,
+						'options' : editors[i].options
+					});
 				}
-			);
+
+				$.post(
+					global_vars.ajax_url,
+					{
+						'action'                : 'wa_fronted_save',
+						'data'                  : save_this,
+						'wa_fronted_save_nonce' : global_vars.nonce
+					}, 
+					function(response){
+						if(response.success){
+							location.reload();
+						}
+						self.hide_loading_spinner();
+					}
+				);
+			}else{
+				for(var i = 0; i < editors.length; i++){
+					if(editors[i].options.hasOwnProperty('has_errors') && editors[i].options.has_errors){
+						editors[i].editor.tipso('destroy');
+						editors[i].editor.tipso({
+							'content'    : self.validation_msg(editors[i].options.validation.type, editors[i].options.validation.compare),
+							'useTitle'   : false,
+							'background' : '#bd362f'
+						});
+						editors[i].editor.tipso('show');
+					}
+				}
+				self.hide_loading_spinner();
+				toastr.error('Save unsuccessful', 'There were validation errors!');
+			}
 		},
 
 		show_save_button: function(){
@@ -541,6 +587,30 @@ var wa_fronted;
 		replace_html: function(element, new_content){
 			el = $(element);
 			el.replaceWith(new_content);
+		},
+
+		/**
+		 * If value should be validated, run validation function and trigger tooltip if invalid
+		 * @param  {jQuery Object} this_editor
+		 * @param  {Object} this_options
+		 */
+		validate: function(this_editor, this_options){
+			var self = this;
+			if(this_options.validation !== false){
+				if(!self.validator(this_editor.text(), this_options.validation.type, this_options.validation.compare)){
+					self.data.has_errors    = true;
+					this_options.has_errors = true;
+					this_editor.tipso({
+						'content'    : self.validation_msg(this_options.validation.type, this_options.validation.compare),
+						'useTitle'   : false,
+						'background' : '#23282d'
+					});
+					this_editor.tipso('show');
+				}else{
+					this_editor.tipso('hide');
+					this_editor.tipso('destroy');
+				}
+			}
 		}
 
 	};

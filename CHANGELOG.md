@@ -1,5 +1,12 @@
 CHANGELOG
 =========
+## 0.5
+* Updated Medium Editor to 5.6.2
+* Added Sale price scheduling for WooCommerce
+* Added live validation
+* Added option `paragraphs`
+* Added option `validation`
+
 ## 0.4.5
 * Updated Medium Editor to 5.6.1
 * Added WooCommerce support (as another core extension)

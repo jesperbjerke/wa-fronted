@@ -47,13 +47,17 @@ class WA_Fronted_WooCommerce extends WA_Fronted{
 
 				if(in_array($field_type, $this->supported_woo_fields)){
 					switch($field_type){
-						case 'woo_sku':
 						case 'woo_price':
 						case 'woo_sale_price':
+							$compiled_options['validation'] = array(
+								'type' => 'contains_num'
+							);
+						case 'woo_sku':
 							if(!array_key_exists('toolbar', $new_options)){
 								$compiled_options['toolbar'] = false;
 							}
 							$compiled_options['media_upload'] = false;
+							$compiled_options['paragraphs']   = false;
 							break;
 						case 'woo_short_description':
 							if(!array_key_exists('toolbar', $new_options)){
@@ -145,7 +149,7 @@ class WA_Fronted_WooCommerce extends WA_Fronted{
 			if($product->managing_stock()):
 			?>
 				<div class="fieldgroup">
-					<label for="<?php echo $field_prefix; ?>stock"><?php _e('Stock Quantitiy', 'wa-fronted'); ?></label>
+					<label for="<?php echo $field_prefix; ?>stock"><?php _e('Stock Qty', 'woocommerce'); ?></label>
 					<input type="text" name="<?php echo $field_prefix; ?>stock" id="<?php echo $field_prefix; ?>stock" value="<?php echo $product->get_stock_quantity(); ?>">
 				</div>
 			<?php 
@@ -190,6 +194,21 @@ class WA_Fronted_WooCommerce extends WA_Fronted{
 					<label for="<?php echo $field_prefix; ?>featured"><?php _e('Featured product', 'woocommerce'); ?></label>
 					<input type="checkbox" name="<?php echo $field_prefix; ?>featured" id="<?php echo $field_prefix; ?>featured" value="1" <?php echo ($product->is_featured()) ? 'checked' : ''; ?>>
 				</div>
+
+			<?php
+				$sale_from = get_post_meta( $post->ID, '_sale_price_dates_from', true );
+				$sale_to = get_post_meta( $post->ID, '_sale_price_dates_to', true );
+			?>
+
+				<div class="fieldgroup half">
+					<label for="<?php echo $field_prefix; ?>sale_from"><?php _e('Schedule sale from', 'wa-fronted'); ?></label>
+					<input type="text" name="<?php echo $field_prefix; ?>sale_from" id="<?php echo $field_prefix; ?>sale_from" class="wa_fronted_datepicker" data-time="false" value="<?php echo ($sale_from) ? date_i18n('Y-m-d', $sale_from) : ''; ?>">
+				</div>
+
+				<div class="fieldgroup half">
+					<label for="<?php echo $field_prefix; ?>sale_to"><?php _e('Schedule sale to', 'wa-fronted'); ?></label>
+					<input type="text" name="<?php echo $field_prefix; ?>sale_to" id="<?php echo $field_prefix; ?>sale_to" class="wa_fronted_datepicker" data-time="false" value="<?php echo ($sale_to) ? date_i18n('Y-m-d', $sale_to) : ''; ?>">
+				</div>
 			<?php
 
 		endif;
@@ -219,8 +238,36 @@ class WA_Fronted_WooCommerce extends WA_Fronted{
 						case $field_prefix . 'visibility':
 							update_post_meta( $post_id, '_visibility', $value );
 							break;
+						case $field_prefix . 'sale_from':
+							$value = ($value == '') ? '' : strtotime($value);
+							update_post_meta( $post_id, '_sale_price_dates_from',  $value );
+							break;
+						case $field_prefix . 'sale_to':
+							$value = ($value == '') ? '' : strtotime($value);
+							update_post_meta( $post_id, '_sale_price_dates_to', $value );
+							break;
 					}
 				}
+				
+				$sale_from = strtotime($_POST[$field_prefix . 'sale_from']);
+				$sale_to   = strtotime($_POST[$field_prefix . 'sale_to']);
+				$now       = strtotime('now', current_time( 'timestamp' ));
+
+				if($sale_to && $sale_from){
+					if($sale_from <= $now && $sale_to >= $now){
+						$set_price = $product->get_sale_price();
+					}else{
+						$set_price = $product->get_regular_price();
+					}
+				}else{
+					if($product->get_sale_price()){
+						$set_price = $product->get_sale_price();
+					}else{
+						$set_price = $product->get_regular_price();
+					}
+				}
+				
+				update_post_meta( $post_id, '_price', $set_price);
 
 				$is_featured = $product->is_featured();
 				if(isset($_POST[$field_prefix . 'featured']) && !$is_featured){
