@@ -1,6 +1,7 @@
 CHANGELOG
 =========
 ## 0.6
+* Updated Medium Editor to 5.6.3
 * Added file-api to modernizr
 * Added image upload by dropping image to the editable area
 * Changed jQuery UI resizable to custom function instead (problems with unnecessary bloated markup and css added by jQuery UI)
