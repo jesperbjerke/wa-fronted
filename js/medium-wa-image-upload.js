@@ -4,13 +4,16 @@
  */
 function Wa_image_upload(this_options) {
     this.editor_options        = this_options;
+    this.get_image_src_timeout = false;
+    this.handles               = false;
+    this.resizing_img          = false;
+
     this.button                = document.createElement('button');
     this.button.className      = 'medium-wa-image-upload-action';
     this.button.icon           = document.createElement('i');
     this.button.icon.className = 'fa fa-picture-o';
     this.button.appendChild(this.button.icon);
     this.button.onclick        = this.onClick.bind(this);
-    this.get_image_src_timeout = false;
     document.body.appendChild(this.button);
 }
 
@@ -27,24 +30,24 @@ Wa_image_upload.prototype.setup_wp_media = function(type, shortcode_string, shor
     var self = this;
 
     //Destroy current frame, else return
-    if(this.frame){
-        if(this.frame.options.state !== type){
-            this.frame.dispose();
+    if(self.frame){
+        if(self.frame.options.state !== type){
+            self.frame.dispose();
         }else{
             return;
         }
     }
 
     if(type === 'insert'){
-        this.frame = wp.media({
+        self.frame = wp.media({
             frame    : 'post',
             editing  : true,
             multiple : false
         });   
     }else if(type === 'gallery-edit' && shortcode_string !== false){
-        var selection = this.select(shortcode_string);
+        var selection = self.select(shortcode_string);
         if(selection !== false){
-            this.frame = wp.media({
+            self.frame = wp.media({
                 frame     : 'post',
                 state     : 'gallery-edit',
                 title     : wp.media.view.l10n.editGalleryTitle,
@@ -53,7 +56,7 @@ Wa_image_upload.prototype.setup_wp_media = function(type, shortcode_string, shor
                 selection : selection
             });
         }else{
-            this.frame = wp.media({
+            self.frame = wp.media({
                 frame    : 'post',
                 state    : 'gallery-edit',
                 title    : wp.media.view.l10n.editGalleryTitle,
@@ -62,7 +65,7 @@ Wa_image_upload.prototype.setup_wp_media = function(type, shortcode_string, shor
             });
         }
     }else if(type === 'featured-image'){
-        this.frame = wp.media({
+        self.frame = wp.media({
             frame  : 'post',
             state  : 'featured-image',
             states : [ new wp.media.controller.FeaturedImage() , new wp.media.controller.EditImage() ],
@@ -71,7 +74,7 @@ Wa_image_upload.prototype.setup_wp_media = function(type, shortcode_string, shor
         });   
     }
 
-    this.frame.on( 'insert', function() {
+    self.frame.on( 'insert', function() {
         var selection = self.frame.state().get('selection');
 
         if(selection.length === 0){
@@ -85,11 +88,11 @@ Wa_image_upload.prototype.setup_wp_media = function(type, shortcode_string, shor
         }
     });
 
-    this.frame.on( 'update', function() {
+    self.frame.on( 'update', function() {
         self.insertGallery(self.frame, shortcode_wrap);
     });
 
-    this.frame.state('featured-image').on( 'select', function() {
+    self.frame.state('featured-image').on( 'select', function() {
         var selection = self.frame.state().get('selection').single();
         if(typeof self.replace_this !== 'undefined' && self.replace_this !== false){
             self.insertImage(self.frame, self.replace_this);
@@ -135,7 +138,6 @@ Wa_image_upload.prototype.round = function(value, decimals) {
  * @return {mixed}        object with closest match or false if none
  */
 Wa_image_upload.prototype.get_closest_image_size = function(attachment_id, height, width, callback){
-    clearTimeout(this.get_image_src_timeout);
 
     var self       = this,
         height     = Math.round(height),
@@ -148,13 +150,7 @@ Wa_image_upload.prototype.get_closest_image_size = function(attachment_id, heigh
             width     : null,
             crop      : null
         },
-        aspect_ratio = this.round(this.aspect_ratio(width, height), 2);
-
-    if(height === width){
-        image_type = 'square';
-    }else{
-        image_type = 'original';
-    }
+        aspect_ratio = self.round(self.aspect_ratio(width, height), 2);
 
     for(size in global_vars.image_sizes){
         var this_size        = global_vars.image_sizes[size],
@@ -163,16 +159,10 @@ Wa_image_upload.prototype.get_closest_image_size = function(attachment_id, heigh
             new_aspect_ratio = self.round(self.aspect_ratio(size_width, size_height), 2),
             this_image_type  = false;
 
-        if((size_height === size_width) && this_size.crop === true){
-            this_image_type = 'square';
-        }else{
-            this_image_type = 'original';
-        }
-
-        if((Math.abs(aspect_ratio - new_aspect_ratio) < 3) && (image_type === this_image_type)){
+        if(aspect_ratio === new_aspect_ratio || (this_size.crop !== true && this_size.crop !== 1)){
             var height_diff = Math.abs(height - size_height);
 
-            if(closest.diff === null || height_diff < closest.diff){
+            if(height_diff < closest.diff || closest.diff === null){
                 closest.diff      = height_diff;
                 closest.size_name = size;
                 closest.height    = size_height;
@@ -182,22 +172,19 @@ Wa_image_upload.prototype.get_closest_image_size = function(attachment_id, heigh
         }
     }
 
-    clearTimeout(this.get_image_src_timeout);
-    this.get_image_src_timeout = setTimeout(function(){
-        if(closest.size_name !== null){
-            jQuery.post(
-                global_vars.ajax_url,
-                {
-                    'action'        : 'wa_get_image_src',
-                    'attachment_id' : attachment_id,
-                    'size'          : closest.size_name
-                }, 
-                function(response){
-                    callback(response);
-                }
-            );
-        }
-    }, 1000);
+    if(closest.size_name !== null){
+        jQuery.post(
+            global_vars.ajax_url,
+            {
+                'action'        : 'wa_get_image_src',
+                'attachment_id' : attachment_id,
+                'size'          : closest.size_name
+            }, 
+            function(response){
+                callback(response);
+            }
+        );
+    }
 }
 
 /**
@@ -210,6 +197,9 @@ Wa_image_upload.prototype.bindings = function(instance, editor_container){
 
     jQuery('body').click(function(e){
         jQuery(self.button).removeClass('show');
+        if(self.image_toolbar !== undefined && e.target.classList[0] !== 'resize_handles'){
+            self.image_toolbar.removeClass('show');
+        }
     });
 
     //Init jquery ui resizable
@@ -242,59 +232,82 @@ Wa_image_upload.prototype.bindings = function(instance, editor_container){
         }else if(wa_fronted.getSelectionText() === '' && e.target.tagName !== 'IMG'){
             e.preventDefault();
             self.setup_wp_media('insert');
-
+            
             clearTimeout(showTimer);
             var showTimer = setTimeout(function(){
                 self.showToolbar(e, editor_container);
             }, instance.options.delay);
 
-        }else if(e.target.tagName === 'IMG'){
-            e.preventDefault();
-            var img_el = jQuery(e.target),
-                img_link = img_el.parents('a'),
-                img_wrap = img_el;
-
-            if(img_link.length !== 0){
-                img_wrap = img_link;
-            }
-
-            self.replace_this = img_wrap;
-
-
-            var class_match = e.target.className.match(/wp-image-\d+/);
-            if(class_match !== null){
-                self.setup_wp_media('insert');
-                self.WPMedia(parseInt(class_match[0].match(/\d+/)[0]));
-            }else{
-                self.setup_wp_media('featured-image');
-                wa_fronted.show_loading_spinner();
-                jQuery.post(
-                    global_vars.ajax_url,
-                    {
-                        'action'  : 'wa_get_thumbnail_id',
-                        'post_id' : self.editor_options.post_id
-                    }, 
-                    function(response){
-                        if(response.attachment_id !== '' && response.attachment_id !== false){
-                            wp.media.view.settings.post.featuredImageId = parseInt(response.attachment_id);
-                            self.WPMedia(parseInt(response.attachment_id));
-                        }
-                        wa_fronted.hide_loading_spinner();
+        }else if(e.target.tagName === 'IMG' && e.target.className.match(/wp-image-\d+/) === null){
+            self.setup_wp_media('featured-image');
+            wa_fronted.show_loading_spinner();
+            jQuery.post(
+                global_vars.ajax_url,
+                {
+                    'action'  : 'wa_get_thumbnail_id',
+                    'post_id' : self.editor_options.post_id
+                }, 
+                function(response){
+                    if(response.attachment_id !== '' && response.attachment_id !== false){
+                        wp.media.view.settings.post.featuredImageId = parseInt(response.attachment_id);
+                        self.WPMedia(parseInt(response.attachment_id));
                     }
-                );
-            }
-
+                    wa_fronted.hide_loading_spinner();
+                }
+            );
         }
     });
 
-    instance.subscribe('editableDrag', function (event, editable) {
-        console.log(editable);
-    });
-
-    instance.subscribe('editableDrop', function (event, editable) {
-        console.log(editable);
-    });
+    self.enable_drop_upload(instance, editor_container);
 };
+
+Wa_image_upload.prototype.enable_drop_upload = function(instance, editor_container) {
+    
+    if(Modernizr.filereader){
+        var self = this,
+            allowed_file_types = [
+                'image/jpeg',
+                'image/png',
+                'image/gif'
+            ];
+
+        instance.subscribe('editableDrop', function (event, editable) {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            if(event.dataTransfer.files.length !== 0){
+                wa_fronted.show_loading_spinner();
+                var file = event.dataTransfer.files[0];
+
+                if(jQuery.inArray(file.type, allowed_file_types) !== -1){
+                    var fileReader = new FileReader();
+
+                    fileReader.onload = function(evt){
+                        jQuery.post(
+                            global_vars.ajax_url,
+                            {
+                                'action'                : 'wa_create_image',
+                                'post_id'               : self.editor_options.post_id,
+                                'file_data'             : encodeURIComponent(evt.target.result),
+                                'file_name'             : file.name,
+                                'file_type'             : file.type,
+                                'wa_fronted_save_nonce' : global_vars.nonce
+                            }, 
+                            function(response){
+                                self.dropImage(event.target, response.attachment_obj, false);
+                            }
+                        );
+                    };
+
+                    fileReader.readAsDataURL(file);
+                }else{
+                    wa_fronted.show_loading_spinner();
+                }
+            }
+        });
+    }
+}
 
 /**
  * Make images resizable and change img src to the closest to new size
@@ -302,34 +315,277 @@ Wa_image_upload.prototype.bindings = function(instance, editor_container){
  * @param  {jQuery Object} editor_container jQuery element of editor
  */
 Wa_image_upload.prototype.enable_resizing = function(instance, editor_container) {
-    var self = this;
-    editor_container.find('img[class*="wp-image-"]').resizable({
-        autoHide    : true,
-        aspectRatio : true,
-        ghost       : true,
-        handles     : 'nw, ne, sw, se',
-        resize      : function(event, ui){
-            var class_match = ui.element.context.className.match(/wp-image-\d+/);
-            if(class_match !== null){
-                var attachment_id = class_match[0].match(/\d+/)[0];
-                self.get_closest_image_size(attachment_id, ui.size.height, ui.size.width, function(response){
-                    if(response[3] === true){
-                        var size_class = ui.element.context.className.match(/size-\S+/),
-                            image_el = jQuery(ui.element.context);
+    var self = this,
+        images = editor_container.find('img[class*="wp-image-"]');
 
-                        if(size_class !== null){
-                            image_el
-                                .removeClass(size_class[0])
-                                .addClass('size-' + response[4]);
-                        }
-                        image_el.attr('src', response[0]);
-                    }
+    if(images.length > 0){
+        if(self.handles === false){
+            self.handles              = document.createElement('div');
+            self.handles.className    = 'resize_handles';
+
+            self.handles.se           = document.createElement('span');
+            self.handles.se.className = 'resize_handle se fa fa-arrows-alt';
+            self.handles.appendChild(self.handles.se);
+        
+            document.body.appendChild(self.handles);
+
+            self.handles = jQuery(self.handles);
+            self.on_resize_image();
+            self.enable_image_toolbar(instance, editor_container);
+            self.enable_drag(instance, editor_container);
+        }
+
+        for(var i = 0; i < images.length; i++){
+            var this_image = jQuery(images[i]);
+            if(this_image.data('resizable') !== true){
+                this_image.data('resizable', true);
+                this_image.on('hover', function( event ){
+                    var hovering_img = jQuery(this);
+                    self.resizing_img = hovering_img;
+                    self.position_handles(hovering_img);
                 });
             }
+        }
 
-            wa_fronted.trigger(instance, 'editableInput');
+    }
+}
+
+/**
+ * Positions resizing handles based on container and sets necessary values
+ */
+Wa_image_upload.prototype.position_handles = function(container) {
+
+    var self = this,
+        offset = container.offset(),
+        handle = self.handles.find('.resize_handle');
+
+    self.handles.css({
+        'width'  : container.width() + 10,
+        'height' : container.height() + 10,
+        'top'    : offset.top - 5,
+        'left'   : offset.left - 5
+    });
+
+    self.handles.addClass('show');
+
+    self.handles.off();
+    
+    self.handles.on('mouseout blur', function(){
+        self.handles.removeClass('show');
+    });
+
+    self.handles.on('click', function(e){
+        if(e.target.classList[0] !== 'resize_handle'){
+            self.show_image_edit_toolbar(e);
         }
     });
+
+    handle.off();
+    handle.on('mousedown touchstart', function(event){
+        self.current_size = {
+            'height' : container.height(),
+            'width'  : container.width(),
+            'x'      : event.clientX,
+            'y'      : event.clientY
+        };
+
+        event.preventDefault();
+        self.is_resizing = true;
+    }); 
+}
+
+/**
+ * Binds and handles resizing function
+ */
+Wa_image_upload.prototype.on_resize_image = function() {
+    var self = this;
+
+    jQuery(document).on('mousemove touchmove mouseup touchend', function(event){
+        if(self.is_resizing === true && (event.type === 'mousemove' || event.type === 'touchmove')){
+
+            event.stopPropagation();
+            event.preventDefault();
+
+            var new_size = {
+                    'width'   : self.current_size.width + (event.clientX - self.current_size.x),
+                    'height'  : self.current_size.height + (event.clientY - self.current_size.y),
+                    'offsetX' : (event.clientX - self.current_size.x),
+                    'offsetY' : (event.clientY - self.current_size.y),
+                },
+                final_size = {
+                    'height' : 0,
+                    'width'  : 0
+                };
+
+            //Calculate size proportionally to keep aspect ratio
+            if (Math.abs(new_size.offsetX) > Math.abs(new_size.offsetY)) {
+                final_size.width = Math.round(self.current_size.width + new_size.offsetX);
+                final_size.height = Math.round(final_size.width * (self.current_size.height / self.current_size.width));
+            } else {
+                final_size.height = Math.round(self.current_size.height + new_size.offsetY);
+                final_size.width = Math.round(final_size.height * (self.current_size.width / self.current_size.height));
+            }
+
+            self.resizing_img.width(final_size.width);
+            self.resizing_img.height(final_size.height);
+
+            self.handles.css({
+                'width'  : final_size.width + 10,
+                'height' : final_size.height + 10
+            });
+
+        }else if(self.is_resizing === true && (event.type === 'mouseup' || event.type === 'touchend')){
+
+            event.preventDefault();
+            self.is_resizing = false;
+
+            //Ensure aspect ratio
+            self.resizing_img.height((self.current_size.height / self.current_size.width) * self.resizing_img.width());
+
+            //Set wp image size to closest matching
+            clearTimeout(self.get_image_src_timeout);
+            self.get_image_src_timeout = setTimeout(function(){
+                var class_match = self.resizing_img[0].className.match(/wp-image-\d+/);
+                if(class_match !== null){
+                    var attachment_id = class_match[0].match(/\d+/)[0];
+                    self.get_closest_image_size(attachment_id, self.resizing_img.height(), self.resizing_img.width(), function(response){
+                        if(response[3] === true){
+                            self.resizing_img[0].className = self.resizing_img[0].className.replace(/size-\S+/, 'size-' + response[4]);
+                            self.resizing_img.attr('src', response[0]);
+                        }
+                    });
+                }
+
+                wa_fronted.trigger(self.instance, 'editableInput');
+            }, 500);
+
+        }
+    });
+}
+
+
+Wa_image_upload.prototype.enable_drag = function(instance, editor_container) {
+
+}
+
+/**
+ * Adds and binds image editing toolbar
+ * @param  {Object} instance         medium-editor instance
+ * @param  {jQuery Object} editor_container current editor object
+ */
+Wa_image_upload.prototype.enable_image_toolbar = function(instance, editor_container) {
+    var self = this,
+        image_toolbar           = document.createElement('div');
+        image_toolbar.className = 'medium-wa-image-edit-toolbar';
+        image_toolbar.buttons   = [
+            {
+                'id' : 'alignleft',
+                'icon' : 'dashicons dashicons-align-left',
+                'title' : 'Align left',
+                'func' : function(){
+                    self.resizing_img[0].className = self.resizing_img[0].className.replace(/align\w+/, 'alignleft');
+                }
+            },
+            {
+                'id' : 'aligncenter',
+                'icon' : 'dashicons dashicons-align-center',
+                'title' : 'Align center',
+                'func' : function(){
+                    self.resizing_img[0].className = self.resizing_img[0].className.replace(/align\w+/, 'aligncenter');
+                }
+            },
+            {
+                'id' : 'alignright',
+                'icon' : 'dashicons dashicons-align-right',
+                'title' : 'Align right',
+                'func' : function(){
+                    self.resizing_img[0].className = self.resizing_img[0].className.replace(/align\w+/, 'alignright');
+                }
+            },
+            {
+                'id' : 'edit',
+                'icon' : 'dashicons dashicons-edit',
+                'title' : 'Edit',
+                'func' : function(){
+
+                    var img_link = self.resizing_img.parents('a'),
+                        img_wrap = self.resizing_img;
+
+                    if(img_link.length !== 0){
+                        img_wrap = img_link;
+                    }
+
+                    self.replace_this = img_wrap;
+
+                    var class_match = self.resizing_img[0].className.match(/wp-image-\d+/);
+                    if(class_match !== null){
+                        self.setup_wp_media('insert');
+                        self.WPMedia(parseInt(class_match[0].match(/\d+/)[0]));
+                    }
+                
+                }
+            },
+            {
+                'id' : 'remove',
+                'icon' : 'dashicons dashicons-no',
+                'title' : 'Remove',
+                'func' : function(){
+
+                    var img_link = self.resizing_img.parents('a'),
+                        img_wrap = self.resizing_img;
+
+                    if(img_link.length !== 0){
+                        img_wrap = img_link;
+                    }
+
+                    wa_fronted.replace_html(img_wrap, '');
+
+                }
+            }
+        ];
+
+    for(var i = 0; i < image_toolbar.buttons.length; i++){
+        var button      = image_toolbar.buttons[i],
+            button_el   = document.createElement('button'),
+            button_icon = document.createElement('i');
+            
+            button_el.className   = 'wa-image-edit-' + button.id;
+            button_icon.className = button.icon;
+            button_icon.title     = button.title;
+
+        button_el.appendChild(button_icon)
+        image_toolbar.appendChild(button_el);
+
+        button_el.addEventListener('click', button.func);
+    }
+
+    document.body.appendChild(image_toolbar);
+    self.image_toolbar = jQuery(image_toolbar);
+}
+
+Wa_image_upload.prototype.show_image_edit_toolbar = function(event) {
+
+    var self   = this,
+        offset = self.resizing_img.offset(),
+        scroll_top = jQuery(window).scrollTop(),
+        distance_to_top = offset.top - scroll_top,
+        pos_top = offset.top;
+        
+        self.image_toolbar.removeClass('arrow-over arrow-under');
+
+        if(distance_to_top <= 42){
+            pos_top = offset.top + self.resizing_img.height() + 42;
+            self.image_toolbar.addClass('arrow-over');
+        }else{
+            self.image_toolbar.addClass('arrow-under');
+        }
+
+        self.image_toolbar
+            .css({
+                'top' : pos_top,
+                'left' : (offset.left + ((self.resizing_img.width() / 2) - (self.image_toolbar.width() / 2)))
+            })
+            .addClass('show');
 }
 
 /**
@@ -432,7 +688,6 @@ Wa_image_upload.prototype.insertImage = function(frame, replace_this){
     var self         = this,
         state        = frame.state(),
         selection    = state.get('selection'),
-        imageArray   = [],
         replace_this = replace_this || false;
 
     if ( ! selection ) return;
@@ -529,6 +784,31 @@ Wa_image_upload.prototype.insertImage = function(frame, replace_this){
 
         }
     });                
+};
+
+/**
+ * Inserts image into content after being dropped
+ * @param  {Object} attachment
+ */
+Wa_image_upload.prototype.dropImage = function(target, attachment, replace_this){
+    replace_this = replace_this || false;
+
+    var self = this,
+        use_size = attachment.sizes.medium,
+        html = '<img src="' + use_size.url + '" width="' + use_size.width + '" height="' + use_size.height + '" alt="' + attachment.title + '" class="wp-image-' + attachment.id + ' alignleft size-medium" style="height:' + use_size.height + '; width:' + use_size.width + ';">';
+
+    if(replace_this !== false){
+        wa_fronted.replace_html(replace_this, html);
+        self.replace_this = false;
+    }else{
+        jQuery(target).append(html);
+        wa_fronted.hide_loading_spinner();
+    }
+
+    setTimeout(function(){
+        wa_fronted.trigger(self.instance, 'editableInput');
+        self.enable_resizing(self.instance, jQuery(self.instance.elements));
+    }, 500);
 };
 
 /**

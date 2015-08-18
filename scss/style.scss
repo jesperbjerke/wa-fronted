@@ -175,7 +175,7 @@
 
 	.csstransforms &{
 		display: block;
-		transition: all 0.2s ease;
+		transition: transform 0.2s ease, opacity 0.2s ease;
 		transform: translateY(50px);
 		z-index: -1;
 		opacity: 0;
@@ -503,23 +503,129 @@
 	}
 }
 
-.ui-wrapper{
-	.ui-resizable-handle{
-		border: 1px solid #9E9E9E;
-		width: 9px;
-		height: 9px;
-		bottom: -5px;
-		background-image: none;
-		background-color: #fff;
+.resize_handles{
+	position: absolute;
+	display: none;
+	z-index: 999;
 
-		&.ui-resizable{
-			&-se{
-				right: -5px;
-			}
+	&.show{
+		display: block;
+	}
+
+	.resize_handle{
+		border: 1px solid #fff;
+		background: #222;
+		color: #fff;
+		position: absolute;
+		font-size: 15px;
+		padding: 2px;
+		text-align: center;
+		vertical-align: middle;
+
+		&:hover{
+			background: #333;
+  			color: #45bbe6;
+		}
+
+		&.nw{
+			left: 0;
+			top: 0;
+			cursor: nwse-resize;
+		}
+		
+		&.ne{
+			right: 0;
+			top: 0;
+			cursor: nesw-resize;
+		}
+		
+		&.sw{
+			left: 0;
+			bottom: 0;
+			cursor: nesw-resize;
+		}
+		
+		&.se{
+			right: 0;
+			bottom: 0;
+			cursor: nwse-resize;
 		}
 
 		&:hover{
 			background-color: #444;
+		}
+	}
+}
+
+.medium-wa-image-edit-toolbar{
+	position: absolute;
+	margin-top: -42px;
+	display: none;
+
+	&.show{
+		display: block;
+	}
+
+	.csstransforms &{
+		display: block;
+		transition: transform 0.2s ease, opacity 0.2s ease;
+		transform: translateY(50px);
+		z-index: -1;
+		opacity: 0;
+
+		&.show{
+			z-index: 1;
+			transform: translateY(0px);
+			opacity: 1;
+		}
+	}
+
+	&.arrow-under{
+		&:after{
+			top: 35px;
+			border-color: #222 transparent transparent;
+			border-width: 8px 8px 0 8px;
+			position: absolute;
+			left: 50%;
+			display: block;
+			margin-left: -8px;
+			width: 0;
+			height: 0;
+			border-style: solid;
+			content: "";
+		}
+	}
+
+	&.arrow-over{
+		margin-top: -34px;
+
+		&:before{
+			top: -8px;
+			border-color: transparent transparent #222;
+			border-width: 0 8px 8px 8px;
+			position: absolute;
+			left: 50%;
+			display: block;
+			margin-left: -8px;
+			width: 0;
+			height: 0;
+			border-style: solid;
+			content: "";
+		}
+	}
+
+	button{
+		transition: background-color .2s ease-in,color .2s ease-in;
+		@extend %button;
+		background-color: #222;
+		padding: 5px 10px;
+		text-transform: uppercase;
+		font-size: 14px;
+		line-height: 2;
+
+		i{
+		    vertical-align: middle;
+		    margin-top: -5px;
 		}
 	}
 }

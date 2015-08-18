@@ -1,5 +1,14 @@
 CHANGELOG
 =========
+## 0.6
+* Added file-api to modernizr
+* Added image upload by dropping image to the editable area
+* Changed jQuery UI resizable to custom function instead (problems with unnecessary bloated markup and css added by jQuery UI)
+* Fixed issue with getting proper image size of square images when resizing
+* Performance improvements of image resizing
+* Added `cleanPastedHTML : true` to medium-editor to fix ugly markup when copying and pasting html
+* Added image toolbar when clicking on image, mimicking toolbar in tinymce
+
 ## 0.5
 * Updated Medium Editor to 5.6.2
 * Added Sale price scheduling for WooCommerce

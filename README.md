@@ -161,11 +161,11 @@ array(
 * [x] Allow/Disable comments
 * [x] WooCommerce support for simple product types (see supported WooCommerce fields for more details)
 * [x] Live value validation
+* [x] Image upload by dropping an image into the editable area
 * [ ] Validate on server-side before save
 * [ ] Native custom fields support
 * [ ] Shortcodes support (other than gallery)
 * [ ] Autosave (need some discussion on how to best implement this)
-* [ ] Image upload by dropping an image into the editable area
 * [ ] Drag image to move it within the editable area
 * [ ] Multiple `output_to` selectors and attrs
 * [ ] Choice-based fields like dropdown-select (click on content to show dropdown and select option to insert)

@@ -29,7 +29,8 @@ var wa_fronted;
 			current_range          : false,
 			current_editor_options : false,
 			has_changes            : false,
-			has_errors             : false
+			has_errors             : false,
+			is_saving              : false
 		},
 
 		/*
@@ -213,7 +214,7 @@ var wa_fronted;
 			self.do_action('on_bind');
 
 			window.onbeforeunload = function(){
-				if(self.data.has_changes){
+				if(self.data.has_changes && !self.data.is_saving){
 			  		return 'The changes you have made will be lost if you navigate away from this page.';
 				}
 			};
@@ -229,7 +230,7 @@ var wa_fronted;
 
 			var self = this,
 				editor_options = {
-				    buttons: [
+				    buttons	: [
 				    	'bold', 
 				    	'italic', 
 				    	'underline', 
@@ -243,11 +244,13 @@ var wa_fronted;
 				    	'justifyCenter', 
 				    	'justifyRight'
 				    ],
-				    buttonLabels: 'fontawesome',
-				    imageDragging: false,
-				    autoLink: true,
-				    anchorPreview: false,
-				    anchor: {
+					buttonLabels    : 'fontawesome',
+					imageDragging   : false,
+					cleanPastedHTML : true,
+					// forcePlainText  : true,
+					autoLink        : true,
+					anchorPreview   : false,
+					anchor          : {
 				    	linkValidation: true
 				    }
 				};
@@ -382,6 +385,8 @@ var wa_fronted;
 			self.show_loading_spinner();
 			
 			if(!self.data.has_errors){
+
+				self.data.is_saving = true;
 
 				for(var i = 0; i < editors.length; i++){
 

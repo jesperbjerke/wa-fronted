@@ -3,7 +3,7 @@
 	Plugin Name: WA-Fronted
 	Plugin URI: http://github.com/jesperbjerke/wa-fronted
 	Description: Edit content directly from fronted in the contents actual place
-	Version: 0.5
+	Version: 0.6
 	Text Domain: wa-fronted
 	Domain Path: /lang
 	Author: Jesper Bjerke
@@ -64,6 +64,7 @@ class WA_Fronted {
 		add_action( 'wp_ajax_wa_get_oembed', array( $this, 'wa_get_oembed' ) );
 		add_action( 'wp_ajax_wa_get_thumbnail_id', array( $this, 'wa_get_thumbnail_id' ) );
 		add_action( 'wp_ajax_wa_set_thumbnail', array( $this, 'wa_set_thumbnail' ) );
+		add_action( 'wp_ajax_wa_create_image', array( $this, 'wa_create_image' ) );
 	}
 
 	/**
@@ -212,7 +213,7 @@ class WA_Fronted {
 			wp_enqueue_script('jquery-ui-core');
 			wp_enqueue_script('jquery-ui-draggable');
 			wp_enqueue_script('jquery-ui-droppable');
-			wp_enqueue_script('jquery-ui-resizable');
+			// wp_enqueue_script('jquery-ui-resizable');
 			wp_enqueue_script('jquery-ui-datepicker');
 			wp_enqueue_script('jquery-ui-slider');
 			wp_enqueue_script('jquery-ui-selectmenu');
@@ -781,6 +782,50 @@ class WA_Fronted {
 		}else{
 			return $return;
 		}	
+	}
+
+	public function wa_create_image(){
+		if(wp_verify_nonce( $_POST['wa_fronted_save_nonce'], 'wa_fronted_save_nonce' ) && isset($_POST['file_data']) && isset($_POST['file_name']) && isset($_POST['file_type'])){
+
+			global $post;
+
+			$file_data       = rawurldecode($_POST['file_data']);
+			$base64str       = preg_replace('/(data:image\\/(jpeg|png|gif);base64,)/i', '', $file_data);
+			$upload_dir      = wp_upload_dir();
+			$upload_path     = str_replace( '/', DIRECTORY_SEPARATOR, $upload_dir['path'] ) . DIRECTORY_SEPARATOR;
+			$decoded         = base64_decode( $base64str );
+			$filename        = $_POST['file_name'];
+			$hashed_filename = md5( $filename . microtime() ) . '_' . $filename;
+			$image_upload    = file_put_contents( $upload_path . $hashed_filename, $decoded );
+			$post_id         = (isset($_POST['post_id'])) ? $_POST['post_id'] : $post->ID;
+
+			//HANDLE UPLOADED FILE
+			if( !function_exists( 'wp_handle_sideload' ) ) {
+			  require_once( ABSPATH . 'wp-admin/includes/file.php' );
+			}
+
+			// Without that I'm getting a debug error!?
+			if( !function_exists( 'wp_get_current_user' ) ) {
+			  require_once( ABSPATH . 'wp-includes/pluggable.php' );
+			}
+
+			$file             = array();
+			$file['error']    = '';
+			$file['tmp_name'] = $upload_path . $hashed_filename;
+			$file['name']     = $hashed_filename;
+			$file['type']     = $_POST['file_type'];
+			$file['size']     = filesize( $upload_path . $hashed_filename );
+
+			// upload file to server
+			$attachment_id = media_handle_sideload( $file, $post_id );
+			wp_send_json(array(
+				'attachment_id' => $attachment_id,
+				'attachment_obj' => wp_prepare_attachment_for_js($attachment_id)
+			));
+
+		}else{
+			return false;
+		}
 	}
 }
 

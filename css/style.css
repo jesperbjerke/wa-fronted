@@ -6707,7 +6707,7 @@ body .ui-tooltip {
   border-radius: 8px;
 }
 
-.medium-editor-toolbar ul li button, .medium-wa-image-upload-action, .edit-acf-field, #wa-fronted-toolbar > button, #acf-dialog #close-acf-dialog, #wa-fronted-settings-modal .close-wa-fronted-modal, .ui-selectmenu-button, #ui-datepicker-div .ui-datepicker-header .ui-datepicker-prev,
+.medium-editor-toolbar ul li button, .medium-wa-image-upload-action, .edit-acf-field, #wa-fronted-toolbar > button, #acf-dialog #close-acf-dialog, #wa-fronted-settings-modal .close-wa-fronted-modal, .medium-wa-image-edit-toolbar button, .ui-selectmenu-button, #ui-datepicker-div .ui-datepicker-header .ui-datepicker-prev,
 #ui-datepicker-div .ui-datepicker-header .ui-datepicker-next {
   box-shadow: none !important;
   text-shadow: none !important;
@@ -6726,6 +6726,7 @@ body .ui-tooltip {
 #wa-fronted-toolbar > button.medium-editor-button-active,
 #acf-dialog .medium-editor-button-active#close-acf-dialog,
 #wa-fronted-settings-modal .medium-editor-button-active.close-wa-fronted-modal,
+.medium-wa-image-edit-toolbar button.medium-editor-button-active,
 .medium-editor-button-active.ui-selectmenu-button,
 #ui-datepicker-div .ui-datepicker-header .medium-editor-button-active.ui-datepicker-prev,
 #ui-datepicker-div .ui-datepicker-header .medium-editor-button-active.ui-datepicker-next,
@@ -6735,10 +6736,11 @@ body .ui-tooltip {
 #wa-fronted-toolbar > button.active,
 #acf-dialog .active#close-acf-dialog,
 #wa-fronted-settings-modal .active.close-wa-fronted-modal,
+.medium-wa-image-edit-toolbar button.active,
 .active.ui-selectmenu-button,
 #ui-datepicker-div .ui-datepicker-header .active.ui-datepicker-prev,
 #ui-datepicker-div .ui-datepicker-header .active.ui-datepicker-next,
-.medium-editor-toolbar ul li button:hover, .medium-wa-image-upload-action:hover, .edit-acf-field:hover, #wa-fronted-toolbar > button:hover, #acf-dialog #close-acf-dialog:hover, #wa-fronted-settings-modal .close-wa-fronted-modal:hover, .ui-selectmenu-button:hover, #ui-datepicker-div .ui-datepicker-header .ui-datepicker-prev:hover,
+.medium-editor-toolbar ul li button:hover, .medium-wa-image-upload-action:hover, .edit-acf-field:hover, #wa-fronted-toolbar > button:hover, #acf-dialog #close-acf-dialog:hover, #wa-fronted-settings-modal .close-wa-fronted-modal:hover, .medium-wa-image-edit-toolbar button:hover, .ui-selectmenu-button:hover, #ui-datepicker-div .ui-datepicker-header .ui-datepicker-prev:hover,
 #ui-datepicker-div .ui-datepicker-header .ui-datepicker-next:hover {
   background: #333;
   color: #45bbe6;
@@ -6856,8 +6858,8 @@ body .ui-tooltip {
 
 .csstransforms .medium-wa-image-upload-action {
   display: block;
-  -webkit-transition: all 0.2s ease;
-          transition: all 0.2s ease;
+  -webkit-transition: -webkit-transform 0.2s ease, opacity 0.2s ease;
+          transition: transform 0.2s ease, opacity 0.2s ease;
   -webkit-transform: translateY(50px);
       -ms-transform: translateY(50px);
           transform: translateY(50px);
@@ -7185,21 +7187,134 @@ body .ui-tooltip {
   border-top: 1px solid #ddd;
 }
 
-.ui-wrapper .ui-resizable-handle {
-  border: 1px solid #9E9E9E;
-  width: 9px;
-  height: 9px;
-  bottom: -5px;
-  background-image: none;
-  background-color: #fff;
+.resize_handles {
+  position: absolute;
+  display: none;
+  z-index: 999;
 }
 
-.ui-wrapper .ui-resizable-handle.ui-resizable-se {
-  right: -5px;
+.resize_handles.show {
+  display: block;
 }
 
-.ui-wrapper .ui-resizable-handle:hover {
+.resize_handles .resize_handle {
+  border: 1px solid #fff;
+  background: #222;
+  color: #fff;
+  position: absolute;
+  font-size: 15px;
+  padding: 2px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.resize_handles .resize_handle:hover {
+  background: #333;
+  color: #45bbe6;
+}
+
+.resize_handles .resize_handle.nw {
+  left: 0;
+  top: 0;
+  cursor: nwse-resize;
+}
+
+.resize_handles .resize_handle.ne {
+  right: 0;
+  top: 0;
+  cursor: nesw-resize;
+}
+
+.resize_handles .resize_handle.sw {
+  left: 0;
+  bottom: 0;
+  cursor: nesw-resize;
+}
+
+.resize_handles .resize_handle.se {
+  right: 0;
+  bottom: 0;
+  cursor: nwse-resize;
+}
+
+.resize_handles .resize_handle:hover {
   background-color: #444;
+}
+
+.medium-wa-image-edit-toolbar {
+  position: absolute;
+  margin-top: -42px;
+  display: none;
+}
+
+.medium-wa-image-edit-toolbar.show {
+  display: block;
+}
+
+.csstransforms .medium-wa-image-edit-toolbar {
+  display: block;
+  -webkit-transition: -webkit-transform 0.2s ease, opacity 0.2s ease;
+          transition: transform 0.2s ease, opacity 0.2s ease;
+  -webkit-transform: translateY(50px);
+      -ms-transform: translateY(50px);
+          transform: translateY(50px);
+  z-index: -1;
+  opacity: 0;
+}
+
+.csstransforms .medium-wa-image-edit-toolbar.show {
+  z-index: 1;
+  -webkit-transform: translateY(0px);
+      -ms-transform: translateY(0px);
+          transform: translateY(0px);
+  opacity: 1;
+}
+
+.medium-wa-image-edit-toolbar.arrow-under:after {
+  top: 35px;
+  border-color: #222 transparent transparent;
+  border-width: 8px 8px 0 8px;
+  position: absolute;
+  left: 50%;
+  display: block;
+  margin-left: -8px;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  content: "";
+}
+
+.medium-wa-image-edit-toolbar.arrow-over {
+  margin-top: -34px;
+}
+
+.medium-wa-image-edit-toolbar.arrow-over:before {
+  top: -8px;
+  border-color: transparent transparent #222;
+  border-width: 0 8px 8px 8px;
+  position: absolute;
+  left: 50%;
+  display: block;
+  margin-left: -8px;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  content: "";
+}
+
+.medium-wa-image-edit-toolbar button {
+  -webkit-transition: background-color 0.2s ease-in, color 0.2s ease-in;
+          transition: background-color 0.2s ease-in, color 0.2s ease-in;
+  background-color: #222;
+  padding: 5px 10px;
+  text-transform: uppercase;
+  font-size: 14px;
+  line-height: 2;
+}
+
+.medium-wa-image-edit-toolbar button i {
+  vertical-align: middle;
+  margin-top: -5px;
 }
 
 .ui-selectmenu-button {
