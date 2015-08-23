@@ -14,6 +14,21 @@ var wa_fronted;
 
 (function($){
 
+    $.fn.getCursorPosition = function() {
+        var el = $(this).get(0);
+        var pos = 0;
+        if('selectionStart' in el) {
+            pos = el.selectionStart;
+        } else if('selection' in document) {
+            el.focus();
+            var Sel = document.selection.createRange();
+            var SelLength = document.selection.createRange().text.length;
+            Sel.moveStart('character', -el.value.length);
+            pos = Sel.text.length - SelLength;
+        }
+        return pos;
+    }
+
 	wa_fronted = {
 
 		options: $.parseJSON(global_vars.options),
@@ -324,6 +339,10 @@ var wa_fronted;
 					this_editor.on('focusout', function(e){
 						this_editor.html(this_editor.text());
 					});
+				}
+
+				if(this_options.direction === 'rtl'){
+					this_editor.attr('dir', 'rtl');
 				}
 
 			}else if(this_options.media_upload === 'only' && this_options.native){

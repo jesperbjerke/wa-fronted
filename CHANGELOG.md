@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+## 0.6.1
+* Updated Medium Editor to 5.7.0
+* Added basic RTL support
+
 ## 0.6
 * Updated Medium Editor to 5.6.3
 * Added file-api to modernizr

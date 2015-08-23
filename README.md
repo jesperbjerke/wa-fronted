@@ -58,6 +58,7 @@ add_filter('wa_fronted_options', 'my_editor_options');
 
 ## Options
 * **native** (optional, bool): `true` (default, setup the native editor), `false` (utilize the do_action function instead)
+* **direction** (optional, string): `ltr` (default, left-to-right reading direction), `rtl` (right-to-left reading direction)
 * **container** (required, string): selector of wrapping element of what you want to edit. Can be any valid jQuery selector string
 * **field_type** (required, string): `post_content`, `post_title`, `post_thumbnail` (note that if you don't use the_post_thumbnail() function, the image has to have the class 'attachment-post-thumbnail'), `acf_{FIELD ID}` / `acf_sub_{SUBFIELD ID}` (if set and **toolbar** is not specified, **toolbar** will set itself based on what field it is), `woo_sku`, `woo_price`, `woo_sale_price`, `woo_short_description`
 * **permission** (optional, string): `logged-in` (enable to all logged in users), `default` (default, enabled if user has capability *edit_posts*), `{USER ROLE}` (enable to specific user role)
@@ -162,6 +163,7 @@ array(
 * [x] WooCommerce support for simple product types (see supported WooCommerce fields for more details)
 * [x] Live value validation
 * [x] Image upload by dropping an image into the editable area
+* [x] Basic RTL support
 * [ ] Validate on server-side before save
 * [ ] Native custom fields support
 * [ ] Shortcodes support (other than gallery)

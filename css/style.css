@@ -6935,11 +6935,6 @@ body .ui-tooltip {
   box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.2);
 }
 
-.wa-fronted-editor img {
-  -webkit-user-drag: none;
-  user-drag: none;
-}
-
 .wa-fronted-editor img:hover {
   box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.2);
 }
@@ -7191,6 +7186,7 @@ body .ui-tooltip {
   position: absolute;
   display: none;
   z-index: 999;
+  cursor: pointer;
 }
 
 .resize_handles.show {

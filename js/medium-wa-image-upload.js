@@ -332,7 +332,7 @@ Wa_image_upload.prototype.enable_resizing = function(instance, editor_container)
             self.handles = jQuery(self.handles);
             self.on_resize_image();
             self.enable_image_toolbar(instance, editor_container);
-            self.enable_drag(instance, editor_container);
+            // self.on_image_drag(instance, editor_container);
         }
 
         for(var i = 0; i < images.length; i++){
@@ -379,6 +379,15 @@ Wa_image_upload.prototype.position_handles = function(container) {
             self.show_image_edit_toolbar(e);
         }
     });
+
+    // self.handles.on('mousedown', function(e){
+    //     if(e.target.classList[0] !== 'resize_handle'){
+    //         self.is_dragging = true;
+    //         self.resizing_img
+    //             .attr('draggable', true)
+    //             .trigger('dragstart');
+    //     }
+    // });
 
     handle.off();
     handle.on('mousedown touchstart', function(event){
@@ -463,10 +472,27 @@ Wa_image_upload.prototype.on_resize_image = function() {
     });
 }
 
+/*
+Wa_image_upload.prototype.on_image_drag = function(instance, editor_container) {
+    var self = this;
 
-Wa_image_upload.prototype.enable_drag = function(instance, editor_container) {
+    jQuery(document).on('mousemove touchmove mouseup touchend', function(event){
+        if(self.is_dragging === true && (event.type === 'mousemove' || event.type === 'touchmove')){
 
+            event.stopPropagation();
+            event.preventDefault();
+
+            console.log(editor_container.getCursorPosition());
+        
+        }else if(self.is_dragging === true && (event.type === 'mouseup' || event.type === 'touchend')){
+
+            event.preventDefault();
+            self.is_dragging = false;
+        
+        }
+    });
 }
+*/
 
 /**
  * Adds and binds image editing toolbar
