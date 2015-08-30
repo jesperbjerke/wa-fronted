@@ -41,6 +41,8 @@ add_filter( 'auto_update_plugin', 'auto_update_wa_fronted', 10, 2 );
 
 class WA_Fronted {
 
+	protected $supported_custom_fields;
+
 	/**
 	 * Add hooks and actions and registers ajax function for saving
 	 * Also adds filters for rendering shortcodes
@@ -119,6 +121,66 @@ class WA_Fronted {
 		}else if($field_type == 'post_thumbnail'){
 			if(!array_key_exists('media_upload', $new_options)){
 				$options['media_upload'] = 'only';
+			}
+		}else if(strpos($field_type, 'meta_') !== false){
+			
+			if(!isset($this->supported_custom_fields)){
+				$this->supported_custom_fields = $this->get_supported_custom_fields();
+			}
+
+			if(in_array($field_type, $this->supported_custom_fields)){
+				switch($field_type){
+					case 'meta_email':
+						if($field_type == 'meta_email' && !array_key_exists('validation', $new_options)){
+							$compiled_options['validation'] = array(
+								'type' => 'is_email'
+							);
+						}
+					case 'meta_url':
+						if($field_type == 'meta_url' && !array_key_exists('validation', $new_options)){
+							$compiled_options['validation'] = array(
+								'type' => 'is_url'
+							);
+						}
+					case 'meta_number':
+						if($field_type == 'meta_number' && !array_key_exists('validation', $new_options)){
+							$compiled_options['validation'] = array(
+								'type' => 'is_num'
+							);
+						}
+					case 'meta_text':
+						if(!array_key_exists('paragraphs', $new_options)){
+							$compiled_options['paragraphs'] = false;
+						}
+					case 'meta_textarea':
+						if($field_type == 'meta_textarea' && !array_key_exists('validation', $new_options)){
+							$compiled_options['paragraphs'] = true;
+						}
+
+						if(!array_key_exists('toolbar', $new_options)){
+							$compiled_options['toolbar'] = false;
+						}
+
+						if(!array_key_exists('media_upload', $new_options)){
+							$compiled_options['media_upload'] = false;
+						}
+						break;		
+					case 'meta_wysiwyg':
+						if(!array_key_exists('toolbar', $new_options)){
+							$compiled_options['toolbar'] = 'full';
+						}
+
+						if(!array_key_exists('media_upload', $new_options)){
+							$compiled_options['media_upload'] = true;
+						}
+						break;	
+					case 'meta_image':
+						$compiled_options['toolbar']      = false;
+						$compiled_options['media_upload'] = 'only';
+						break;
+				}
+			}else{
+				trigger_error('Custom field type "' . $field_type . '" is not yet supported', E_USER_ERROR);
 			}
 		}
 
@@ -425,6 +487,22 @@ class WA_Fronted {
 						'ID'        => $post_id,
 						$field_type => $safe_content
 					));
+				}else if(strpos($field_type, 'meta_') !== false && array_key_exists('meta_key', $this_data['options'])){
+					switch($field_type){
+						case 'text':
+						case 'email':
+						case 'url':
+						case 'number':
+							$safe_content = trim(strip_tags($safe_content));
+						case 'textarea':
+							if(!$this_data['options']['paragraphs']){
+								$safe_content = strip_tags($safe_content);
+							}
+							$safe_content = trim($safe_content);
+							break;
+					}
+
+					update_post_meta($post_id, $this_data['options']['meta_key'], $safe_content);
 				}
 			}
 
@@ -827,6 +905,25 @@ class WA_Fronted {
 		}else{
 			return false;
 		}
+	}
+
+
+	/**
+	 * Defines supported custom fields types, hookable through filter 'supported_custom_fields'
+	 * Prefixed with 'meta_'
+	 */
+	protected function get_supported_custom_fields(){
+		$supported_custom_fields = array(
+			'meta_image',
+			'meta_email',
+			'meta_url',
+			'meta_number',
+			'meta_text',
+			'meta_textarea',
+			'meta_wysiwyg'
+		);
+
+		return apply_filters('supported_custom_fields', $supported_custom_fields);
 	}
 }
 

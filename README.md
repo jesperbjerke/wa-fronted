@@ -60,7 +60,7 @@ add_filter('wa_fronted_options', 'my_editor_options');
 * **native** (optional, bool): `true` (default, setup the native editor), `false` (utilize the do_action function instead)
 * **direction** (optional, string): `ltr` (default, left-to-right reading direction), `rtl` (right-to-left reading direction)
 * **container** (required, string): selector of wrapping element of what you want to edit. Can be any valid jQuery selector string
-* **field_type** (required, string): `post_content`, `post_title`, `post_thumbnail` (note that if you don't use the_post_thumbnail() function, the image has to have the class 'attachment-post-thumbnail'), `acf_{FIELD ID}` / `acf_sub_{SUBFIELD ID}` (if set and **toolbar** is not specified, **toolbar** will set itself based on what field it is), `woo_sku`, `woo_price`, `woo_sale_price`, `woo_short_description`
+* **field_type** (required, string): `post_content`, `post_title`, `post_thumbnail` (note that if you don't use the_post_thumbnail() function, the image has to have the class 'attachment-post-thumbnail'), `acf_{FIELD ID}` / `acf_sub_{SUBFIELD ID}` (if set and **toolbar** is not specified, **toolbar** will set itself based on what field it is), `woo_{WooCommerce field (see supported fields below)}`, `meta_{custom field type (see supported fields below)}`
 * **permission** (optional, string): `logged-in` (enable to all logged in users), `default` (default, enabled if user has capability *edit_posts*), `{USER ROLE}` (enable to specific user role)
 * **post_id** (optional, int): Insert post id to override the `global $post` variable. If used in combination with `acf_{FIELD ID}`, note that it can also be set to *options / taxonomies / users / etc*
 * **toolbar** (optional, mixed bool/string): `full` (default, all buttons), `false` (do not show toolbar), `comma-separated string` (`bold`, `italic`, `underline`, `anchor`, `header1`, `header2`, `quote`, `unorderedlist`, `orderedlist`, `justifyLeft`, `justifyCenter`, `justifyRight`)
@@ -82,6 +82,7 @@ array(
 	"compare" => (mixed) if needed, pass value to compare against
 )
 ```
+* **meta_key** (optional, string): if **field_type** is a custom field, set which meta_key to save to
 
 #### Validation types
 > Some validation types requires you to pass a comparison value. ACF field validation will be read from the field object
@@ -134,6 +135,7 @@ array(
 * **wa_fronted_settings_values** modify values before they're sent to the `wp_update_post` function array, use this to set your options (1 argument)
 * **supported_acf_fields** modify supported ACF fields array (1 argument)
 * **supported_woo_fields** modify supported WooCommerce fields/values array (1 argument)
+* **supported_custom_fields** modify supported native custom field types (1 argument)
 
 ### Javascript
 > The javascript filters functions very similarly to their native PHP counterparts. Only difference is that these functions resides within the `wa_fronted` object, so to call the `add_filter` function, you type like so: `wa_fronted.add_filter('filter_name', function(value){ return value; });`
@@ -164,8 +166,8 @@ array(
 * [x] Live value validation
 * [x] Image upload by dropping an image into the editable area
 * [x] Basic RTL support
+* [x] Native custom fields support
 * [ ] Validate on server-side before save
-* [ ] Native custom fields support
 * [ ] Shortcodes support (other than gallery)
 * [ ] Autosave (need some discussion on how to best implement this)
 * [ ] Drag image to move it within the editable area
@@ -193,6 +195,15 @@ array(
 * [ ] Markdown parser
 * [ ] Column-maker (made as an add-on?)
 
+### Supported custom field types
+* Text `meta_text`
+* Text Area `meta_textarea`
+* Number `meta_number`
+* Email `meta_email`
+* Url `meta_url`
+* Wysiwyg Editor `meta_wysiwyg`
+* Image `meta_image`
+
 ### Supported ACF field types
 * Text
 * Text Area
@@ -206,11 +217,11 @@ array(
 * File
 
 ### Supported WooCommerce fields (for simple product types)
-* SKU
-* Price
-* Sale Price
+* SKU `woo_sku`
+* Price `woo_price`
+* Sale Price `woo_sale_price`
   * Scheduling
-* Short Description
+* Short Description `woo_short_description`
 * Inventory (through settings modal)
   * Stock Quantitiy (if manage stock is enabled)
   * Stock Status

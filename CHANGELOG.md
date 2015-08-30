@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+## 0.6.5
+* Added native custom field support
+* Fixed faulty logic in validation settings in ACF field type switch
+
 ## 0.6.1
 * Updated Medium Editor to 5.7.0
 * Added basic RTL support

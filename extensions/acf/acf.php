@@ -101,15 +101,21 @@ class WA_Fronted_ACF extends WA_Fronted{
 
 				switch($field_object['field_object']['type']){
 					case 'email':
-						$compiled_options['validation'] = array(
-							'type' => 'is_email'
-						);
+						if($field_object['field_object']['type'] == 'email'){
+							$compiled_options['validation'] = array(
+								'type' => 'is_email'
+							);
+						}
 					case 'url':
-						$compiled_options['validation'] = array(
-							'type' => 'is_url'
-						);
+						if($field_object['field_object']['type'] == 'url'){
+							$compiled_options['validation'] = array(
+								'type' => 'is_url'
+							);
+						}
 					case 'password':
-						$compiled_options['validation'] = false;
+						if($field_object['field_object']['type'] == 'password'){
+							$compiled_options['validation'] = false;
+						}
 					case 'number':
 						if(($field_object['field_object']['min'] || $field_object['field_object']['min'] === 0) && ($field_object['field_object']['max'] || $field_object['field_object']['max'] === 0)){
 							$compiled_options['validation'] = array(
@@ -129,7 +135,7 @@ class WA_Fronted_ACF extends WA_Fronted{
 								'type'    => 'max',
 								'compare' => $field_object['field_object']['max']
 							);
-						}else{
+						}else if($field_object['field_object']['type'] == 'number'){
 							$compiled_options['validation'] = array(
 								'type' => 'is_num'
 							);
