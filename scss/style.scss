@@ -188,11 +188,59 @@
 	}
 }
 
+.wa-fronted-selectmenu{
+	position: absolute;
+	display: none;
+	margin-top: -42px;
+	z-index: 99;
+
+	&:after {
+		top: 35px;
+		border-color: #222 transparent transparent;
+		border-width: 8px 8px 0 8px;
+		position: absolute;
+		left: 50%;
+		display: block;
+		margin-left: -8px;
+		width: 0;
+		height: 0;
+		border-style: solid;
+		content: "";
+	}
+
+	&:hover{
+		&:after {
+			top: 35px;
+			border-color: #333 transparent transparent;
+		}
+	}
+
+	&.show{
+		display: block;
+		overflow: visible;
+	}
+
+	.csstransforms &{
+		display: block;
+		transition: all 0.2s ease;
+		transform: translateY(50px);
+		z-index: -1;
+		opacity: 0;
+
+		&.show{
+			z-index: 1;
+			transform: translateY(0px);
+			opacity: 1;
+		}
+	}
+}
+
 .edit-acf-field{
 	position: absolute;
 	display: none;
 	@extend %button;
 	margin-top: -42px;
+	z-index: 99;
 
 	&:after {
 		top: 35px;
@@ -333,6 +381,11 @@
 		right: 30px;
 		z-index: 160001;
 		@extend %button;
+
+		@include breakpoint(max, 1100px){
+			top: 10px;
+			right: 10px;
+		}
 	}
 
 	#acf-dialog-inner{

@@ -160,7 +160,7 @@ var wa_fronted;
 		initialize: function(){
 			var self = this;
 
-			if(typeof self.options.editable_areas !== undefined && self.options.editable_areas.length !== 0){
+			if(typeof self.options.editable_areas !== 'undefined' && self.options.editable_areas.length !== 0){
 				for(var i = 0; i < self.options.editable_areas.length; i++){
 					
 					var editors = $(self.options.editable_areas[i].container);
@@ -296,53 +296,140 @@ var wa_fronted;
 
 			if(this_options.media_upload !== 'only' && this_options.native){
 
-				if(this_options.media_upload === true){
-					editor_options.extensions = {
-				    	'image_upload' : new Wa_image_upload(this_options)
-				    }
-				}
-				
-				editor_options.extensions = self.apply_filters('medium_extensions', editor_options.extensions, this_options);
+				if(this_options.field_type !== 'meta_select'){
 
-				editor = new MediumEditor(this_editor, editor_options);
-
-				//Hook onto paste event and determine if pasted content is valid oEmbed
-				editor.subscribe('editablePaste', function (event, editable) {
-					event.preventDefault();
-					var clipboardData = event.clipboardData.getData('text/plain');
-					if(clipboardData && (clipboardData.indexOf('http://') !== -1 || clipboardData.indexOf('https://') !== -1)){
-						self.show_loading_spinner();
-						$.post(
-							global_vars.ajax_url,
-							{
-								'action' : 'wa_get_oembed',
-								'link'	 : clipboardData
-							}, 
-							function(response){
-								if(response.oembed !== false){
-									var current_content = this_editor.html(),
-										regex_str	= escape_regexp(clipboardData),
-										regex       = new RegExp(regex_str, 'm'),
-										new_content = current_content.replace(regex, response.oembed);
-									this_editor.html(new_content);
-								}
-								self.hide_loading_spinner();
-							}
-						);
+					if(this_options.media_upload === true){
+						editor_options.extensions = {
+					    	'image_upload' : new Wa_image_upload(this_options)
+					    }
 					}
-				});
+					
+					editor_options.extensions = self.apply_filters('medium_extensions', editor_options.extensions, this_options);
 
-				if(this_options.paragraphs === false){
-					this_editor.keypress(function(e){
-						return e.which != 13; 
-					});
-					this_editor.on('focusout', function(e){
-						this_editor.html(this_editor.text());
-					});
-				}
+					editor = new MediumEditor(this_editor, editor_options);
 
-				if(this_options.direction === 'rtl'){
-					this_editor.attr('dir', 'rtl');
+					//Hook onto paste event and determine if pasted content is valid oEmbed
+					editor.subscribe('editablePaste', function (event, editable) {
+						event.preventDefault();
+						var clipboardData = event.clipboardData.getData('text/plain');
+						if(clipboardData && (clipboardData.indexOf('http://') !== -1 || clipboardData.indexOf('https://') !== -1)){
+							self.show_loading_spinner();
+							$.post(
+								global_vars.ajax_url,
+								{
+									'action' : 'wa_get_oembed',
+									'link'	 : clipboardData
+								}, 
+								function(response){
+									if(response.oembed !== false){
+										var current_content = this_editor.html(),
+											regex_str	= escape_regexp(clipboardData),
+											regex       = new RegExp(regex_str, 'm'),
+											new_content = current_content.replace(regex, response.oembed);
+										this_editor.html(new_content);
+									}
+									self.hide_loading_spinner();
+								}
+							);
+						}
+					});
+
+					if(this_options.paragraphs === false){
+						this_editor.keypress(function(e){
+							return e.which != 13; 
+						});
+						this_editor.on('focusout', function(e){
+							this_editor.html(this_editor.text());
+						});
+					}
+
+					if(this_options.direction === 'rtl'){
+						this_editor.attr('dir', 'rtl');
+					}
+
+				}else if(this_options.hasOwnProperty('values') && this_options.values.length > 1 && this_options.hasOwnProperty('meta_key') && this_options.native){
+
+					//Setup select dropdown
+
+					var select_el = document.createElement('select');
+					
+					select_el.id        = 'select_' + this_options.meta_key;
+					select_el.name      = 'select_' + this_options.meta_key;
+					select_el.className = 'wa_fronted_select';
+
+					for(var i = 0; i < this_options.values.length; i++){
+						var this_value = this_options.values[i],
+							option_el = document.createElement('option');
+							
+							option_el.value     = this_value.value;
+							option_el.innerHTML = this_value.label;
+					
+							if(this_value.hasOwnProperty('selected') && this_value.selected){
+								option_el.selected = true;
+								this_editor.attr('data-db-value', this_value.value);
+							}
+
+							select_el.appendChild(option_el);
+					}
+
+					document.body.appendChild(select_el);
+					var select_el = $(select_el);
+					select_el.selectmenu({
+						change: function( event, ui ) {
+							if(!self.specific_output_to(this_editor, this_options, ui.item.value, ui.item.value)){
+								this_editor.html(ui.item.value);
+								this_editor.attr('data-db-value', ui.item.value);
+							}
+						}
+					});
+
+					var content_width = this_editor.width(),
+						content_pos   = this_editor.position(),
+						button_el     = select_el.selectmenu('instance').button,
+						menu_el       = select_el.selectmenu('instance').menu;
+
+					button_el
+						.css({
+							'left' : (content_pos.left + ((content_width / 2) - 13)) + 'px'
+						})
+						.addClass('wa-fronted-selectmenu');
+
+					var edit_select_timeout;
+
+					var hide_selectmenu = function(){
+						edit_select_timeout = setTimeout(function(){
+							button_el.removeClass('show');
+							select_el.selectmenu('close');
+						}, 500);
+					};
+
+					this_editor.hover(
+						function(){
+							clearTimeout(edit_select_timeout);
+							var pos = this_editor.position();
+							button_el
+								.css({
+									'top' : pos.top + 'px'
+								})
+								.addClass('show');
+						},
+						hide_selectmenu
+					);
+
+					button_el.hover(
+						function(){
+							clearTimeout(edit_select_timeout);
+						},
+						hide_selectmenu
+					);
+
+					menu_el.hover(
+						function(){
+							clearTimeout(edit_select_timeout);
+						},
+						hide_selectmenu
+					);
+
 				}
 
 			}else if(this_options.media_upload === 'only' && this_options.native){
@@ -412,7 +499,7 @@ var wa_fronted;
 					var db_value = editors[i].editor.attr('data-db-value'),
 						content = '';
 
-					if(typeof db_value !== typeof undefined && db_value !== false){
+					if(typeof db_value !== 'undefined' && db_value !== false){
 						content = db_value;
 					}else{
 						content = editors[i].editor.html();
@@ -505,8 +592,7 @@ var wa_fronted;
 		    if (sel.rangeCount) {
 
 		        var range = sel.getRangeAt(0);
-		        var needsToWorkAroundNewlineBug = (range.startContainer.nodeName.toLowerCase() == 'p'
-		                                           && range.startOffset == 0);
+		        var needsToWorkAroundNewlineBug = (range.startContainer.nodeName.toLowerCase() == 'p' && range.startOffset == 0);
 
 		        if (needsToWorkAroundNewlineBug) {
 		            x = range.startContainer.offsetLeft;
@@ -543,11 +629,11 @@ var wa_fronted;
 		 * @todo read output options
 		 */
 		specific_output_to: function(this_editor, this_options, db_value, output_content){
-			if(!this_options.hasOwnProperty('output_to') || !this_options.output_to.hasOwnProperty('selector')){
+			if(!this_options.hasOwnProperty('output_to')){
 				return false;
 			}
 
-			var selector = this_editor.find(this_options.output_to.selector);
+			var selector = (!this_options.output_to.hasOwnProperty('selector')) ? this_editor : this_editor.find(this_options.output_to.selector);
 			if(selector.length === 0){
 				return false;
 			}
@@ -574,7 +660,7 @@ var wa_fronted;
 		    	range;
 		    if (window.getSelection) {
 		        // IE9 and non-IE
-		        if(typeof self.data.current_selection === undefined || typeof self.data.current_selection === 'undefined' || self.data.current_selection === false){
+		        if(typeof self.data.current_selection === 'undefined' || self.data.current_selection === false){
 		            sel = window.getSelection();
 		            range = sel.getRangeAt(0);
 		        }else{

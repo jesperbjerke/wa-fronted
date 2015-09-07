@@ -70,7 +70,9 @@ class WA_Fronted_ACF extends WA_Fronted{
 			'wysiwyg',
 			'image',
 			'file',
-			'oembed'
+			'oembed',
+			'select',
+			'radio'
 		);
 
 		return apply_filters('supported_acf_fields', $supported_acf_fields);
@@ -178,6 +180,20 @@ class WA_Fronted_ACF extends WA_Fronted{
 						$compiled_options['native']       = false;
 						$compiled_options['toolbar']      = false;
 						$compiled_options['media_upload'] = 'only';
+						break;
+					case 'radio':
+					case 'select':
+						$compiled_options['native'] = false;
+						foreach($field_object['field_object']['choices'] as $label => $value){
+							$this_value = array(
+								'label' => $label,
+								'value' => $value
+							);
+							if(isset($field_object['field_object']['default_value'][$label])){
+								$this_value['selected'] = true;
+							}
+							$compiled_options['values'][] = $this_value;
+						}
 						break;
 				}
 			}else{
@@ -395,6 +411,8 @@ class WA_Fronted_ACF extends WA_Fronted{
 						}
 						$safe_content = trim($safe_content);
 					case 'wysiwyg':
+					case 'select':
+					case 'radio':
 						if($field_object['sub_field']){
 							update_sub_field($acf_field_key, $safe_content, $post_id);
 						}else{

@@ -3,7 +3,7 @@
 Discuss this project at Gitter</p>
 <p>Frontend editor for WordPress, an experiment with a goal to enhance usability and convenience of editing exisiting content.</p>
 <blockquote>
-<p>This plugin is intended strictly for plugin and theme developers, it will <strong>not</strong> work &quot;out of the box&quot;. Are you an end-user? <a href="https://lasso.is/">Look here!</a></p>
+<p>This plugin is intended strictly for plugin and theme developers, it will <strong>not</strong> work &quot;out of the box&quot;. Are you an end-user? <a href="https://edituswp.com/">Look here!</a></p>
 </blockquote>
 <p><img src="https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/screenshot-1.jpg" alt="">
 <img src="https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/screenshot-2.jpg" alt="">
@@ -52,14 +52,14 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <li><strong>native</strong> (optional, bool): <code>true</code> (default, setup the native editor), <code>false</code> (utilize the do_action function instead)</li>
 <li><strong>direction</strong> (optional, string): <code>ltr</code> (default, left-to-right reading direction), <code>rtl</code> (right-to-left reading direction)</li>
 <li><strong>container</strong> (required, string): selector of wrapping element of what you want to edit. Can be any valid jQuery selector string</li>
-<li><strong>field_type</strong> (required, string): <code>post_content</code>, <code>post_title</code>, <code>post_thumbnail</code> (note that if you don&#39;t use the<em>post_thumbnail() function, the image has to have the class &#39;attachment-post-thumbnail&#39;), `acf</em>{FIELD ID}<code>/</code>acf<em>sub</em>{SUBFIELD ID}<code>(if set and **toolbar** is not specified, **toolbar** will set itself based on what field it is),</code>woo_sku<code>,</code>woo_price<code>,</code>woo_sale_price<code>,</code>woo_short_description`</li>
+<li><strong>field_type</strong> (required, string): <code>post_content</code>, <code>post_title</code>, <code>post_thumbnail</code> (note that if you don&#39;t use the<em>post_thumbnail() function, the image has to have the class &#39;attachment-post-thumbnail&#39;), `acf</em>{FIELD ID}<code>/</code>acf<em>sub</em>{SUBFIELD ID}<code>(if set and **toolbar** is not specified, **toolbar** will set itself based on what field it is),</code>woo<em>{WooCommerce field (see supported fields below)}<code>,</code>meta</em>{custom field type (see supported fields below)}`</li>
 <li><strong>permission</strong> (optional, string): <code>logged-in</code> (enable to all logged in users), <code>default</code> (default, enabled if user has capability <em>edit_posts</em>), <code>{USER ROLE}</code> (enable to specific user role)</li>
 <li><strong>post_id</strong> (optional, int): Insert post id to override the <code>global $post</code> variable. If used in combination with <code>acf_{FIELD ID}</code>, note that it can also be set to <em>options / taxonomies / users / etc</em></li>
 <li><strong>toolbar</strong> (optional, mixed bool/string): <code>full</code> (default, all buttons), <code>false</code> (do not show toolbar), <code>comma-separated string</code> (<code>bold</code>, <code>italic</code>, <code>underline</code>, <code>anchor</code>, <code>header1</code>, <code>header2</code>, <code>quote</code>, <code>unorderedlist</code>, <code>orderedlist</code>, <code>justifyLeft</code>, <code>justifyCenter</code>, <code>justifyRight</code>)</li>
 <li><strong>media_upload</strong> (optional, mixed bool/string): <code>true</code> (default, will allow user to insert/upload media to the editable area), <code>false</code> (disable media upload), <code>only</code> (constrain the editable area to only edit media. ie; no text, no toolbar)</li>
 <li><strong>image_size</strong> (optional, string): any registered image size (only applicable if <strong>field_type</strong> is <code>post_thumbnail</code> and you want another image size than WP default, which is <code>post-thumbnail</code>)</li>
 <li><strong>output</strong> (optional, string): alue to retrieve from <code>get_field()</code> to output as a dot separated string representing the traversing of value array, ie. for an image field that should output the thumbnail: <code>sizes.thumbnail</code> <em>(only applicable to ACF fields with complex output)</em></li>
-<li><strong>output_to</strong> (optional, array): <em>if not specified, the returned data after save will be put directly into the container element</em> <pre><code class="lang-php">array(
+<li><strong>output_to</strong> (optional, array): <em>if not specified, the returned data after save/selection will be put directly into the container element</em> <pre><code class="lang-php">array(
   &quot;selector&quot; =&gt; (string) selector of element inside **container** to output content to. Can be any valid jQuery selector string,
   &quot;attr&quot;    =&gt; (mixed bool/string) if output should be set to an attribute of **selector**, otherwise false or not set
 )
@@ -69,6 +69,20 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <li><strong>validation</strong> (optional, mixed bool/array): <code>false</code> (default, do not validate)<pre><code class="lang-php">array(
   &quot;type&quot; =&gt; (string) validation type to check against, see validation types below,
   &quot;compare&quot; =&gt; (mixed) if needed, pass value to compare against
+)
+</code></pre>
+</li>
+<li><strong>meta_key</strong> (optional, string): if <strong>field_type</strong> is a custom field, set which meta_key to save to</li>
+<li><strong>values</strong> (required if <strong>meta_key</strong> is <code>meta_select</code>, array): an array of arrays with values to populate the dropdown with<pre><code class="lang-php">array(
+  array(
+      &quot;label&quot;    =&gt; &quot;Yes&quot;, // (string) label to show for the value in the dropdown
+      &quot;value&quot;    =&gt; true,  // (mixed) the value to store to database when selected and insert to page
+      &quot;selected&quot; =&gt; true   // (bool) set wether this value should be pre-selected
+  ),
+  array(
+      &quot;label&quot; =&gt; &quot;No&quot;,
+      &quot;value&quot; =&gt; false
+  )
 )
 </code></pre>
 </li>
@@ -127,6 +141,7 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <li><strong>wa_fronted_settings_values</strong> modify values before they&#39;re sent to the <code>wp_update_post</code> function array, use this to set your options (1 argument)</li>
 <li><strong>supported_acf_fields</strong> modify supported ACF fields array (1 argument)</li>
 <li><strong>supported_woo_fields</strong> modify supported WooCommerce fields/values array (1 argument)</li>
+<li><strong>supported_custom_fields</strong> modify supported native custom field types (1 argument)</li>
 </ul>
 <h3 id="javascript">Javascript</h3>
 <blockquote>
@@ -160,13 +175,12 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <li>[x] Live value validation</li>
 <li>[x] Image upload by dropping an image into the editable area</li>
 <li>[x] Basic RTL support</li>
+<li>[x] Native custom fields support</li>
+<li>[x] Choice-based fields with dropdown-select (hover on content to show dropdown and select option to insert)</li>
 <li>[ ] Validate on server-side before save</li>
-<li>[ ] Native custom fields support</li>
 <li>[ ] Shortcodes support (other than gallery)</li>
-<li>[ ] Autosave (need some discussion on how to best implement this)</li>
 <li>[ ] Drag image to move it within the editable area</li>
 <li>[ ] Multiple <code>output_to</code> selectors and attrs</li>
-<li>[ ] Choice-based fields like dropdown-select (click on content to show dropdown and select option to insert)</li>
 <li>[ ] More ACF fields support</li>
 <li>[ ] Smarter outputting of value (like if it&#39;s an image field and has no output options, determine by itself)</li>
 <li>[ ] Post revisions</li>
@@ -176,12 +190,14 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <li>[ ] Mirror style of current WP admin theme</li>
 <li>[ ] Extended WooCommerce support</li>
 <li>[ ] Ability to set default options on posttype level of array</li>
+<li>[ ] Ability to edit fields saved in the wp_options table</li>
 </ul>
 <h2 id="proposed-features">Proposed features</h2>
 <blockquote>
 <p>These features requires further discussion, not yet set to be implemented</p>
 </blockquote>
 <ul>
+<li>[ ] Autosave</li>
 <li>[ ] Enhance UX by visualizing which area you are editing</li>
 <li>[ ] Make it possible to create new posts from frontend</li>
 <li>[ ] Change common ajax functions to make use of WP Rest API instead (when implemented into core)</li>
@@ -190,6 +206,17 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <li>[ ] Editing from archives/blog home</li>
 <li>[ ] Markdown parser</li>
 <li>[ ] Column-maker (made as an add-on?)</li>
+</ul>
+<h3 id="supported-custom-field-types">Supported custom field types</h3>
+<ul>
+<li>Text <code>meta_text</code></li>
+<li>Text Area <code>meta_textarea</code></li>
+<li>Number <code>meta_number</code></li>
+<li>Email <code>meta_email</code></li>
+<li>Url <code>meta_url</code></li>
+<li>Wysiwyg Editor <code>meta_wysiwyg</code></li>
+<li>Image <code>meta_image</code></li>
+<li>Select (dropdown) <code>meta_select</code></li>
 </ul>
 <h3 id="supported-acf-field-types">Supported ACF field types</h3>
 <ul>
@@ -203,16 +230,18 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <li>oEmbed</li>
 <li>Image</li>
 <li>File</li>
+<li>Select</li>
+<li>Radio</li>
 </ul>
 <h3 id="supported-woocommerce-fields-for-simple-product-types-">Supported WooCommerce fields (for simple product types)</h3>
 <ul>
-<li>SKU</li>
-<li>Price</li>
-<li>Sale Price<ul>
+<li>SKU <code>woo_sku</code></li>
+<li>Price <code>woo_price</code></li>
+<li>Sale Price <code>woo_sale_price</code><ul>
 <li>Scheduling</li>
 </ul>
 </li>
-<li>Short Description</li>
+<li>Short Description <code>woo_short_description</code></li>
 <li>Inventory (through settings modal)<ul>
 <li>Stock Quantitiy (if manage stock is enabled)</li>
 <li>Stock Status</li>

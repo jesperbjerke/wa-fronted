@@ -6,7 +6,7 @@ Discuss this project at Gitter
 
 Frontend editor for WordPress, an experiment with a goal to enhance usability and convenience of editing exisiting content.
 
-> This plugin is intended strictly for plugin and theme developers, it will **not** work "out of the box". Are you an end-user? [Look here!](https://lasso.is/)
+> This plugin is intended strictly for plugin and theme developers, it will **not** work "out of the box". Are you an end-user? [Look here!](https://edituswp.com/)
 
 ![](https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/screenshot-1.jpg)
 ![](https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/screenshot-2.jpg)
@@ -67,7 +67,7 @@ add_filter('wa_fronted_options', 'my_editor_options');
 * **media_upload** (optional, mixed bool/string): `true` (default, will allow user to insert/upload media to the editable area), `false` (disable media upload), `only` (constrain the editable area to only edit media. ie; no text, no toolbar)
 * **image_size** (optional, string): any registered image size (only applicable if **field_type** is `post_thumbnail` and you want another image size than WP default, which is `post-thumbnail`)
 * **output** (optional, string): alue to retrieve from `get_field()` to output as a dot separated string representing the traversing of value array, ie. for an image field that should output the thumbnail: `sizes.thumbnail` *(only applicable to ACF fields with complex output)*
-* **output_to** (optional, array): *if not specified, the returned data after save will be put directly into the container element* 
+* **output_to** (optional, array): *if not specified, the returned data after save/selection will be put directly into the container element* 
 ```php
 array(
 	"selector" => (string) selector of element inside **container** to output content to. Can be any valid jQuery selector string,
@@ -83,6 +83,20 @@ array(
 )
 ```
 * **meta_key** (optional, string): if **field_type** is a custom field, set which meta_key to save to
+* **values** (required if **meta_key** is `meta_select`, array): an array of arrays with values to populate the dropdown with
+```php
+array(
+	array(
+		"label"    => "Yes", // (string) label to show for the value in the dropdown
+		"value"    => true,  // (mixed) the value to store to database when selected and insert to page
+		"selected" => true   // (bool) set wether this value should be pre-selected
+	),
+	array(
+		"label" => "No",
+		"value" => false
+	)
+)
+```
 
 #### Validation types
 > Some validation types requires you to pass a comparison value. ACF field validation will be read from the field object
@@ -167,12 +181,11 @@ array(
 * [x] Image upload by dropping an image into the editable area
 * [x] Basic RTL support
 * [x] Native custom fields support
+* [x] Choice-based fields with dropdown-select (hover on content to show dropdown and select option to insert)
 * [ ] Validate on server-side before save
 * [ ] Shortcodes support (other than gallery)
-* [ ] Autosave (need some discussion on how to best implement this)
 * [ ] Drag image to move it within the editable area
 * [ ] Multiple `output_to` selectors and attrs
-* [ ] Choice-based fields like dropdown-select (click on content to show dropdown and select option to insert)
 * [ ] More ACF fields support
 * [ ] Smarter outputting of value (like if it's an image field and has no output options, determine by itself)
 * [ ] Post revisions
@@ -182,10 +195,12 @@ array(
 * [ ] Mirror style of current WP admin theme
 * [ ] Extended WooCommerce support
 * [ ] Ability to set default options on posttype level of array
+* [ ] Ability to edit fields saved in the wp_options table
 
 ## Proposed features
 > These features requires further discussion, not yet set to be implemented
 
+* [ ] Autosave
 * [ ] Enhance UX by visualizing which area you are editing
 * [ ] Make it possible to create new posts from frontend
 * [ ] Change common ajax functions to make use of WP Rest API instead (when implemented into core)
@@ -203,6 +218,7 @@ array(
 * Url `meta_url`
 * Wysiwyg Editor `meta_wysiwyg`
 * Image `meta_image`
+* Select (dropdown) `meta_select`
 
 ### Supported ACF field types
 * Text
@@ -215,6 +231,8 @@ array(
 * oEmbed
 * Image
 * File
+* Select
+* Radio
 
 ### Supported WooCommerce fields (for simple product types)
 * SKU `woo_sku`

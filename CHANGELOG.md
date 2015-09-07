@@ -1,5 +1,13 @@
 CHANGELOG
 =========
+## 0.7
+* Added choice-based fields (enables dropdown select to choose between values to insert) for custom fields
+* Added support for ACF fields: `select` and `radio` 
+* Added ability to omit `selector` and only set `attr` in `output_to` to target the editor element
+* Removed fatal error trigger if no configuration filter found (plugin will just not initialize instead)
+* Changed link to Editus (formerly known as Lasso) in README.md
+* Fixed issue where the ACF-edit button would be replaced by new content after save
+
 ## 0.6.5
 * Added native custom field support
 * Fixed faulty logic in validation settings in ACF field type switch

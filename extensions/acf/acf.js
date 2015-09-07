@@ -55,37 +55,52 @@ var wa_fronted_acf;
 				}
 
 				var editor_children = this_editor.children(),
-					editor_contents = $(editor_children[0]),
+					editor_contents = (editor_children.length !== 0) ? $(editor_children[0]) : this_editor,
 					content_width   = editor_contents.width(),
 					content_pos     = editor_contents.position();
 
-				this_editor.prepend('<button title="Edit ' + field_object.type + '" class="edit-acf-field" style="left: ' + (content_pos.left + ((content_width / 2) - 13)) + 'px;"><i class="fa fa-edit"></i></button>');
+				$('body').prepend('<button id="' + field_object.key + '" title="Edit ' + field_object.type + '" class="edit-acf-field" style="left: ' + (content_pos.left + ((content_width / 2) - 13)) + 'px;"><i class="fa fa-edit"></i></button>');
+				
+				var edit_button = $('#' + field_object.key),
+					acf_button_timeout;
+
+				var hide_acf_button = function(){
+					acf_button_timeout = setTimeout(function(){
+						edit_button.removeClass('show');
+					}, 500);
+				};
+
 				this_editor.hover(
 					function(){
+						clearTimeout(acf_button_timeout);
 						var pos = editor_contents.position();
-						this_editor.find('.edit-acf-field')
+						edit_button
 							.css({
 								'top' : pos.top + 'px'
 							})
 							.addClass('show');
 					},
-					function(){
-						this_editor.find('.edit-acf-field')
-							.removeClass('show');
-					}
+					hide_acf_button
 				);
 
-				this_editor.find('.edit-acf-field').click(function(e){
-					e.preventDefault();
-					e.stopPropagation();
-					
-					wa_fronted_acf.show_acf_form(
-						field_object.key, 
-						this_options.post_id, 
-						this_options, 
-						this_editor
-					);
-				});
+				edit_button
+					.hover(
+						function(){
+							clearTimeout(acf_button_timeout);
+						},
+						hide_acf_button
+					)
+					.click(function(e){
+						e.preventDefault();
+						e.stopPropagation();
+						
+						wa_fronted_acf.show_acf_form(
+							field_object.key, 
+							this_options.post_id, 
+							this_options, 
+							this_editor
+						);
+					});
 
 			}
 		});

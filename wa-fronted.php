@@ -3,7 +3,7 @@
 	Plugin Name: WA-Fronted
 	Plugin URI: http://github.com/jesperbjerke/wa-fronted
 	Description: Edit content directly from fronted in the contents actual place
-	Version: 0.6.5
+	Version: 0.7
 	Text Domain: wa-fronted
 	Domain Path: /lang
 	Author: Jesper Bjerke
@@ -214,7 +214,7 @@ class WA_Fronted {
 		$options = apply_filters('wa_fronted_options', array());
 
 		if(!is_array($options) || empty($options) || $options == ''){
-			trigger_error('No configuration found. Please configure by adding a filter to \'wa_fronted_options\'', E_USER_ERROR);
+			return false;
 		}
 
 		global $post;
@@ -276,7 +276,6 @@ class WA_Fronted {
 			wp_enqueue_script('jquery-ui-core');
 			wp_enqueue_script('jquery-ui-draggable');
 			wp_enqueue_script('jquery-ui-droppable');
-			// wp_enqueue_script('jquery-ui-resizable');
 			wp_enqueue_script('jquery-ui-datepicker');
 			wp_enqueue_script('jquery-ui-slider');
 			wp_enqueue_script('jquery-ui-selectmenu');
@@ -920,6 +919,7 @@ class WA_Fronted {
 			'meta_number',
 			'meta_text',
 			'meta_textarea',
+			'meta_select',
 			'meta_wysiwyg'
 		);
 
