@@ -509,7 +509,15 @@ Wa_image_upload.prototype.enable_image_toolbar = function(instance, editor_conta
                 'icon' : 'dashicons dashicons-align-left',
                 'title' : 'Align left',
                 'func' : function(){
-                    self.resizing_img[0].className = self.resizing_img[0].className.replace(/align\w+/, 'alignleft');
+                    var img_el = self.resizing_img[0],
+                        img_caption_wrap = self.resizing_img.parents('.wa-shortcode-wrap');
+
+                    if(img_caption_wrap.length !== 0){
+                        img_el = img_caption_wrap.find('.wp-caption')[0];
+                        console.log(img_el);
+                    }
+
+                    img_el.className = img_el.className.className.replace(/align\w+/, 'alignleft');
                 }
             },
             {
@@ -517,7 +525,15 @@ Wa_image_upload.prototype.enable_image_toolbar = function(instance, editor_conta
                 'icon' : 'dashicons dashicons-align-center',
                 'title' : 'Align center',
                 'func' : function(){
-                    self.resizing_img[0].className = self.resizing_img[0].className.replace(/align\w+/, 'aligncenter');
+                    var img_el = self.resizing_img[0],
+                        img_caption_wrap = self.resizing_img.parents('.wa-shortcode-wrap');
+
+                    if(img_caption_wrap.length !== 0){
+                        img_el = img_caption_wrap.find('.wp-caption')[0];
+                        console.log(img_el);
+                    }
+
+                    img_el.className = img_el.className.className.replace(/align\w+/, 'aligncenter');
                 }
             },
             {
@@ -525,7 +541,15 @@ Wa_image_upload.prototype.enable_image_toolbar = function(instance, editor_conta
                 'icon' : 'dashicons dashicons-align-right',
                 'title' : 'Align right',
                 'func' : function(){
-                    self.resizing_img[0].className = self.resizing_img[0].className.replace(/align\w+/, 'alignright');
+                    var img_el = self.resizing_img[0],
+                        img_caption_wrap = self.resizing_img.parents('.wa-shortcode-wrap');
+
+                    if(img_caption_wrap.length !== 0){
+                        img_el = img_caption_wrap.find('.wp-caption')[0];
+                        console.log(img_el);
+                    }
+
+                    img_el.className = img_el.className.replace(/align\w+/, 'alignright');
                 }
             },
             {
@@ -535,9 +559,12 @@ Wa_image_upload.prototype.enable_image_toolbar = function(instance, editor_conta
                 'func' : function(){
 
                     var img_link = self.resizing_img.parents('a'),
-                        img_wrap = self.resizing_img;
+                        img_wrap = self.resizing_img,
+                        img_caption_wrap = self.resizing_img.parents('.wa-shortcode-wrap');
 
-                    if(img_link.length !== 0){
+                    if(img_caption_wrap.length !== 0){
+                        img_wrap = img_caption_wrap;
+                    }else if(img_link.length !== 0){
                         img_wrap = img_link;
                     }
 
@@ -558,9 +585,12 @@ Wa_image_upload.prototype.enable_image_toolbar = function(instance, editor_conta
                 'func' : function(){
 
                     var img_link = self.resizing_img.parents('a'),
-                        img_wrap = self.resizing_img;
+                        img_wrap = self.resizing_img,
+                        img_caption_wrap = self.resizing_img.parents('.wa-shortcode-wrap');
 
-                    if(img_link.length !== 0){
+                    if(img_caption_wrap.length !== 0){
+                        img_wrap = img_caption_wrap;
+                    }else if(img_link.length !== 0){
                         img_wrap = img_link;
                     }
 
@@ -773,14 +803,22 @@ Wa_image_upload.prototype.insertImage = function(frame, replace_this){
                 if( wp.media.view.settings.captions && caption ){
                     wa_fronted.shortcode_to_html(attachment.attributes['html'], true, function(html){
                         wa_fronted.replace_html(replace_this, html);
-                        self.replace_this = false;                
+                        self.replace_this = false;
+                        self.enable_resizing(self.instance, jQuery(self.instance.elements));
                     });
                 }else{
                     wa_fronted.replace_html(replace_this, attachment.attributes['html']);
                     self.replace_this = false;
                 }
             }else{
-                wa_fronted.insertHtmlAtCaret(attachment.attributes['html']);
+                if( wp.media.view.settings.captions && caption ){
+                    wa_fronted.shortcode_to_html(attachment.attributes['html'], true, function(html){
+                        wa_fronted.insertHtmlAtCaret(html);
+                        self.enable_resizing(self.instance, jQuery(self.instance.elements));
+                    });
+                }else{
+                    wa_fronted.insertHtmlAtCaret(attachment.attributes['html']);
+                }
             }
 
             wa_fronted.trigger(self.instance, 'editableInput');

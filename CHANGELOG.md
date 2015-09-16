@@ -1,5 +1,14 @@
 CHANGELOG
 =========
+## 0.7.5
+* Updated Medium Editor to 5.8.1
+* Added multiple `output_to` support
+* Added support for writing shortcodes
+* Added toolbar button `renderShortcode`
+* Fixed some toolbar buttons not being rendered
+* Fixed issue where image with caption would not render if inserted without selection
+* Fixed issue with aligning/editing/removing images with caption
+
 ## 0.7
 * Added choice-based fields (enables dropdown select to choose between values to insert) for custom fields
 * Added support for ACF fields: `select` and `radio` 

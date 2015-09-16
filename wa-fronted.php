@@ -409,16 +409,20 @@ class WA_Fronted {
 		}
 
 		preg_match('/(?>\\[)([^\\s]+)/s', $shortcode, $sub_matches);
-		
-		$html = 
-			(($comments) ? '<!-- shortcode -->' : '') . '
-				<div 
-					class="wa-shortcode-wrap" 
-					data-shortcode-base="' . $sub_matches[1] . '" 
-					data-shortcode="' . rawurlencode($shortcode) . '">
-					' . do_shortcode($shortcode) . '
-				</div>
-			' . (($comments) ? '<!-- /shortcode -->' : '');
+
+		if(!empty($sub_matches) && $sub_matches[1] !== ''){
+			$html = 
+				(($comments) ? '<!-- shortcode -->' : '') . '
+					<div 
+						class="wa-shortcode-wrap" 
+						data-shortcode-base="' . $sub_matches[1] . '" 
+						data-shortcode="' . rawurlencode($shortcode) . '">
+						' . do_shortcode($shortcode) . '
+					</div>
+				' . (($comments) ? '<!-- /shortcode -->' : '');
+		}else{
+			$html = '';
+		}
 
 		if($is_ajax){
 			echo $html;

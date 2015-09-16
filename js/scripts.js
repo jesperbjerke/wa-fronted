@@ -4,6 +4,7 @@
 //@prepros-prepend '../bower_components/toastr/toastr.js'
 //@prepros-prepend 'eventmanager.js'
 //@prepros-prepend 'medium-wa-image-upload.js'
+//@prepros-prepend 'medium-wa-render-shortcode.js'
 //@prepros-append 'validate.js'
 
 function escape_regexp(s) {
@@ -245,29 +246,34 @@ var wa_fronted;
 
 			var self = this,
 				editor_options = {
-				    buttons	: [
-				    	'bold', 
-				    	'italic', 
-				    	'underline', 
-				    	'anchor', 
-				    	'header1', 
-				    	'header2', 
-				    	'quote', 
-				    	'unorderedlist', 
-				    	'orderedlist', 
-				    	'justifyLeft', 
-				    	'justifyCenter', 
-				    	'justifyRight'
-				    ],
-					buttonLabels    : 'fontawesome',
-					imageDragging   : false,
-					cleanPastedHTML : true,
-					// forcePlainText  : true,
-					autoLink        : true,
-					anchorPreview   : false,
-					anchor          : {
-				    	linkValidation: true
-				    }
+				    toolbar	: {
+				    	buttons : [
+					    	'bold', 
+					    	'italic', 
+					    	'underline', 
+					    	'anchor', 
+					    	'h2',
+					    	'h3', 
+					    	'quote', 
+					    	'unorderedlist', 
+					    	'orderedlist', 
+					    	'justifyLeft', 
+					    	'justifyCenter', 
+					    	'justifyRight',
+					    	'renderShortcode'
+					    ]
+					},
+					buttonLabels      : 'fontawesome',
+					imageDragging     : false,
+					cleanPastedHTML   : true,
+					placeholder       : false,
+					// forcePlainText : true,
+					autoLink          : true,
+					anchorPreview     : false,
+					anchor            : {
+				    	linkValidation : true
+				    },
+				    extensions 		  : {}
 				};
 
 			if(this_options.toolbar === undefined){
@@ -277,10 +283,12 @@ var wa_fronted;
 			if(this_options.toolbar === 'false' || this_options.toolbar === false){
 				editor_options.toolbar = false;
 			}else if(this_options.toolbar !== 'full'){
-				editor_options.buttons = (this_options.toolbar.replace(/\s+/g, '')).split(',');
+				editor_options.toolbar.buttons = (this_options.toolbar.replace(/\s+/g, '')).split(',');
 			}
-
-			editor_options.buttons = self.apply_filters('toolbar_buttons', editor_options.buttons, this_options);
+			
+			if(this_options.toolbar !== 'false' && this_options.toolbar !== false){
+				editor_options.toolbar.buttons = self.apply_filters('toolbar_buttons', editor_options.toolbar.buttons, this_options);
+			}
 
 			this_editor.click(function(){
 				var sel = window.getSelection();
@@ -299,9 +307,11 @@ var wa_fronted;
 				if(this_options.field_type !== 'meta_select'){
 
 					if(this_options.media_upload === true){
-						editor_options.extensions = {
-					    	'image_upload' : new Wa_image_upload(this_options)
-					    }
+						editor_options.extensions.image_upload = new Wa_image_upload(this_options);
+					}
+
+					if(editor_options.toolbar.hasOwnProperty('buttons') && editor_options.toolbar.buttons.indexOf('renderShortcode')){
+						editor_options.extensions.renderShortcode = new Wa_render_shortcode(this_options);
 					}
 					
 					editor_options.extensions = self.apply_filters('medium_extensions', editor_options.extensions, this_options);
@@ -633,15 +643,44 @@ var wa_fronted;
 				return false;
 			}
 
-			var selector = (!this_options.output_to.hasOwnProperty('selector')) ? this_editor : this_editor.find(this_options.output_to.selector);
-			if(selector.length === 0){
-				return false;
-			}
+			if(this_options.output_to.hasOwnProperty('selector')){
+				var selector = this_editor.find(this_options.output_to.selector);
+				if(selector.length === 0){
+					return false;
+				}
 
-			if(this_options.output_to.hasOwnProperty('attr')){
-				selector.attr(this_options.output_to.attr, output_content);
+				if(this_options.output_to.hasOwnProperty('attr')){
+					selector.attr(this_options.output_to.attr, output_content);
+				}else{
+					selector.html(output_content);
+				}
+			}else if(Array.isArray(this_options.output_to)){
+
+				for(var i = 0; i < this_options.output_to.length; i++){
+					var this_selector_opts = this_options.output_to[i];
+					if(!this_selector_opts.hasOwnProperty('selector')){
+						continue;
+					}
+
+					var selector = this_editor.find(this_selector_opts.selector);
+					if(selector.length === 0){
+						return false;
+					}
+
+					if(this_selector_opts.hasOwnProperty('attr')){
+						selector.attr(this_selector_opts.attr, output_content);
+					}else{
+						selector.html(output_content);
+					}
+				}
+
 			}else{
-				selector.html(output_content);
+				var selector = this_editor;
+				if(this_options.output_to.hasOwnProperty('attr')){
+					selector.attr(this_options.output_to.attr, output_content);
+				}else{
+					selector.html(output_content);
+				}
 			}
 
 			this_editor.attr('data-db-value', db_value);

@@ -63,11 +63,11 @@ add_filter('wa_fronted_options', 'my_editor_options');
 * **field_type** (required, string): `post_content`, `post_title`, `post_thumbnail` (note that if you don't use the_post_thumbnail() function, the image has to have the class 'attachment-post-thumbnail'), `acf_{FIELD ID}` / `acf_sub_{SUBFIELD ID}` (if set and **toolbar** is not specified, **toolbar** will set itself based on what field it is), `woo_{WooCommerce field (see supported fields below)}`, `meta_{custom field type (see supported fields below)}`
 * **permission** (optional, string): `logged-in` (enable to all logged in users), `default` (default, enabled if user has capability *edit_posts*), `{USER ROLE}` (enable to specific user role)
 * **post_id** (optional, int): Insert post id to override the `global $post` variable. If used in combination with `acf_{FIELD ID}`, note that it can also be set to *options / taxonomies / users / etc*
-* **toolbar** (optional, mixed bool/string): `full` (default, all buttons), `false` (do not show toolbar), `comma-separated string` (`bold`, `italic`, `underline`, `anchor`, `header1`, `header2`, `quote`, `unorderedlist`, `orderedlist`, `justifyLeft`, `justifyCenter`, `justifyRight`)
+* **toolbar** (optional, mixed bool/string): `full` (default, all buttons), `false` (do not show toolbar), `comma-separated string` (`bold`, `italic`, `underline`, `anchor`, `header1`, `header2`, `quote`, `unorderedlist`, `orderedlist`, `justifyLeft`, `justifyCenter`, `justifyRight`, `renderShortcode`)
 * **media_upload** (optional, mixed bool/string): `true` (default, will allow user to insert/upload media to the editable area), `false` (disable media upload), `only` (constrain the editable area to only edit media. ie; no text, no toolbar)
 * **image_size** (optional, string): any registered image size (only applicable if **field_type** is `post_thumbnail` and you want another image size than WP default, which is `post-thumbnail`)
 * **output** (optional, string): alue to retrieve from `get_field()` to output as a dot separated string representing the traversing of value array, ie. for an image field that should output the thumbnail: `sizes.thumbnail` *(only applicable to ACF fields with complex output)*
-* **output_to** (optional, array): *if not specified, the returned data after save/selection will be put directly into the container element* 
+* **output_to** (optional, array): *if not specified, the returned data after save/selection will be put directly into the container element* can also be an multidimensional array with multiple "selector"/"attr" pairs
 ```php
 array(
 	"selector" => (string) selector of element inside **container** to output content to. Can be any valid jQuery selector string,
@@ -136,7 +136,7 @@ array(
 
 * **on_init** runs within the wa_fronted.initialize function
 * **on_bind** runs within the wa_fronted.bind function
-* **on_setup_editor** if the option `native` is true, this action will run instead of the regular editor setup, passes 3 arguments, jQuery object of editor container, current editor options and full options object
+* **on_setup_editor** if the option `native` is false, this action will run instead of the regular editor setup, passes 3 arguments, jQuery object of editor container, current editor options and full options object
 
 *I'll try to add hooks where I see it could be useful, but if you are missing one, please post an issue requesting it*
 
@@ -156,7 +156,7 @@ array(
 
 * **toolbar_buttons** modify the buttons available to the editor toolbar (2 arguments), passes an array of strings as the first argument *(which should be returned)* and current editor options as second
 * **medium_extensions** modify extensions of the Medium Editor (2 arguments), passes an object with active extensions as the first argument *(which should be returned)*, and current editor options as second. Want to make a toolbar extension? [Look here](https://github.com/yabwe/medium-editor/tree/master/src/js/extensions)
-* **validate** add a custom validation method should only return true or false (4 arguments), `bool` (result), `value to validate`, `validation method called`, `comparison value`
+* **validate** add a custom validation method. Should only return true or false (4 arguments), `bool` (result), `value to validate`, `validation method called`, `comparison value`
 * **validation_msg** add a custom validation error message (3 arguments), `message`, `validation method`, `comparison value`
 
 *I'll try to add filters where I see it could be useful, but if you are missing one, please post an issue requesting it*
@@ -182,10 +182,10 @@ array(
 * [x] Basic RTL support
 * [x] Native custom fields support
 * [x] Choice-based fields with dropdown-select (hover on content to show dropdown and select option to insert)
+* [x] Multiple `output_to` selectors and attrs
+* [x] Shortcodes support (other than gallery)
 * [ ] Validate on server-side before save
-* [ ] Shortcodes support (other than gallery)
 * [ ] Drag image to move it within the editable area
-* [ ] Multiple `output_to` selectors and attrs
 * [ ] More ACF fields support
 * [ ] Smarter outputting of value (like if it's an image field and has no output options, determine by itself)
 * [ ] Post revisions

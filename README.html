@@ -55,11 +55,11 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <li><strong>field_type</strong> (required, string): <code>post_content</code>, <code>post_title</code>, <code>post_thumbnail</code> (note that if you don&#39;t use the<em>post_thumbnail() function, the image has to have the class &#39;attachment-post-thumbnail&#39;), `acf</em>{FIELD ID}<code>/</code>acf<em>sub</em>{SUBFIELD ID}<code>(if set and **toolbar** is not specified, **toolbar** will set itself based on what field it is),</code>woo<em>{WooCommerce field (see supported fields below)}<code>,</code>meta</em>{custom field type (see supported fields below)}`</li>
 <li><strong>permission</strong> (optional, string): <code>logged-in</code> (enable to all logged in users), <code>default</code> (default, enabled if user has capability <em>edit_posts</em>), <code>{USER ROLE}</code> (enable to specific user role)</li>
 <li><strong>post_id</strong> (optional, int): Insert post id to override the <code>global $post</code> variable. If used in combination with <code>acf_{FIELD ID}</code>, note that it can also be set to <em>options / taxonomies / users / etc</em></li>
-<li><strong>toolbar</strong> (optional, mixed bool/string): <code>full</code> (default, all buttons), <code>false</code> (do not show toolbar), <code>comma-separated string</code> (<code>bold</code>, <code>italic</code>, <code>underline</code>, <code>anchor</code>, <code>header1</code>, <code>header2</code>, <code>quote</code>, <code>unorderedlist</code>, <code>orderedlist</code>, <code>justifyLeft</code>, <code>justifyCenter</code>, <code>justifyRight</code>)</li>
+<li><strong>toolbar</strong> (optional, mixed bool/string): <code>full</code> (default, all buttons), <code>false</code> (do not show toolbar), <code>comma-separated string</code> (<code>bold</code>, <code>italic</code>, <code>underline</code>, <code>anchor</code>, <code>header1</code>, <code>header2</code>, <code>quote</code>, <code>unorderedlist</code>, <code>orderedlist</code>, <code>justifyLeft</code>, <code>justifyCenter</code>, <code>justifyRight</code>, <code>renderShortcode</code>)</li>
 <li><strong>media_upload</strong> (optional, mixed bool/string): <code>true</code> (default, will allow user to insert/upload media to the editable area), <code>false</code> (disable media upload), <code>only</code> (constrain the editable area to only edit media. ie; no text, no toolbar)</li>
 <li><strong>image_size</strong> (optional, string): any registered image size (only applicable if <strong>field_type</strong> is <code>post_thumbnail</code> and you want another image size than WP default, which is <code>post-thumbnail</code>)</li>
 <li><strong>output</strong> (optional, string): alue to retrieve from <code>get_field()</code> to output as a dot separated string representing the traversing of value array, ie. for an image field that should output the thumbnail: <code>sizes.thumbnail</code> <em>(only applicable to ACF fields with complex output)</em></li>
-<li><strong>output_to</strong> (optional, array): <em>if not specified, the returned data after save/selection will be put directly into the container element</em> <pre><code class="lang-php">array(
+<li><strong>output_to</strong> (optional, array): <em>if not specified, the returned data after save/selection will be put directly into the container element</em> can also be an multidimensional array with multiple &quot;selector&quot;/&quot;attr&quot; pairs<pre><code class="lang-php">array(
   &quot;selector&quot; =&gt; (string) selector of element inside **container** to output content to. Can be any valid jQuery selector string,
   &quot;attr&quot;    =&gt; (mixed bool/string) if output should be set to an attribute of **selector**, otherwise false or not set
 )
@@ -129,7 +129,7 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <ul>
 <li><strong>on_init</strong> runs within the wa_fronted.initialize function</li>
 <li><strong>on_bind</strong> runs within the wa_fronted.bind function</li>
-<li><strong>on_setup_editor</strong> if the option <code>native</code> is true, this action will run instead of the regular editor setup, passes 3 arguments, jQuery object of editor container, current editor options and full options object</li>
+<li><strong>on_setup_editor</strong> if the option <code>native</code> is false, this action will run instead of the regular editor setup, passes 3 arguments, jQuery object of editor container, current editor options and full options object</li>
 </ul>
 <p><em>I&#39;ll try to add hooks where I see it could be useful, but if you are missing one, please post an issue requesting it</em></p>
 <h2 id="filters">Filters</h2>
@@ -150,7 +150,7 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <ul>
 <li><strong>toolbar_buttons</strong> modify the buttons available to the editor toolbar (2 arguments), passes an array of strings as the first argument <em>(which should be returned)</em> and current editor options as second</li>
 <li><strong>medium_extensions</strong> modify extensions of the Medium Editor (2 arguments), passes an object with active extensions as the first argument <em>(which should be returned)</em>, and current editor options as second. Want to make a toolbar extension? <a href="https://github.com/yabwe/medium-editor/tree/master/src/js/extensions">Look here</a></li>
-<li><strong>validate</strong> add a custom validation method should only return true or false (4 arguments), <code>bool</code> (result), <code>value to validate</code>, <code>validation method called</code>, <code>comparison value</code></li>
+<li><strong>validate</strong> add a custom validation method. Should only return true or false (4 arguments), <code>bool</code> (result), <code>value to validate</code>, <code>validation method called</code>, <code>comparison value</code></li>
 <li><strong>validation_msg</strong> add a custom validation error message (3 arguments), <code>message</code>, <code>validation method</code>, <code>comparison value</code></li>
 </ul>
 <p><em>I&#39;ll try to add filters where I see it could be useful, but if you are missing one, please post an issue requesting it</em></p>
@@ -177,10 +177,10 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <li>[x] Basic RTL support</li>
 <li>[x] Native custom fields support</li>
 <li>[x] Choice-based fields with dropdown-select (hover on content to show dropdown and select option to insert)</li>
+<li>[x] Multiple <code>output_to</code> selectors and attrs</li>
+<li>[x] Shortcodes support (other than gallery)</li>
 <li>[ ] Validate on server-side before save</li>
-<li>[ ] Shortcodes support (other than gallery)</li>
 <li>[ ] Drag image to move it within the editable area</li>
-<li>[ ] Multiple <code>output_to</code> selectors and attrs</li>
 <li>[ ] More ACF fields support</li>
 <li>[ ] Smarter outputting of value (like if it&#39;s an image field and has no output options, determine by itself)</li>
 <li>[ ] Post revisions</li>
