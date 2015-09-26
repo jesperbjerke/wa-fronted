@@ -1,28 +1,45 @@
-    //MEDIA QUERY SHORTENER
-    @mixin breakpoint($type, $media){
-        $theType: if($type == max, max-width, min-width);
-        @media only screen and ($theType : $media){
-            @content;
-        }
+//MEDIA QUERY SHORTENER
+@mixin breakpoint($type, $media){
+    $theType: if($type == max, max-width, min-width);
+    @media only screen and ($theType : $media){
+        @content;
     }
+}
 
-    @mixin breakbetween($from, $to){
-        @media only screen and (min-width : $from) and (max-width : $to){
-            @content;
-        }
+@mixin breakbetween($from, $to){
+    @media only screen and (min-width : $from) and (max-width : $to){
+        @content;
     }
+}
 
-    @mixin icon($icon, $selector: before){
-        &:#{$selector}{
-            content: $icon;
-            display: inline-block;
-            line-height: 1;
-            font-family: dashicons;
-            text-decoration: inherit;
-            font-weight: 400;
-            font-style: normal;
-            vertical-align: middle;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
+// Icon mixins
+@mixin icon($icon, $selector: before){
+    &:#{$selector}{
+        content: $icon;
+        display: inline-block;
+        line-height: 1;
+        font-family: dashicons;
+        text-decoration: inherit;
+        font-weight: 400;
+        font-style: normal;
+        vertical-align: middle;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
     }
+}
+
+
+@mixin fontawesome($icon, $selector){
+    &:#{$selector}{
+        content:  $icon;
+        speak: none;
+        text-transform: none;
+        line-height: 1;
+        display: inline-block;
+        font: normal normal normal 14px/1 FontAwesome;
+        font-size: inherit;
+        text-rendering: auto;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}

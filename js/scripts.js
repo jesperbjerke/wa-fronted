@@ -35,7 +35,7 @@ var wa_fronted;
 		options: $.parseJSON(global_vars.options),
 
 		/**
-		 * Contains running auto save timers and editable areas
+		 * Contains running auto save timers and editable areas and temporary current data
 		 * @type {Object}
 		 */
 		data: {
@@ -487,7 +487,7 @@ var wa_fronted;
 		 * @todo: auto save post
 		 */
 		auto_save: function(editor_container, options){
-			console.log('auto save', editor_container, options);
+			// console.log('auto save', editor_container, options);
 		},
 
 		/**

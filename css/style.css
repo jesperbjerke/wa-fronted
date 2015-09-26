@@ -7226,6 +7226,49 @@ body .ui-tooltip {
   font-weight: 600;
 }
 
+#wa-fronted-settings-modal .wa-fronted-modal-inner #wa-fronted-settings .fieldgroup.checkbox-fieldgroup > label {
+  cursor: pointer;
+}
+
+#wa-fronted-settings-modal .wa-fronted-modal-inner #wa-fronted-settings .fieldgroup.checkbox-fieldgroup > label:before {
+  content: "";
+  speak: none;
+  text-transform: none;
+  line-height: 1;
+  display: inline-block;
+  font: normal normal normal 14px/1 FontAwesome;
+  font-size: inherit;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#wa-fronted-settings-modal .wa-fronted-modal-inner #wa-fronted-settings .fieldgroup.checkbox-fieldgroup > label:before {
+  margin-right: 5px;
+  color: grey;
+}
+
+#wa-fronted-settings-modal .wa-fronted-modal-inner #wa-fronted-settings .fieldgroup.checkbox-fieldgroup > input {
+  display: none;
+}
+
+#wa-fronted-settings-modal .wa-fronted-modal-inner #wa-fronted-settings .fieldgroup.checkbox-fieldgroup > input:checked + label:before {
+  content: "";
+  speak: none;
+  text-transform: none;
+  line-height: 1;
+  display: inline-block;
+  font: normal normal normal 14px/1 FontAwesome;
+  font-size: inherit;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#wa-fronted-settings-modal .wa-fronted-modal-inner #wa-fronted-settings .fieldgroup.checkbox-fieldgroup > input:checked + label:before {
+  color: green;
+}
+
 #wa-fronted-settings-modal .wa-fronted-modal-inner .wa-fronted-modal-footer {
   position: absolute;
   left: 0;

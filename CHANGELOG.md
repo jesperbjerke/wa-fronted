@@ -1,5 +1,13 @@
 CHANGELOG
 =========
+## 0.8
+* Updated Medium Editor to 5.8.2
+* Updated Tipso to 1.0.6
+* Added ability to save data to wp_options table
+* Added trim() before saving content to remove excessive whitespace
+* Ability to set default options in posttype-level of array
+* Styled checkboxes in settings modal
+
 ## 0.7.5
 * Updated Medium Editor to 5.8.1
 * Added multiple `output_to` support

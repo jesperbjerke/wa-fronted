@@ -60,7 +60,7 @@ add_filter('wa_fronted_options', 'my_editor_options');
 * **native** (optional, bool): `true` (default, setup the native editor), `false` (utilize the do_action function instead)
 * **direction** (optional, string): `ltr` (default, left-to-right reading direction), `rtl` (right-to-left reading direction)
 * **container** (required, string): selector of wrapping element of what you want to edit. Can be any valid jQuery selector string
-* **field_type** (required, string): `post_content`, `post_title`, `post_thumbnail` (note that if you don't use the_post_thumbnail() function, the image has to have the class 'attachment-post-thumbnail'), `acf_{FIELD ID}` / `acf_sub_{SUBFIELD ID}` (if set and **toolbar** is not specified, **toolbar** will set itself based on what field it is), `woo_{WooCommerce field (see supported fields below)}`, `meta_{custom field type (see supported fields below)}`
+* **field_type** (required, string): `post_content`, `post_title`, `post_thumbnail` (note that if you don't use the_post_thumbnail() function, the image has to have the class 'attachment-post-thumbnail'), `acf_{FIELD ID}` / `acf_sub_{SUBFIELD ID}` (if set and **toolbar** is not specified, **toolbar** will set itself based on what field it is), `woo_{WooCommerce field (see supported fields below)}`, `meta_{custom field type (see supported fields below)}`, `option`
 * **permission** (optional, string): `logged-in` (enable to all logged in users), `default` (default, enabled if user has capability *edit_posts*), `{USER ROLE}` (enable to specific user role)
 * **post_id** (optional, int): Insert post id to override the `global $post` variable. If used in combination with `acf_{FIELD ID}`, note that it can also be set to *options / taxonomies / users / etc*
 * **toolbar** (optional, mixed bool/string): `full` (default, all buttons), `false` (do not show toolbar), `comma-separated string` (`bold`, `italic`, `underline`, `anchor`, `header1`, `header2`, `quote`, `unorderedlist`, `orderedlist`, `justifyLeft`, `justifyCenter`, `justifyRight`, `renderShortcode`)
@@ -97,6 +97,7 @@ array(
 	)
 )
 ```
+* **option_name** (required if **field_type** is `option`, string): name of option_name to save to in wp_options table
 
 #### Validation types
 > Some validation types requires you to pass a comparison value. ACF field validation will be read from the field object
@@ -184,18 +185,16 @@ array(
 * [x] Choice-based fields with dropdown-select (hover on content to show dropdown and select option to insert)
 * [x] Multiple `output_to` selectors and attrs
 * [x] Shortcodes support (other than gallery)
-* [ ] Validate on server-side before save
-* [ ] Drag image to move it within the editable area
-* [ ] More ACF fields support
-* [ ] Smarter outputting of value (like if it's an image field and has no output options, determine by itself)
+* [x] Ability to edit fields saved in the wp_options table
+* [x] Ability to set default options in posttype level of array
 * [ ] Post revisions
 * [ ] Edit taxonomies (and native tags and categories)
+* [ ] Drag image to move it within the editable area
+* [ ] Smarter outputting of value (like if it's an image field and has no output options, determine by itself)
+* [ ] Validate on server-side before save
+* [ ] Move documentation to Wiki
 * [ ] How-to guide for integration and extensions
-* [ ] Translation
-* [ ] Mirror style of current WP admin theme
-* [ ] Extended WooCommerce support
-* [ ] Ability to set default options on posttype level of array
-* [ ] Ability to edit fields saved in the wp_options table
+* [ ] Translations
 
 ## Proposed features
 > These features requires further discussion, not yet set to be implemented
@@ -209,6 +208,11 @@ array(
 * [ ] Editing from archives/blog home
 * [ ] Markdown parser
 * [ ] Column-maker (made as an add-on?)
+* [ ] Extended WooCommerce support
+* [ ] More ACF fields support
+* [ ] Mirror style of current WP admin theme
+* [ ] Optimization for small screens
+* [ ] Live SEO analyzis and tips, Yoast integration add-on?
 
 ### Supported custom field types
 * Text `meta_text`
@@ -252,7 +256,7 @@ There will be a proper how-to guide here, but for now, you can look in the `exte
 ## Collaboration notes
 * I'm using Sass for styling and [PrePros](https://prepros.io/) for compiling (there's a free version if you wanna check it out)
 * JS files are minified and concatenated with [PrePros](https://prepros.io/), so without it you'll have to load the other js files individually (see prepros-prepend comments in the beginning of scripts.js)
-* I'm using [Bower](http://bower.io/) for keeping the following librarires up to date:
+* I'm using [Bower](http://bower.io/) for keeping the following libraries up to date:
   * [Medium Editor](https://github.com/yabwe/medium-editor)
   * [jQuery Timepicker Addon](https://github.com/trentrichardson/jQuery-Timepicker-Addon)
   * [tipso](https://github.com/object505/tipso)

@@ -52,7 +52,7 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <li><strong>native</strong> (optional, bool): <code>true</code> (default, setup the native editor), <code>false</code> (utilize the do_action function instead)</li>
 <li><strong>direction</strong> (optional, string): <code>ltr</code> (default, left-to-right reading direction), <code>rtl</code> (right-to-left reading direction)</li>
 <li><strong>container</strong> (required, string): selector of wrapping element of what you want to edit. Can be any valid jQuery selector string</li>
-<li><strong>field_type</strong> (required, string): <code>post_content</code>, <code>post_title</code>, <code>post_thumbnail</code> (note that if you don&#39;t use the<em>post_thumbnail() function, the image has to have the class &#39;attachment-post-thumbnail&#39;), `acf</em>{FIELD ID}<code>/</code>acf<em>sub</em>{SUBFIELD ID}<code>(if set and **toolbar** is not specified, **toolbar** will set itself based on what field it is),</code>woo<em>{WooCommerce field (see supported fields below)}<code>,</code>meta</em>{custom field type (see supported fields below)}`</li>
+<li><strong>field_type</strong> (required, string): <code>post_content</code>, <code>post_title</code>, <code>post_thumbnail</code> (note that if you don&#39;t use the<em>post_thumbnail() function, the image has to have the class &#39;attachment-post-thumbnail&#39;), `acf</em>{FIELD ID}<code>/</code>acf<em>sub</em>{SUBFIELD ID}<code>(if set and **toolbar** is not specified, **toolbar** will set itself based on what field it is),</code>woo<em>{WooCommerce field (see supported fields below)}<code>,</code>meta</em>{custom field type (see supported fields below)}<code>,</code>option`</li>
 <li><strong>permission</strong> (optional, string): <code>logged-in</code> (enable to all logged in users), <code>default</code> (default, enabled if user has capability <em>edit_posts</em>), <code>{USER ROLE}</code> (enable to specific user role)</li>
 <li><strong>post_id</strong> (optional, int): Insert post id to override the <code>global $post</code> variable. If used in combination with <code>acf_{FIELD ID}</code>, note that it can also be set to <em>options / taxonomies / users / etc</em></li>
 <li><strong>toolbar</strong> (optional, mixed bool/string): <code>full</code> (default, all buttons), <code>false</code> (do not show toolbar), <code>comma-separated string</code> (<code>bold</code>, <code>italic</code>, <code>underline</code>, <code>anchor</code>, <code>header1</code>, <code>header2</code>, <code>quote</code>, <code>unorderedlist</code>, <code>orderedlist</code>, <code>justifyLeft</code>, <code>justifyCenter</code>, <code>justifyRight</code>, <code>renderShortcode</code>)</li>
@@ -86,6 +86,7 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 )
 </code></pre>
 </li>
+<li><strong>option_name</strong> (required if <strong>field_type</strong> is <code>option</code>, string): name of option_name to save to in wp_options table</li>
 </ul>
 <h4 id="validation-types">Validation types</h4>
 <blockquote>
@@ -179,18 +180,16 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <li>[x] Choice-based fields with dropdown-select (hover on content to show dropdown and select option to insert)</li>
 <li>[x] Multiple <code>output_to</code> selectors and attrs</li>
 <li>[x] Shortcodes support (other than gallery)</li>
-<li>[ ] Validate on server-side before save</li>
-<li>[ ] Drag image to move it within the editable area</li>
-<li>[ ] More ACF fields support</li>
-<li>[ ] Smarter outputting of value (like if it&#39;s an image field and has no output options, determine by itself)</li>
+<li>[x] Ability to edit fields saved in the wp_options table</li>
+<li>[x] Ability to set default options in posttype level of array</li>
 <li>[ ] Post revisions</li>
 <li>[ ] Edit taxonomies (and native tags and categories)</li>
+<li>[ ] Drag image to move it within the editable area</li>
+<li>[ ] Smarter outputting of value (like if it&#39;s an image field and has no output options, determine by itself)</li>
+<li>[ ] Validate on server-side before save</li>
+<li>[ ] Move documentation to Wiki</li>
 <li>[ ] How-to guide for integration and extensions</li>
-<li>[ ] Translation</li>
-<li>[ ] Mirror style of current WP admin theme</li>
-<li>[ ] Extended WooCommerce support</li>
-<li>[ ] Ability to set default options on posttype level of array</li>
-<li>[ ] Ability to edit fields saved in the wp_options table</li>
+<li>[ ] Translations</li>
 </ul>
 <h2 id="proposed-features">Proposed features</h2>
 <blockquote>
@@ -206,6 +205,11 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <li>[ ] Editing from archives/blog home</li>
 <li>[ ] Markdown parser</li>
 <li>[ ] Column-maker (made as an add-on?)</li>
+<li>[ ] Extended WooCommerce support</li>
+<li>[ ] More ACF fields support</li>
+<li>[ ] Mirror style of current WP admin theme</li>
+<li>[ ] Optimization for small screens</li>
+<li>[ ] Live SEO analyzis and tips, Yoast integration add-on?</li>
 </ul>
 <h3 id="supported-custom-field-types">Supported custom field types</h3>
 <ul>
@@ -256,7 +260,7 @@ add_filter(&#39;wa_fronted_options&#39;, &#39;my_editor_options&#39;);
 <ul>
 <li>I&#39;m using Sass for styling and <a href="https://prepros.io/">PrePros</a> for compiling (there&#39;s a free version if you wanna check it out)</li>
 <li>JS files are minified and concatenated with <a href="https://prepros.io/">PrePros</a>, so without it you&#39;ll have to load the other js files individually (see prepros-prepend comments in the beginning of scripts.js)</li>
-<li>I&#39;m using <a href="http://bower.io/">Bower</a> for keeping the following librarires up to date:<ul>
+<li>I&#39;m using <a href="http://bower.io/">Bower</a> for keeping the following libraries up to date:<ul>
 <li><a href="https://github.com/yabwe/medium-editor">Medium Editor</a></li>
 <li><a href="https://github.com/trentrichardson/jQuery-Timepicker-Addon">jQuery Timepicker Addon</a></li>
 <li><a href="https://github.com/object505/tipso">tipso</a></li>

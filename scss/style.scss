@@ -15,22 +15,6 @@
 @import 'jquery-ui.structure';
 @import 'jquery-ui.theme';
 
-// Icon mixins
-@mixin fontawesome($icon, $selector){
-	&:#{$selector}{
-		content:  $icon;
-		speak: none;
-		text-transform: none;
-		line-height: 1;
-		display: inline-block;
-		font: normal normal normal 14px/1 FontAwesome;
-		font-size: inherit;
-		text-rendering: auto;
-		-webkit-font-smoothing: antialiased;
-		-moz-osx-font-smoothing: grayscale;
-	}
-}
-
 %button {
 	box-shadow: none !important;
 	text-shadow: none !important;
@@ -532,6 +516,30 @@
 				    	background-color: #fcfcfc;
 				    	font-weight: 600;
 				    }
+				}
+
+				&.checkbox-fieldgroup{
+					> label {
+						@include fontawesome('\f096', before);
+						cursor: pointer;
+
+						&:before{
+							margin-right: 5px;
+							color: grey;
+						}
+					}
+
+					> input {
+						display: none;
+
+						&:checked + label{
+							@include fontawesome('\f046', before);
+							
+							&:before{
+								color: green;
+							}
+						}
+					}
 				}
 			}
 		}

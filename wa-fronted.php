@@ -3,7 +3,7 @@
 	Plugin Name: WA-Fronted
 	Plugin URI: http://github.com/jesperbjerke/wa-fronted
 	Description: Edit content directly from fronted in the contents actual place
-	Version: 0.7
+	Version: 0.8
 	Text Domain: wa-fronted
 	Domain Path: /lang
 	Author: Jesper Bjerke
@@ -243,10 +243,16 @@ class WA_Fronted {
 		if(isset($options['defaults'])){
 			$default_options = array_merge($default_options, $options['defaults']);
 		}
+		
 
 		$continue = false;
 		if(isset($options['post_types'][$post_type])){
 			$post_type_options = $options['post_types'][$post_type];
+			
+			if(isset($post_type_options['defaults'])){
+				$default_options = array_merge($default_options, $post_type_options['defaults']);
+			}
+
 			foreach($post_type_options['editable_areas'] as $index => $values){
 				$post_type_options['editable_areas'][$index] = $this->compile_options($default_options, $values);
 				if($this->check_permission($post_type_options['editable_areas'][$index]['permission'])){
@@ -481,7 +487,7 @@ class WA_Fronted {
 			$data = $_POST['data'];
 
 			foreach($data as $this_data){
-				$safe_content = wp_kses_stripslashes($this->unfilter_shortcodes($this_data['content']));
+				$safe_content = trim(wp_kses_stripslashes($this->unfilter_shortcodes($this_data['content'])));
 				$field_type   = $this_data['options']['field_type'];
 				$post_id      = (int)$this_data['options']['post_id'];
 
@@ -506,6 +512,8 @@ class WA_Fronted {
 					}
 
 					update_post_meta($post_id, $this_data['options']['meta_key'], $safe_content);
+				}else if($field_type == 'option' && array_key_exists('option_name', $this_data['options'])){
+					update_option($this_data['options']['option_name'], $safe_content);
 				}
 			}
 
@@ -679,14 +687,14 @@ class WA_Fronted {
 													'sticky',
 													'comment_status'
 												);
-												$extra_class = '';
+												$extra_class = 'checkbox-fieldgroup ';
 												if(count(array_intersect($field_groups, $target)) == count($target)){
-													$extra_class = 'half';
+													$extra_class .= 'half';
 												}
 												?>
 													<div class="fieldgroup <?php echo $extra_class; ?>">
-														<label for="<?php echo $field_prefix . $field_group; ?>"><?php echo $field_label; ?></label>
 														<input type="checkbox" name="<?php echo $field_prefix . $field_group; ?>" id="<?php echo $field_prefix . $field_group; ?>" value="1" <?php echo ($is_checked) ? 'checked' : ''; ?>>
+														<label for="<?php echo $field_prefix . $field_group; ?>"><?php echo $field_label; ?></label>
 													</div>
 												<?php
 											}
