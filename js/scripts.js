@@ -2,6 +2,7 @@
 //@prepros-prepend '../bower_components/medium-editor/dist/js/medium-editor.min.js'
 //@prepros-prepend '../bower_components/tipso/src/tipso.min.js'
 //@prepros-prepend '../bower_components/toastr/toastr.js'
+//@prepros-prepend '../bower_components/select2/dist/js/select2.full.min.js'
 //@prepros-prepend 'eventmanager.js'
 //@prepros-prepend 'medium-wa-image-upload.js'
 //@prepros-prepend 'medium-wa-render-shortcode.js'
@@ -199,11 +200,67 @@ var wa_fronted;
 			});
 
 			$('#wa-fronted-settings').click(function(){
+				$('#wa-fronted-revisions-modal').fadeOut('fast');
 				$('#wa-fronted-settings-modal').fadeIn('fast');
+				$('html, body').addClass('wa-modal-open');
+			});
+
+			$('#wa-fronted-revisions').click(function(){
+				
+				$('#wa-fronted-settings-modal').fadeOut('fast');
+				$('html, body').removeClass('wa-modal-open');
+
+				var post_id = $(this).attr('data-post-id');
+				self.get_revisions(post_id, function(revisions){
+					
+					if(revisions.length !== 0){
+
+						var current_revision = revisions.length -1;
+							revision_input 	= $('#wa_fronted_switch_revision');
+
+						revision_input.val(revisions[current_revision].post_date);
+
+						$('#wa-previous-revision, #wa-next-revision').off();
+
+						$('#wa-previous-revision').on('click', function(e){
+							e.preventDefault();
+							if(current_revision - 1 >= 0){
+								$('#wa-next-revision').removeClass('disabled');
+
+								current_revision = current_revision - 1;
+								revision_input.val(revisions[current_revision].post_date);
+								self.switch_to_revision(revisions[current_revision]);
+								
+								if(current_revision === 0){
+									$(this).addClass('disabled');
+								}
+							}
+						});
+
+						$('#wa-next-revision').on('click', function(e){
+							e.preventDefault();
+							if(current_revision + 1 <= (revisions.length - 1)){
+								$('#wa-previous-revision').removeClass('disabled');
+
+								current_revision = current_revision + 1;
+								revision_input.val(revisions[current_revision].post_date);
+								self.switch_to_revision(revisions[current_revision]);
+								
+								if(current_revision === (revisions.length - 1)){
+									$(this).addClass('disabled');
+								}
+							}
+						}).addClass('disabled');
+
+						$('#wa-fronted-revisions-modal').fadeIn('fast');
+					}
+
+				});
 			});
 
 			$('.close-wa-fronted-modal').click(function(){
-				$('#wa-fronted-settings-modal').fadeOut('fast');
+				$('#wa-fronted-settings-modal, #wa-fronted-revisions-modal').fadeOut('fast');
+				$('html, body').removeClass('wa-modal-open');
 			});
 
 			var wa_datepicker = $('.wa_fronted_datepicker');
@@ -225,7 +282,26 @@ var wa_fronted;
 				this_dp.datetimepicker('setDate', this_dp.val());
 			});
 
-			$('#wa-fronted-settings-modal select').selectmenu();
+			$('#wa-fronted-settings-modal select').select2({
+				minimumResultsForSearch : 10,
+				formatNoMatches : function(term){
+					var no_results_string = 'No results found.';
+
+					if(term !== ''){
+						var curr_select 	= $(this);
+							taxonomy        = curr_select.attr('data-tax'),
+							is_hierarchical = curr_select.attr('data-hierarchical');
+
+						no_results_string += ' <a class="wa-add-tax-btn" href="javascript:void(0)" onclick="wa_fronted.add_tax_term(\'' 
+							+ term + '\', \'' 
+							+ taxonomy + '\', ' 
+							+ is_hierarchical 
+							+ ')"><i class="dashicons dashicons-plus"></i> Add</a>';
+					}
+
+					return no_results_string;
+				}
+			});
 
 			self.do_action('on_bind');
 
@@ -238,9 +314,9 @@ var wa_fronted;
 
 		/**
 		 * Sets up editor instance with specific options for field
-		 * @param  {jQuery Object} element to attach editor to
-		 * @param  {Object} specific options for this field
-		 * @param  {Object} all options for all fields
+		 * @param  {jQuery Object} 		element to attach editor to
+		 * @param  {Object} 			specific options for this field
+		 * @param  {Object} 			all options for all fields
 		 */
 		setup_editor: function(this_editor, this_options, all_options){
 
@@ -474,7 +550,7 @@ var wa_fronted;
 
 		/**
 		 * Trigger custom Medium-Editor event
-		 * @param  {string} event name of custom event
+		 * @param  {string} event 		name of custom event
 		 */
 		trigger: function(instance, event){
 			instance.events.customEvents[event][0]();
@@ -482,8 +558,8 @@ var wa_fronted;
 
 		/**
 		 * Auto save post
-		 * @param  {jQuery Object} editor element of what to save
-		 * @param  {Object} options for this editor
+		 * @param  {jQuery Object} 	editor element of what to save
+		 * @param  {Object} 		options for this editor
 		 * @todo: auto save post
 		 */
 		auto_save: function(editor_container, options){
@@ -566,8 +642,8 @@ var wa_fronted;
 
 		/**
 		 * Decodes shortcode from [data-shortcode] attribute on target element
-		 * @param  {Object} element jQuery object
-		 * @return {string}         shortcode
+		 * @param  {Object} element 	jQuery object
+		 * @return {string}         	shortcode
 		 */
 		shortcode_from_attr: function(element){
 			return decodeURIComponent(element.attr('data-shortcode'));
@@ -575,8 +651,8 @@ var wa_fronted;
 
 		/**
 		 * Takes a shortcode and returns rendered html from it
-		 * @param  {string}   shortcode A valid WordPress shortcode
-		 * @param  {Function} callback  Callback function, sends html as parameter
+		 * @param  {string}   shortcode 	a valid WordPress shortcode
+		 * @param  {Function} callback  	callback function, sends html as parameter
 		 */
 		shortcode_to_html: function(shortcode, comments, callback){
 			$.post(
@@ -594,7 +670,7 @@ var wa_fronted;
 
 		/**
 		 * Get position of caret in pixels
-		 * @return {Object} pixel position in X and Y
+		 * @return {Object} 	pixel position in X and Y
 		 */
 		getCaretPositionPx: function() {
 		    var x = 0, y = 0;
@@ -731,7 +807,7 @@ var wa_fronted;
 
 		/**
 		 * Replaces selector or jQuery object with new content
-		 * @param  {mixed} element a selector or jQuery object of element to replace
+		 * @param  {mixed} element 		a selector or jQuery object of element to replace
 		 */
 		replace_html: function(element, new_content){
 			el = $(element);
@@ -740,8 +816,8 @@ var wa_fronted;
 
 		/**
 		 * If value should be validated, run validation function and trigger tooltip if invalid
-		 * @param  {jQuery Object} this_editor
-		 * @param  {Object} this_options
+		 * @param  {jQuery Object} 	this_editor
+		 * @param  {Object} 		this_options
 		 */
 		validate: function(this_editor, this_options){
 			var self = this;
@@ -760,6 +836,93 @@ var wa_fronted;
 					this_editor.tipso('destroy');
 				}
 			}
+		},
+
+		/**
+		 * Create new taxonomy term and add it to the select2 selectbox
+		 * @param {string} 		 term            	the new term name
+		 * @param {string}  	taxonomy        	taxonomy to add the term to
+		 * @param {Boolean} 	is_hierarchical 	if taxonomy is hierarchical
+		 * @param {function} 	callback
+		 */
+		add_tax_term: function(term, taxonomy, is_hierarchical){
+			var self = this,
+				term_params = {
+					'action'   : 'wa_add_tax_term',
+					'term'     : term,
+					'taxonomy' : taxonomy
+	            };
+			
+			self.show_loading_spinner();
+			
+			$.post(
+	            global_vars.ajax_url,
+	            term_params, 
+	            function(response){
+					$('<option value="' + response.term_id + '" selected>' + term + '</option>').appendTo('#wa_fronted_tax_' + taxonomy);
+					$('#wa_fronted_tax_' + taxonomy).trigger('change');
+	            	self.hide_loading_spinner();
+	            }
+	        );
+		},
+
+		/**
+		 * Gets revisions from post id
+		 * @param  {int}   		post_id
+		 * @param  {Function} 	callback
+		 */
+		get_revisions: function(post_id, callback){
+			var self = this;
+			self.show_loading_spinner();
+
+			$.post(
+	            global_vars.ajax_url,
+	            {
+					'action'  : 'wa_get_revisions',
+					'post_id' : post_id
+	            }, 
+	            function(response){
+	            	self.hide_loading_spinner();
+	            	callback(response);
+	            }
+	        );
+
+		},
+
+		/**
+		 * Change all data on page to data from revision
+		 * @param  {Object} revision 	revision data to change to
+		 */
+		switch_to_revision: function(revision){
+			var self = this,
+				editors = self.data.editable_areas;
+
+			for(var i = 0; i < editors.length; i++){
+
+				var new_content = false,
+					output_content = false;
+
+				if(revision.hasOwnProperty(editors[i].options.field_type)){
+					new_content = revision[editors[i].options.field_type];
+				}
+
+				var db_value = self.apply_filters('revision_db_value', new_content, editors[i], revision);
+
+				output_content = self.apply_filters('revision_content', new_content, editors[i], revision);
+
+				if(output_content !== false){
+					if(!self.specific_output_to(editors[i].editor, editors[i].options, db_value, output_content)){
+						editors[i].editor.html(output_content);
+					}
+					
+					self.validate(editors[i].editor, editors[i].options);
+				}
+
+			}
+
+			self.data.has_changes = true;
+			self.show_save_button();
+
 		}
 
 	};

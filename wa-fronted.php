@@ -3,7 +3,7 @@
 	Plugin Name: WA-Fronted
 	Plugin URI: http://github.com/jesperbjerke/wa-fronted
 	Description: Edit content directly from fronted in the contents actual place
-	Version: 0.8
+	Version: 0.8.5
 	Text Domain: wa-fronted
 	Domain Path: /lang
 	Author: Jesper Bjerke
@@ -67,6 +67,8 @@ class WA_Fronted {
 		add_action( 'wp_ajax_wa_get_thumbnail_id', array( $this, 'wa_get_thumbnail_id' ) );
 		add_action( 'wp_ajax_wa_set_thumbnail', array( $this, 'wa_set_thumbnail' ) );
 		add_action( 'wp_ajax_wa_create_image', array( $this, 'wa_create_image' ) );
+		add_action( 'wp_ajax_wa_add_tax_term', array( $this, 'wa_add_tax_term' ) );
+		add_action( 'wp_ajax_wa_get_revisions', array( $this, 'wa_get_revisions' ) );
 	}
 
 	/**
@@ -283,8 +285,6 @@ class WA_Fronted {
 			wp_enqueue_script('jquery-ui-draggable');
 			wp_enqueue_script('jquery-ui-droppable');
 			wp_enqueue_script('jquery-ui-datepicker');
-			wp_enqueue_script('jquery-ui-slider');
-			wp_enqueue_script('jquery-ui-selectmenu');
 
 			wp_enqueue_script(
 				'jqueryui-timepicker-addon',
@@ -292,8 +292,7 @@ class WA_Fronted {
 				array( 
 					'jquery', 
 					'jquery-ui-core',
-					'jquery-ui-datepicker',
-					'jquery-ui-slider'
+					'jquery-ui-datepicker'
 				),
 				'1.5.5',
 				true
@@ -307,10 +306,7 @@ class WA_Fronted {
 					'jquery-ui-core', 
 					'jquery-ui-draggable',
 					'jquery-ui-droppable', 
-					'jquery-ui-resizable',
 					'jquery-ui-datepicker',
-					'jquery-ui-slider',
-					'jquery-ui-selectmenu',
 					'jqueryui-timepicker-addon'
 				),
 				'0.1',
@@ -605,6 +601,15 @@ class WA_Fronted {
 					<i class="dashicons dashicons-admin-settings"></i> 
 				</button>
 
+				<?php 
+				global $post;
+				if(post_type_supports( $post->post_type, 'revisions' )):
+				?>
+					<button id="wa-fronted-revisions" title="<?php _e('Post revisions', 'wa-fronted'); ?>" data-post-id="<?php echo $post->ID; ?>">
+						<i class="dashicons dashicons-backup"></i> 
+					</button>
+				<?php endif; ?>
+
 				<?php do_action('wa_fronted_toolbar', $_SESSION['wa_fronted_options']); ?>
 			</div>
 		<?php
@@ -624,7 +629,8 @@ class WA_Fronted {
 				'post_status',
 				'post_date',
 				'sticky',
-				'comment_status'
+				'comment_status',
+				'taxonomies'
 			);
 
 			$field_groups = apply_filters('wa_fronted_settings_fields', $default_fieldgroups);
@@ -673,7 +679,6 @@ class WA_Fronted {
 										case 'sticky':
 										case 'comment_status':
 											if(get_post_type($post) == 'post'){
-
 												if($field_group == 'comment_status'){
 													$field_label = __('Allow comments','wa-fronted');
 													$is_checked  = ($post->comment_status == 'open');
@@ -699,6 +704,57 @@ class WA_Fronted {
 												<?php
 											}
 											break;
+										case 'taxonomies':
+
+											$available_taxonomies = get_object_taxonomies( $post, 'objects' );
+											if(!empty($available_taxonomies)):
+												foreach($available_taxonomies as $taxonomy):
+													if($taxonomy->public && $taxonomy->show_ui):
+
+														$terms = get_terms($taxonomy->name, array(
+															'hide_empty' => false,
+															'fields' => all
+														));
+
+														$set_terms = wp_get_post_terms( $post->ID, $taxonomy->name, array(
+															'fields' => 'ids'
+														));
+
+														$data_attrs = array(
+															'data-placeholder="' . __('Select') . ' ' . $taxonomy->labels->name . '"',
+															'data-tags="true"',
+															'data-tax="' . $taxonomy->name . '"',
+															'data-multiple="true"'
+														);
+
+														if($taxonomy->hierarchical):
+															//Taxonomy is "category-type"
+															$data_attrs[] = 'data-hierarchical="true"';
+														else:
+															//Taxonomy is "tag-type"
+														endif;
+
+														?>
+														<div class="fieldgroup">
+															<label for="<?php echo $field_prefix; ?>tax_<?php echo $taxonomy->name; ?>"><?php echo $taxonomy->label; ?></label>
+															
+															<select multiple name="<?php echo $field_prefix; ?>tax_<?php echo $taxonomy->name; ?>[]" id="<?php echo $field_prefix; ?>tax_<?php echo $taxonomy->name; ?>" <?php echo implode(' ', $data_attrs); ?>>
+																<?php if(!empty($terms)): ?>
+																	<?php foreach($terms as $term): ?>
+																		<option value="<?php echo $term->term_id; ?>" <?php echo (in_array($term->term_id, $set_terms)) ? 'selected' : ''; ?>>
+																			<?php echo $term->name; ?>
+																		</option>
+																	<?php endforeach; ?>
+																<?php endif; ?>
+															</select>
+														</div>
+														<?php
+
+													endif;
+												endforeach;
+											endif;
+
+											break;
 									endswitch;
 								endforeach;
 							endif;
@@ -714,6 +770,19 @@ class WA_Fronted {
 							<?php do_action('wa_fronted_settings_modal_footer', $_SESSION['wa_fronted_options']); ?>
 						</div>
 					</form>
+				</div>
+			</div>
+
+			<div id="wa-fronted-revisions-modal">
+				<div class="wa-fronted-revisions-modal-inner">
+					<button class="close-wa-fronted-modal"><i class="fa fa-close"></i></button>
+					
+					<div class="revision-input-container">
+						<h4><?php _e('Step through revisions', 'wa-fronted'); ?></h4>
+						<button id="wa-previous-revision"><i class="fa fa-chevron-left"></i></button>
+						<input type="text" name="wa_fronted_switch_revision" id="wa_fronted_switch_revision" readonly>
+						<button id="wa-next-revision"><i class="fa fa-chevron-right"></i></button>
+					</div>
 				</div>
 			</div>
 
@@ -735,6 +804,8 @@ class WA_Fronted {
 				'comment_status' => 'closed'
 			);
 
+			$update_taxonomies = array();
+
 			foreach($_POST as $key => $value){
 				switch($key){
 					case $field_prefix . 'post_id':
@@ -752,6 +823,18 @@ class WA_Fronted {
 					case $field_prefix . 'comment_status':
 						$update_this['comment_status'] = 'open';
 						break;
+				}
+
+				$tax_name = strpos($key, $field_prefix . 'tax_');
+				if($tax_name !== false){
+					$tax_name = substr($key, strlen($field_prefix . 'tax_'));
+					$update_taxonomies[$tax_name] = array_map('intval', $value);
+				}
+			}
+
+			if(!empty($update_taxonomies)){
+				foreach($update_taxonomies as $taxonomy => $terms){
+					wp_set_object_terms( $update_this['ID'], $terms, $taxonomy );
 				}
 			}
 
@@ -779,7 +862,7 @@ class WA_Fronted {
 					update_option('sticky_posts', $sticky_posts);
 				}
 			}
-			
+
 			if(!empty($update_this)){
 				$update = wp_update_post(apply_filters('wa_fronted_settings_values', $update_this), true);
 				
@@ -936,6 +1019,31 @@ class WA_Fronted {
 		);
 
 		return apply_filters('supported_custom_fields', $supported_custom_fields);
+	}
+
+	/**
+	 * Add a new term to taxonomy through ajax
+	 */
+	public function wa_add_tax_term(){
+		wp_send_json(wp_insert_term($_POST['term'], $_POST['taxonomy']));
+	}
+
+	/**
+	 * Retrieve post revisions and its meta data
+	 */
+	public static function wa_get_revisions($post_id = false){
+		$post_id = (isset($_POST['post_id'])) ? $_POST['post_id'] : $post_id;
+		$revisions = apply_filters('wa_fronted_revisions', wp_get_post_revisions($post_id), $post_id);
+
+		usort($revisions, function($a, $b) {
+		    return $a->post_date - $b->post_date;
+		});
+
+		if(isset($_POST['post_id'])){
+			wp_send_json($revisions);
+		}else{
+			return $revisions;
+		}
 	}
 }
 

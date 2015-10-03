@@ -10,6 +10,9 @@ var wa_fronted_acf;
 			wa_fronted_acf.hide_acf_form();
 		});
 
+		wa_fronted.add_filter('revision_content', wa_fronted_acf.switch_revision_content);
+		wa_fronted.add_filter('revision_db_value ', wa_fronted_acf.switch_revision_db_value);
+
 		if(typeof acf !== 'undefined'){
 			acf.add_action('submit', function(form){
 				var form_values = form.serializeArray(),
@@ -242,6 +245,40 @@ var wa_fronted_acf;
 
 				self.hide_acf_form();
 			});
+		},
+
+		switch_revision_content: function(new_content, editor, revision){
+
+			if(revision.acf_fields.length !== 0){
+				if(typeof revision.acf_fields === 'object' && revision.acf_fields.hasOwnProperty(editor.options.field_name)){
+					if(editor.options.hasOwnProperty('output')){
+						var output_trail = editor.options.output.split('.');
+						output_content = revision.acf_fields[editor.options.field_name].value;
+						for(var i = 0; i < output_trail.length; i++){
+							output_content = output_content[output_trail[i]];
+						}
+					}else{
+						output_content = revision.acf_fields[editor.options.field_name].value;
+					}
+
+					return output_content;
+				}
+			}
+
+			return new_content;
+
+		},
+
+		switch_revision_db_value: function(new_content, editor, revision){
+
+			if(revision.acf_fields.length !== 0){
+				if(typeof revision.acf_fields === 'object' && revision.acf_fields.hasOwnProperty(editor.options.field_name)){
+					return revision.acf_fields[editor.options.field_name].value.ID;
+				}
+			}
+
+			return new_content;
+
 		}
 
 	};

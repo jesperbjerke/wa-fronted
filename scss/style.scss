@@ -2,18 +2,41 @@
 @import '../bower_components/medium-editor/dist/css/medium-editor.min.css';
 @import '../bower_components/medium-editor/dist/css/themes/bootstrap.min.css';
 
+//Libraries styles
+@import '../bower_components/select2/dist/css/select2.min.css';
+@import '../bower_components/tipso/src/tipso.min.css';
+@import '../bower_components/toastr/toastr.scss';
+
 //Basic
 @import 'normalize';
 @import 'toggle-switch';
 @import 'fontawesome/font-awesome';
-@import '../bower_components/tipso/src/tipso.min.css';
-@import '../bower_components/toastr/toastr.scss';
 @import 'functions';
 
 //jQuery UI
 @import 'jquery-ui';
 @import 'jquery-ui.structure';
 @import 'jquery-ui.theme';
+
+//Colors
+$wp_admin_color: #222;
+
+%clear {
+	&:after {
+        visibility: hidden;
+        display: block;
+        font-size: 0;
+        content: " ";
+        clear: both;
+        height: 0;
+    }
+    * html & {
+        zoom: 1;
+    }
+    *:first-child+html & {
+        zoom: 1;
+    }
+}
 
 %button {
 	box-shadow: none !important;
@@ -23,7 +46,7 @@
 	min-width: 35px;
 	height: 35px;
 	border: 0;
-	background: #222;
+	background: none $wp_admin_color;
 	color: #fff;
 
 	&.medium-editor-button-active,
@@ -74,9 +97,16 @@
 	}
 }
 
+html,
+body{
+	&.wa-modal-open{
+		overflow: hidden !important;
+	}
+}
+
 .medium-editor-toolbar{
 	border-radius: 0;
-	background: #222;
+	background: $wp_admin_color;
 	border: 0;
 
 	ul{
@@ -88,12 +118,12 @@
 	}
 
 	.medium-editor-toolbar-form{
-		background: #222;
+		background: $wp_admin_color;
 		border-radius: 0;
 		height: 35px;
 
 		input{
-		  background: #222;
+		  background: $wp_admin_color;
 		  border-radius: 0;
 		  height: 35px;
 		  padding: 0px 5px;
@@ -112,18 +142,18 @@
 
 	&:after{
 		top: 35px;
-		border-color: #222 transparent transparent;
+		border-color: $wp_admin_color transparent transparent;
 	}
 }
 
 .medium-editor-anchor-preview{
 
 	&:before{
-		  border-color: transparent transparent #222;
+		  border-color: transparent transparent $wp_admin_color;
 	}
 
 	.medium-editor-toolbar-anchor-preview{
-		background: #222;
+		background: $wp_admin_color;
 		border-radius: 0;
 	}
 }
@@ -134,12 +164,12 @@
 	@extend %button;
 
 	&.medium-toolbar-arrow-over:before {
-		border-color: transparent transparent #222;
+		border-color: transparent transparent $wp_admin_color;
 	}
 
 	&.medium-toolbar-arrow-under:after {
 		top: 35px;
-		border-color: #222 transparent transparent;
+		border-color: $wp_admin_color transparent transparent;
 	}
 
 	&:hover{
@@ -180,7 +210,7 @@
 
 	&:after {
 		top: 35px;
-		border-color: #222 transparent transparent;
+		border-color: $wp_admin_color transparent transparent;
 		border-width: 8px 8px 0 8px;
 		position: absolute;
 		left: 50%;
@@ -228,7 +258,7 @@
 
 	&:after {
 		top: 35px;
-		border-color: #222 transparent transparent;
+		border-color: $wp_admin_color transparent transparent;
 		border-width: 8px 8px 0 8px;
 		position: absolute;
 		left: 50%;
@@ -307,7 +337,7 @@
 
 	> button{
 		@extend %button;
-		background-color: #222;
+		background-color: $wp_admin_color;
 		padding: 5px 10px;
 		text-transform: uppercase;
 		font-size: 14px;
@@ -564,6 +594,75 @@
 	}
 }
 
+#wa-fronted-revisions-modal{
+	position: fixed;
+	bottom: 40px;
+	z-index: 159900;
+	display: none;
+	font-family: 'Open Sans', sans-serif !important;
+	width: 100%;
+
+	.wa-fronted-revisions-modal-inner{
+		@extend %clear;
+		position: relative;
+		background: none $wp_admin_color;
+		padding: 10px;
+		color: #fff;
+		width: 100%;
+		max-width: 360px;
+		margin: 0 auto;
+
+		.close-wa-fronted-modal{
+			position: absolute;
+			top: 0;
+			right: 0;
+			z-index: 160001;
+			@extend %button;
+			line-height: 30px;
+
+			i{
+				vertical-align: middle;
+	    		margin-top: -8px;
+			}
+		}
+
+		.revision-input-container{
+			@extend %clear;
+
+			h4{
+				font-family: 'Open Sans', sans-serif !important;
+				margin: 0 0 5px;
+				font-weight: 400;
+			}
+
+			button{
+				width: 15%;
+				display: inline-block;
+
+				&#wa-previous-revision{
+					float: left;
+				}
+				
+				&#wa-next-revision{
+					float: right;
+				}
+			}
+
+			input{
+				width: 70%;
+				display: inline-block;
+				float: left;
+				font-family: 'Open Sans', sans-serif !important;
+				border: 0;
+				text-align: center;
+				background: none transparent;
+				color: #45bbe6;
+				font-weight: 600;
+			}
+		}
+	}
+}
+
 .resize_handles{
 	position: absolute;
 	display: none;
@@ -576,7 +675,7 @@
 
 	.resize_handle{
 		border: 1px solid #fff;
-		background: #222;
+		background: $wp_admin_color;
 		color: #fff;
 		position: absolute;
 		font-size: 15px;
@@ -645,7 +744,7 @@
 	&.arrow-under{
 		&:after{
 			top: 35px;
-			border-color: #222 transparent transparent;
+			border-color: $wp_admin_color transparent transparent;
 			border-width: 8px 8px 0 8px;
 			position: absolute;
 			left: 50%;
@@ -663,7 +762,7 @@
 
 		&:before{
 			top: -8px;
-			border-color: transparent transparent #222;
+			border-color: transparent transparent $wp_admin_color;
 			border-width: 0 8px 8px 8px;
 			position: absolute;
 			left: 50%;
@@ -679,7 +778,7 @@
 	button{
 		transition: background-color .2s ease-in,color .2s ease-in;
 		@extend %button;
-		background-color: #222;
+		background-color: $wp_admin_color;
 		padding: 5px 10px;
 		text-transform: uppercase;
 		font-size: 14px;
@@ -692,33 +791,182 @@
 	}
 }
 
-.ui-selectmenu-button{
-	@extend %button;
-	padding: 0;
-	min-width: 200px;
-	font-size: 1.5rem;
-	line-height: 1.5;
+.select2-container{
+	.select2-choice{
+		@extend %button;
+  		padding: 0.4em 2.1em 0.4em 1em !important;
+		min-width: 200px;
+		font-size: 1.5rem;
+		line-height: 1.5;
+		height: auto;
+
+		.select2-arrow{
+			border: 0;
+			border-radius: 0;
+			background: none transparent;
+			width: auto;
+
+			b{
+				background: none transparent;
+				@include icon('\f347', before);
+				padding: 5px;
+			    width: auto;
+			    text-align: center;
+			    margin-right: 2px;
+			}
+		}
+	}
+
+	&.select2-container-multi{
+		.select2-choices{
+			margin: 0;
+			border: 0;
+			padding: 0;
+			box-shadow: none !important;
+			background: none $wp_admin_color !important;
+
+			input{
+		  		padding: 0.4em 2.1em 0.4em 1em !important;
+				min-width: 200px;
+				font-size: 1.5rem;
+				margin: 0 !important;
+				border: 0 !important;
+				line-height: 1.5;
+				box-shadow: none !important;
+				text-shadow: none !important;
+				border-radius: 0;
+				height: 35px;
+				border: 0;
+				background: none $wp_admin_color !important;
+				color: #fff;
+			}
+
+			.select2-search-choice{
+				line-height: 1.5;
+				border: 0;
+				box-shadow: none;
+  				background: none lighten(#333, 10%);
+  				color: #45bbe6;
+  				font-size: 15px;
+
+  				.select2-search-choice-close{
+  					background: none transparent;
+					font-size: 1.5rem;
+					line-height: 1.5;
+					top: 1px;
+					height: auto;
+					color: #fff;
+  					@include icon('\f335', before);
+
+  					&:hover{
+  						color: #45bbe6;
+  					}
+  				}
+			}
+		}
+	}
+
+	&.select2-dropdown-open{
+		.select2-choice{
+			.select2-arrow{
+				b{
+					@include icon('\f343', before);
+				}
+			}
+		}
+	}
 }
 
-.ui-selectmenu-menu{
+.select2-drop-mask{
+	z-index: 160000;
+}
+
+.select2-drop{
+	border: 0;
+	background: none #333;
+	font-size: 1.4rem;
+	border-radius: 0;
+  	color: #fff;
+  	padding: 0;
+  	font-family: 'Open Sans', sans-serif;
 	z-index: 160001;
 
+	.select2-search{
+		padding: 0;
+
+		input{
+			border: 0;
+			background: lighten(#333, 10%);
+  			color: #45bbe6;
+  			padding: 0.4em 2.1em 0.4em 1em !important;
+  			height: auto;
+			font-size: 1.5rem;
+  			line-height: 1.5;
+		}
+	}
+
 	ul{
-		font-size: 1.4rem;
-		border-radius: 0;
-		border: 0;
-		background: #333;
-  		color: #fff;
+		padding: 0;
+		margin: 0;
 
   		li{
   			border: 0 !important;
   			margin: 0 !important;
   			padding: 0.4em 2.1em 0.4em 1em !important;
 
-  			&.ui-state-hover,
-  			&.ui-state-focus{
+  			&:hover,
+  			&.select2-highlighted{
   				background: lighten(#333, 10%);
   				color: #45bbe6;
+  			}
+
+  			&.select2-no-results{
+				background: none #333;
+				color: #fff;
+				font-style: italic;
+				padding-right: 0.4em !important;
+
+				.wa-add-tax-btn{
+					font-style: normal;
+					padding: 5px 10px;
+				    background: #00a0d2;
+				    border-color: #0073aa;
+				    box-shadow: inset 0 1px 0 rgba(120, 200, 230, 0.5), 0 1px 0 rgba(0, 0, 0, 0.15);
+				    color: #fff;
+				    display: inline-block;
+				    text-decoration: none;
+				    font-size: 13px;
+				    line-height: 13px;
+				    margin-left: 5px;
+				    border-width: 1px;
+				    border-style: solid;
+				    -webkit-appearance: none;
+				    border-radius: 3px;
+				    white-space: nowrap;
+				    box-sizing: border-box;
+
+				    i{
+				    	width: auto;
+				    	height: auto;
+				    	font-size: 13px;
+				    	line-height: 13px;
+				    	margin: 0;
+				    }
+
+					&:hover{
+					    background: #0091cd;
+					    border-color: #0073aa;
+					    box-shadow: inset 0 1px 0 rgba(120, 200, 230, 0.6);
+					    color: #fff;
+				    }
+
+				    &:active{
+				    	background: #0073aa;
+					    border-color: #005082;
+					    color: rgba(255, 255, 255, 0.95);
+					    box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.1);
+				    }
+				}
   			}
 		}
 	}
@@ -733,7 +981,7 @@
 
 	.ui-datepicker-header{
 		border-radius: 0;
-		background: #222;
+		background: $wp_admin_color;
 		color: #fff;
 		border: 0;
 		font-weight: normal;
@@ -801,13 +1049,13 @@
 						color: #707070;
 
 						&.ui-state-highlight{
-							color: #222;
+							color: $wp_admin_color;
 							background-color: #E6E6E6;
 						}
 
 						&.ui-state-active{
 							font-weight: bold;
-							color: #222;
+							color: $wp_admin_color;
 							background-color: #E6E6E6;
 						}
 
@@ -854,7 +1102,7 @@
     		.ui-slider-handle{
     			border-radius: 3px;
     			cursor: grab;
-    			background:	#222 none;
+    			background:	$wp_admin_color none;
     			border: 0;
 
     			&:active{
@@ -878,7 +1126,7 @@
 				background:	#E0E0E0;
 				border-color: #B5B5B5;
 				box-shadow: inset 0 1px 0 rgba(#fcfcfc, 0.5), 0 1px 0 rgba(#000, 0.15);
-				color: #222;
+				color: $wp_admin_color;
 
 				&:hover{
 					background:	#D2D2D2;
@@ -894,7 +1142,21 @@
 	}
 }
 
+.toast,
 .tipso_bubble{
 	border-radius: 0 !important;
 	font-family: 'Open Sans', sans-serif !important;
+
+	.toast-title{
+		line-height: 1.2;
+		font-weight: 600;
+		font-size: 15px;
+	}
+
+	.toast-message{
+		line-height: 1.2;
+		font-weight: 300;
+		font-style: italic;
+		font-size: 13px;
+	}
 }

@@ -1,5 +1,14 @@
 CHANGELOG
 =========
+## 0.8.5
+* Added support for adding/managing taxonomies, categories and tags
+* Added post revision handling
+* Added php filter `wa_fronted_revisions`
+* Added javscript filter `revision_content`
+* Added javscript filter `revision_db_value`
+* Changed jQuery UI selectmenu to [select2](https://select2.github.io/)
+* Moved documentation to Wiki
+
 ## 0.8
 * Updated Medium Editor to 5.8.2
 * Updated Tipso to 1.0.6

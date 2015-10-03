@@ -1,6 +1,230 @@
 @charset "UTF-8";
 @import url(../bower_components/medium-editor/dist/css/medium-editor.min.css);
 @import url(../bower_components/medium-editor/dist/css/themes/bootstrap.min.css);
+@import url(../bower_components/select2/dist/css/select2.min.css);
+@import url(../bower_components/tipso/src/tipso.min.css);
+.toast-title {
+  font-weight: bold;
+}
+
+.toast-message {
+  -ms-word-wrap: break-word;
+  word-wrap: break-word;
+}
+
+.toast-message a,
+.toast-message label {
+  color: #ffffff;
+}
+
+.toast-message a:hover {
+  color: #cccccc;
+  text-decoration: none;
+}
+
+.toast-close-button {
+  position: relative;
+  right: -0.3em;
+  top: -0.3em;
+  float: right;
+  font-size: 20px;
+  font-weight: bold;
+  color: #ffffff;
+  -webkit-text-shadow: 0 1px 0 #ffffff;
+  text-shadow: 0 1px 0 #ffffff;
+  opacity: 0.8;
+  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=80);
+  filter: alpha(opacity=80);
+}
+
+.toast-close-button:hover,
+.toast-close-button:focus {
+  color: #000000;
+  text-decoration: none;
+  cursor: pointer;
+  opacity: 0.4;
+  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=40);
+  filter: alpha(opacity=40);
+}
+
+/*Additional properties for button version
+ iOS requires the button element instead of an anchor tag.
+ If you want the anchor version, it requires `href="#"`.*/
+button.toast-close-button {
+  padding: 0;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  -webkit-appearance: none;
+}
+
+.toast-top-center {
+  top: 0;
+  right: 0;
+  width: 100%;
+}
+
+.toast-bottom-center {
+  bottom: 0;
+  right: 0;
+  width: 100%;
+}
+
+.toast-top-full-width {
+  top: 0;
+  right: 0;
+  width: 100%;
+}
+
+.toast-bottom-full-width {
+  bottom: 0;
+  right: 0;
+  width: 100%;
+}
+
+.toast-top-left {
+  top: 12px;
+  left: 12px;
+}
+
+.toast-top-right {
+  top: 12px;
+  right: 12px;
+}
+
+.toast-bottom-right {
+  right: 12px;
+  bottom: 12px;
+}
+
+.toast-bottom-left {
+  bottom: 12px;
+  left: 12px;
+}
+
+#toast-container {
+  position: fixed;
+  z-index: 999999;
+  /*overrides*/
+}
+
+#toast-container * {
+  box-sizing: border-box;
+}
+
+#toast-container > div {
+  position: relative;
+  overflow: hidden;
+  margin: 0 0 6px;
+  padding: 15px 15px 15px 50px;
+  width: 300px;
+  border-radius: 3px 3px 3px 3px;
+  background-position: 15px center;
+  background-repeat: no-repeat;
+  box-shadow: 0 0 12px #999999;
+  color: #ffffff;
+  opacity: 0.8;
+  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=80);
+  filter: alpha(opacity=80);
+}
+
+#toast-container > :hover {
+  box-shadow: 0 0 12px #000000;
+  opacity: 1;
+  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=100);
+  filter: alpha(opacity=100);
+  cursor: pointer;
+}
+
+#toast-container > .toast-info {
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGwSURBVEhLtZa9SgNBEMc9sUxxRcoUKSzSWIhXpFMhhYWFhaBg4yPYiWCXZxBLERsLRS3EQkEfwCKdjWJAwSKCgoKCcudv4O5YLrt7EzgXhiU3/4+b2ckmwVjJSpKkQ6wAi4gwhT+z3wRBcEz0yjSseUTrcRyfsHsXmD0AmbHOC9Ii8VImnuXBPglHpQ5wwSVM7sNnTG7Za4JwDdCjxyAiH3nyA2mtaTJufiDZ5dCaqlItILh1NHatfN5skvjx9Z38m69CgzuXmZgVrPIGE763Jx9qKsRozWYw6xOHdER+nn2KkO+Bb+UV5CBN6WC6QtBgbRVozrahAbmm6HtUsgtPC19tFdxXZYBOfkbmFJ1VaHA1VAHjd0pp70oTZzvR+EVrx2Ygfdsq6eu55BHYR8hlcki+n+kERUFG8BrA0BwjeAv2M8WLQBtcy+SD6fNsmnB3AlBLrgTtVW1c2QN4bVWLATaIS60J2Du5y1TiJgjSBvFVZgTmwCU+dAZFoPxGEEs8nyHC9Bwe2GvEJv2WXZb0vjdyFT4Cxk3e/kIqlOGoVLwwPevpYHT+00T+hWwXDf4AJAOUqWcDhbwAAAAASUVORK5CYII=") !important;
+}
+
+#toast-container > .toast-error {
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHOSURBVEhLrZa/SgNBEMZzh0WKCClSCKaIYOED+AAKeQQLG8HWztLCImBrYadgIdY+gIKNYkBFSwu7CAoqCgkkoGBI/E28PdbLZmeDLgzZzcx83/zZ2SSXC1j9fr+I1Hq93g2yxH4iwM1vkoBWAdxCmpzTxfkN2RcyZNaHFIkSo10+8kgxkXIURV5HGxTmFuc75B2RfQkpxHG8aAgaAFa0tAHqYFfQ7Iwe2yhODk8+J4C7yAoRTWI3w/4klGRgR4lO7Rpn9+gvMyWp+uxFh8+H+ARlgN1nJuJuQAYvNkEnwGFck18Er4q3egEc/oO+mhLdKgRyhdNFiacC0rlOCbhNVz4H9FnAYgDBvU3QIioZlJFLJtsoHYRDfiZoUyIxqCtRpVlANq0EU4dApjrtgezPFad5S19Wgjkc0hNVnuF4HjVA6C7QrSIbylB+oZe3aHgBsqlNqKYH48jXyJKMuAbiyVJ8KzaB3eRc0pg9VwQ4niFryI68qiOi3AbjwdsfnAtk0bCjTLJKr6mrD9g8iq/S/B81hguOMlQTnVyG40wAcjnmgsCNESDrjme7wfftP4P7SP4N3CJZdvzoNyGq2c/HWOXJGsvVg+RA/k2MC/wN6I2YA2Pt8GkAAAAASUVORK5CYII=") !important;
+}
+
+#toast-container > .toast-success {
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADsSURBVEhLY2AYBfQMgf///3P8+/evAIgvA/FsIF+BavYDDWMBGroaSMMBiE8VC7AZDrIFaMFnii3AZTjUgsUUWUDA8OdAH6iQbQEhw4HyGsPEcKBXBIC4ARhex4G4BsjmweU1soIFaGg/WtoFZRIZdEvIMhxkCCjXIVsATV6gFGACs4Rsw0EGgIIH3QJYJgHSARQZDrWAB+jawzgs+Q2UO49D7jnRSRGoEFRILcdmEMWGI0cm0JJ2QpYA1RDvcmzJEWhABhD/pqrL0S0CWuABKgnRki9lLseS7g2AlqwHWQSKH4oKLrILpRGhEQCw2LiRUIa4lwAAAABJRU5ErkJggg==") !important;
+}
+
+#toast-container > .toast-warning {
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGYSURBVEhL5ZSvTsNQFMbXZGICMYGYmJhAQIJAICYQPAACiSDB8AiICQQJT4CqQEwgJvYASAQCiZiYmJhAIBATCARJy+9rTsldd8sKu1M0+dLb057v6/lbq/2rK0mS/TRNj9cWNAKPYIJII7gIxCcQ51cvqID+GIEX8ASG4B1bK5gIZFeQfoJdEXOfgX4QAQg7kH2A65yQ87lyxb27sggkAzAuFhbbg1K2kgCkB1bVwyIR9m2L7PRPIhDUIXgGtyKw575yz3lTNs6X4JXnjV+LKM/m3MydnTbtOKIjtz6VhCBq4vSm3ncdrD2lk0VgUXSVKjVDJXJzijW1RQdsU7F77He8u68koNZTz8Oz5yGa6J3H3lZ0xYgXBK2QymlWWA+RWnYhskLBv2vmE+hBMCtbA7KX5drWyRT/2JsqZ2IvfB9Y4bWDNMFbJRFmC9E74SoS0CqulwjkC0+5bpcV1CZ8NMej4pjy0U+doDQsGyo1hzVJttIjhQ7GnBtRFN1UarUlH8F3xict+HY07rEzoUGPlWcjRFRr4/gChZgc3ZL2d8oAAAAASUVORK5CYII=") !important;
+}
+
+#toast-container.toast-top-center > div,
+#toast-container.toast-bottom-center > div {
+  width: 300px;
+  margin: auto;
+}
+
+#toast-container.toast-top-full-width > div,
+#toast-container.toast-bottom-full-width > div {
+  width: 96%;
+  margin: auto;
+}
+
+.toast {
+  background-color: #030303;
+}
+
+.toast-success {
+  background-color: #51a351;
+}
+
+.toast-error {
+  background-color: #bd362f;
+}
+
+.toast-info {
+  background-color: #2f96b4;
+}
+
+.toast-warning {
+  background-color: #f89406;
+}
+
+.toast-progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 4px;
+  background-color: #000000;
+  opacity: 0.4;
+  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=40);
+  filter: alpha(opacity=40);
+}
+
+/*Responsive Design*/
+@media all and (max-width: 240px) {
+  #toast-container > div {
+    padding: 8px 8px 8px 50px;
+    width: 11em;
+  }
+  #toast-container .toast-close-button {
+    right: -0.2em;
+    top: -0.2em;
+  }
+}
+
+@media all and (min-width: 241px) and (max-width: 480px) {
+  #toast-container > div {
+    padding: 8px 8px 8px 50px;
+    width: 18em;
+  }
+  #toast-container .toast-close-button {
+    right: -0.2em;
+    top: -0.2em;
+  }
+}
+
+@media all and (min-width: 481px) and (max-width: 768px) {
+  #toast-container > div {
+    padding: 15px 15px 15px 50px;
+    width: 25em;
+  }
+}
+
 /*! normalize.css v2.1.2 | MIT License | git.io/normalize */
 /* ==========================================================================
    HTML5 display definitions
@@ -8,7 +232,6 @@
 /**
  * Correct `block` display not defined in IE 8/9.
  */
-@import url(../bower_components/tipso/src/tipso.min.css);
 article,
 aside,
 details,
@@ -2932,228 +3155,6 @@ table {
 
 .fa-medium:before {
   content: "";
-}
-
-.toast-title {
-  font-weight: bold;
-}
-
-.toast-message {
-  -ms-word-wrap: break-word;
-  word-wrap: break-word;
-}
-
-.toast-message a,
-.toast-message label {
-  color: #ffffff;
-}
-
-.toast-message a:hover {
-  color: #cccccc;
-  text-decoration: none;
-}
-
-.toast-close-button {
-  position: relative;
-  right: -0.3em;
-  top: -0.3em;
-  float: right;
-  font-size: 20px;
-  font-weight: bold;
-  color: #ffffff;
-  -webkit-text-shadow: 0 1px 0 #ffffff;
-  text-shadow: 0 1px 0 #ffffff;
-  opacity: 0.8;
-  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=80);
-  filter: alpha(opacity=80);
-}
-
-.toast-close-button:hover,
-.toast-close-button:focus {
-  color: #000000;
-  text-decoration: none;
-  cursor: pointer;
-  opacity: 0.4;
-  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=40);
-  filter: alpha(opacity=40);
-}
-
-/*Additional properties for button version
- iOS requires the button element instead of an anchor tag.
- If you want the anchor version, it requires `href="#"`.*/
-button.toast-close-button {
-  padding: 0;
-  cursor: pointer;
-  background: transparent;
-  border: 0;
-  -webkit-appearance: none;
-}
-
-.toast-top-center {
-  top: 0;
-  right: 0;
-  width: 100%;
-}
-
-.toast-bottom-center {
-  bottom: 0;
-  right: 0;
-  width: 100%;
-}
-
-.toast-top-full-width {
-  top: 0;
-  right: 0;
-  width: 100%;
-}
-
-.toast-bottom-full-width {
-  bottom: 0;
-  right: 0;
-  width: 100%;
-}
-
-.toast-top-left {
-  top: 12px;
-  left: 12px;
-}
-
-.toast-top-right {
-  top: 12px;
-  right: 12px;
-}
-
-.toast-bottom-right {
-  right: 12px;
-  bottom: 12px;
-}
-
-.toast-bottom-left {
-  bottom: 12px;
-  left: 12px;
-}
-
-#toast-container {
-  position: fixed;
-  z-index: 999999;
-  /*overrides*/
-}
-
-#toast-container * {
-  box-sizing: border-box;
-}
-
-#toast-container > div {
-  position: relative;
-  overflow: hidden;
-  margin: 0 0 6px;
-  padding: 15px 15px 15px 50px;
-  width: 300px;
-  border-radius: 3px 3px 3px 3px;
-  background-position: 15px center;
-  background-repeat: no-repeat;
-  box-shadow: 0 0 12px #999999;
-  color: #ffffff;
-  opacity: 0.8;
-  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=80);
-  filter: alpha(opacity=80);
-}
-
-#toast-container > :hover {
-  box-shadow: 0 0 12px #000000;
-  opacity: 1;
-  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=100);
-  filter: alpha(opacity=100);
-  cursor: pointer;
-}
-
-#toast-container > .toast-info {
-  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGwSURBVEhLtZa9SgNBEMc9sUxxRcoUKSzSWIhXpFMhhYWFhaBg4yPYiWCXZxBLERsLRS3EQkEfwCKdjWJAwSKCgoKCcudv4O5YLrt7EzgXhiU3/4+b2ckmwVjJSpKkQ6wAi4gwhT+z3wRBcEz0yjSseUTrcRyfsHsXmD0AmbHOC9Ii8VImnuXBPglHpQ5wwSVM7sNnTG7Za4JwDdCjxyAiH3nyA2mtaTJufiDZ5dCaqlItILh1NHatfN5skvjx9Z38m69CgzuXmZgVrPIGE763Jx9qKsRozWYw6xOHdER+nn2KkO+Bb+UV5CBN6WC6QtBgbRVozrahAbmm6HtUsgtPC19tFdxXZYBOfkbmFJ1VaHA1VAHjd0pp70oTZzvR+EVrx2Ygfdsq6eu55BHYR8hlcki+n+kERUFG8BrA0BwjeAv2M8WLQBtcy+SD6fNsmnB3AlBLrgTtVW1c2QN4bVWLATaIS60J2Du5y1TiJgjSBvFVZgTmwCU+dAZFoPxGEEs8nyHC9Bwe2GvEJv2WXZb0vjdyFT4Cxk3e/kIqlOGoVLwwPevpYHT+00T+hWwXDf4AJAOUqWcDhbwAAAAASUVORK5CYII=") !important;
-}
-
-#toast-container > .toast-error {
-  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHOSURBVEhLrZa/SgNBEMZzh0WKCClSCKaIYOED+AAKeQQLG8HWztLCImBrYadgIdY+gIKNYkBFSwu7CAoqCgkkoGBI/E28PdbLZmeDLgzZzcx83/zZ2SSXC1j9fr+I1Hq93g2yxH4iwM1vkoBWAdxCmpzTxfkN2RcyZNaHFIkSo10+8kgxkXIURV5HGxTmFuc75B2RfQkpxHG8aAgaAFa0tAHqYFfQ7Iwe2yhODk8+J4C7yAoRTWI3w/4klGRgR4lO7Rpn9+gvMyWp+uxFh8+H+ARlgN1nJuJuQAYvNkEnwGFck18Er4q3egEc/oO+mhLdKgRyhdNFiacC0rlOCbhNVz4H9FnAYgDBvU3QIioZlJFLJtsoHYRDfiZoUyIxqCtRpVlANq0EU4dApjrtgezPFad5S19Wgjkc0hNVnuF4HjVA6C7QrSIbylB+oZe3aHgBsqlNqKYH48jXyJKMuAbiyVJ8KzaB3eRc0pg9VwQ4niFryI68qiOi3AbjwdsfnAtk0bCjTLJKr6mrD9g8iq/S/B81hguOMlQTnVyG40wAcjnmgsCNESDrjme7wfftP4P7SP4N3CJZdvzoNyGq2c/HWOXJGsvVg+RA/k2MC/wN6I2YA2Pt8GkAAAAASUVORK5CYII=") !important;
-}
-
-#toast-container > .toast-success {
-  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADsSURBVEhLY2AYBfQMgf///3P8+/evAIgvA/FsIF+BavYDDWMBGroaSMMBiE8VC7AZDrIFaMFnii3AZTjUgsUUWUDA8OdAH6iQbQEhw4HyGsPEcKBXBIC4ARhex4G4BsjmweU1soIFaGg/WtoFZRIZdEvIMhxkCCjXIVsATV6gFGACs4Rsw0EGgIIH3QJYJgHSARQZDrWAB+jawzgs+Q2UO49D7jnRSRGoEFRILcdmEMWGI0cm0JJ2QpYA1RDvcmzJEWhABhD/pqrL0S0CWuABKgnRki9lLseS7g2AlqwHWQSKH4oKLrILpRGhEQCw2LiRUIa4lwAAAABJRU5ErkJggg==") !important;
-}
-
-#toast-container > .toast-warning {
-  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGYSURBVEhL5ZSvTsNQFMbXZGICMYGYmJhAQIJAICYQPAACiSDB8AiICQQJT4CqQEwgJvYASAQCiZiYmJhAIBATCARJy+9rTsldd8sKu1M0+dLb057v6/lbq/2rK0mS/TRNj9cWNAKPYIJII7gIxCcQ51cvqID+GIEX8ASG4B1bK5gIZFeQfoJdEXOfgX4QAQg7kH2A65yQ87lyxb27sggkAzAuFhbbg1K2kgCkB1bVwyIR9m2L7PRPIhDUIXgGtyKw575yz3lTNs6X4JXnjV+LKM/m3MydnTbtOKIjtz6VhCBq4vSm3ncdrD2lk0VgUXSVKjVDJXJzijW1RQdsU7F77He8u68koNZTz8Oz5yGa6J3H3lZ0xYgXBK2QymlWWA+RWnYhskLBv2vmE+hBMCtbA7KX5drWyRT/2JsqZ2IvfB9Y4bWDNMFbJRFmC9E74SoS0CqulwjkC0+5bpcV1CZ8NMej4pjy0U+doDQsGyo1hzVJttIjhQ7GnBtRFN1UarUlH8F3xict+HY07rEzoUGPlWcjRFRr4/gChZgc3ZL2d8oAAAAASUVORK5CYII=") !important;
-}
-
-#toast-container.toast-top-center > div,
-#toast-container.toast-bottom-center > div {
-  width: 300px;
-  margin: auto;
-}
-
-#toast-container.toast-top-full-width > div,
-#toast-container.toast-bottom-full-width > div {
-  width: 96%;
-  margin: auto;
-}
-
-.toast {
-  background-color: #030303;
-}
-
-.toast-success {
-  background-color: #51a351;
-}
-
-.toast-error {
-  background-color: #bd362f;
-}
-
-.toast-info {
-  background-color: #2f96b4;
-}
-
-.toast-warning {
-  background-color: #f89406;
-}
-
-.toast-progress {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  height: 4px;
-  background-color: #000000;
-  opacity: 0.4;
-  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=40);
-  filter: alpha(opacity=40);
-}
-
-/*Responsive Design*/
-@media all and (max-width: 240px) {
-  #toast-container > div {
-    padding: 8px 8px 8px 50px;
-    width: 11em;
-  }
-  #toast-container .toast-close-button {
-    right: -0.2em;
-    top: -0.2em;
-  }
-}
-
-@media all and (min-width: 241px) and (max-width: 480px) {
-  #toast-container > div {
-    padding: 8px 8px 8px 50px;
-    width: 18em;
-  }
-  #toast-container .toast-close-button {
-    right: -0.2em;
-    top: -0.2em;
-  }
-}
-
-@media all and (min-width: 481px) and (max-width: 768px) {
-  #toast-container > div {
-    padding: 15px 15px 15px 50px;
-    width: 25em;
-  }
 }
 
 /*! jQuery UI - v1.11.4 - 2015-05-24
@@ -6707,7 +6708,24 @@ body .ui-tooltip {
   border-radius: 8px;
 }
 
-.medium-editor-toolbar ul li button, .medium-wa-image-upload-action, .edit-acf-field, #wa-fronted-toolbar > button, #acf-dialog #close-acf-dialog, #wa-fronted-settings-modal .close-wa-fronted-modal, .medium-wa-image-edit-toolbar button, .ui-selectmenu-button, #ui-datepicker-div .ui-datepicker-header .ui-datepicker-prev,
+#wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner:after, #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .revision-input-container:after {
+  visibility: hidden;
+  display: block;
+  font-size: 0;
+  content: " ";
+  clear: both;
+  height: 0;
+}
+
+* html #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner, #wa-fronted-revisions-modal * html .wa-fronted-revisions-modal-inner, * html #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .revision-input-container, #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner * html .revision-input-container {
+  zoom: 1;
+}
+
+*:first-child + html #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner, #wa-fronted-revisions-modal *:first-child + html .wa-fronted-revisions-modal-inner, *:first-child + html #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .revision-input-container, #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner *:first-child + html .revision-input-container {
+  zoom: 1;
+}
+
+.medium-editor-toolbar ul li button, .medium-wa-image-upload-action, .edit-acf-field, #wa-fronted-toolbar > button, #acf-dialog #close-acf-dialog, #wa-fronted-settings-modal .close-wa-fronted-modal, #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .close-wa-fronted-modal, .medium-wa-image-edit-toolbar button, .select2-container .select2-choice, #ui-datepicker-div .ui-datepicker-header .ui-datepicker-prev,
 #ui-datepicker-div .ui-datepicker-header .ui-datepicker-next {
   box-shadow: none !important;
   text-shadow: none !important;
@@ -6716,7 +6734,7 @@ body .ui-tooltip {
   min-width: 35px;
   height: 35px;
   border: 0;
-  background: #222;
+  background: none #222;
   color: #fff;
 }
 
@@ -6726,8 +6744,9 @@ body .ui-tooltip {
 #wa-fronted-toolbar > button.medium-editor-button-active,
 #acf-dialog .medium-editor-button-active#close-acf-dialog,
 #wa-fronted-settings-modal .medium-editor-button-active.close-wa-fronted-modal,
+#wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .medium-editor-button-active.close-wa-fronted-modal,
 .medium-wa-image-edit-toolbar button.medium-editor-button-active,
-.medium-editor-button-active.ui-selectmenu-button,
+.select2-container .medium-editor-button-active.select2-choice,
 #ui-datepicker-div .ui-datepicker-header .medium-editor-button-active.ui-datepicker-prev,
 #ui-datepicker-div .ui-datepicker-header .medium-editor-button-active.ui-datepicker-next,
 .medium-editor-toolbar ul li button.active,
@@ -6736,11 +6755,12 @@ body .ui-tooltip {
 #wa-fronted-toolbar > button.active,
 #acf-dialog .active#close-acf-dialog,
 #wa-fronted-settings-modal .active.close-wa-fronted-modal,
+#wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .active.close-wa-fronted-modal,
 .medium-wa-image-edit-toolbar button.active,
-.active.ui-selectmenu-button,
+.select2-container .active.select2-choice,
 #ui-datepicker-div .ui-datepicker-header .active.ui-datepicker-prev,
 #ui-datepicker-div .ui-datepicker-header .active.ui-datepicker-next,
-.medium-editor-toolbar ul li button:hover, .medium-wa-image-upload-action:hover, .edit-acf-field:hover, #wa-fronted-toolbar > button:hover, #acf-dialog #close-acf-dialog:hover, #wa-fronted-settings-modal .close-wa-fronted-modal:hover, .medium-wa-image-edit-toolbar button:hover, .ui-selectmenu-button:hover, #ui-datepicker-div .ui-datepicker-header .ui-datepicker-prev:hover,
+.medium-editor-toolbar ul li button:hover, .medium-wa-image-upload-action:hover, .edit-acf-field:hover, #wa-fronted-toolbar > button:hover, #acf-dialog #close-acf-dialog:hover, #wa-fronted-settings-modal .close-wa-fronted-modal:hover, #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .close-wa-fronted-modal:hover, .medium-wa-image-edit-toolbar button:hover, .select2-container .select2-choice:hover, #ui-datepicker-div .ui-datepicker-header .ui-datepicker-prev:hover,
 #ui-datepicker-div .ui-datepicker-header .ui-datepicker-next:hover {
   background: #333;
   color: #45bbe6;
@@ -6784,6 +6804,11 @@ body .ui-tooltip {
   border-color: #005082;
   color: rgba(255, 255, 255, 0.95);
   box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.1);
+}
+
+html.wa-modal-open,
+body.wa-modal-open {
+  overflow: hidden !important;
 }
 
 .medium-editor-toolbar {
@@ -7283,6 +7308,69 @@ body .ui-tooltip {
   border-top: 1px solid #ddd;
 }
 
+#wa-fronted-revisions-modal {
+  position: fixed;
+  bottom: 40px;
+  z-index: 159900;
+  display: none;
+  font-family: 'Open Sans', sans-serif !important;
+  width: 100%;
+}
+
+#wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner {
+  position: relative;
+  background: none #222;
+  padding: 10px;
+  color: #fff;
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+}
+
+#wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .close-wa-fronted-modal {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 160001;
+  line-height: 30px;
+}
+
+#wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .close-wa-fronted-modal i {
+  vertical-align: middle;
+  margin-top: -8px;
+}
+
+#wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .revision-input-container h4 {
+  font-family: 'Open Sans', sans-serif !important;
+  margin: 0 0 5px;
+  font-weight: 400;
+}
+
+#wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .revision-input-container button {
+  width: 15%;
+  display: inline-block;
+}
+
+#wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .revision-input-container button#wa-previous-revision {
+  float: left;
+}
+
+#wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .revision-input-container button#wa-next-revision {
+  float: right;
+}
+
+#wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .revision-input-container input {
+  width: 70%;
+  display: inline-block;
+  float: left;
+  font-family: 'Open Sans', sans-serif !important;
+  border: 0;
+  text-align: center;
+  background: none transparent;
+  color: #45bbe6;
+  font-weight: 600;
+}
+
 .resize_handles {
   position: absolute;
   display: none;
@@ -7414,35 +7502,207 @@ body .ui-tooltip {
   margin-top: -5px;
 }
 
-.ui-selectmenu-button {
-  padding: 0;
+.select2-container .select2-choice {
+  padding: 0.4em 2.1em 0.4em 1em !important;
   min-width: 200px;
+  font-size: 1.5rem;
+  line-height: 1.5;
+  height: auto;
+}
+
+.select2-container .select2-choice .select2-arrow {
+  border: 0;
+  border-radius: 0;
+  background: none transparent;
+  width: auto;
+}
+
+.select2-container .select2-choice .select2-arrow b {
+  background: none transparent;
+  padding: 5px;
+  width: auto;
+  text-align: center;
+  margin-right: 2px;
+}
+
+.select2-container .select2-choice .select2-arrow b:before {
+  content: "";
+  display: inline-block;
+  line-height: 1;
+  font-family: dashicons;
+  text-decoration: inherit;
+  font-weight: 400;
+  font-style: normal;
+  vertical-align: middle;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.select2-container.select2-container-multi .select2-choices {
+  margin: 0;
+  border: 0;
+  padding: 0;
+  box-shadow: none !important;
+  background: none #222 !important;
+}
+
+.select2-container.select2-container-multi .select2-choices input {
+  padding: 0.4em 2.1em 0.4em 1em !important;
+  min-width: 200px;
+  font-size: 1.5rem;
+  margin: 0 !important;
+  border: 0 !important;
+  line-height: 1.5;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  border-radius: 0;
+  height: 35px;
+  border: 0;
+  background: none #222 !important;
+  color: #fff;
+}
+
+.select2-container.select2-container-multi .select2-choices .select2-search-choice {
+  line-height: 1.5;
+  border: 0;
+  box-shadow: none;
+  background: none #4d4d4d;
+  color: #45bbe6;
+  font-size: 15px;
+}
+
+.select2-container.select2-container-multi .select2-choices .select2-search-choice .select2-search-choice-close {
+  background: none transparent;
+  font-size: 1.5rem;
+  line-height: 1.5;
+  top: 1px;
+  height: auto;
+  color: #fff;
+}
+
+.select2-container.select2-container-multi .select2-choices .select2-search-choice .select2-search-choice-close:before {
+  content: "";
+  display: inline-block;
+  line-height: 1;
+  font-family: dashicons;
+  text-decoration: inherit;
+  font-weight: 400;
+  font-style: normal;
+  vertical-align: middle;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.select2-container.select2-container-multi .select2-choices .select2-search-choice .select2-search-choice-close:hover {
+  color: #45bbe6;
+}
+
+.select2-container.select2-dropdown-open .select2-choice .select2-arrow b:before {
+  content: "";
+  display: inline-block;
+  line-height: 1;
+  font-family: dashicons;
+  text-decoration: inherit;
+  font-weight: 400;
+  font-style: normal;
+  vertical-align: middle;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.select2-drop-mask {
+  z-index: 160000;
+}
+
+.select2-drop {
+  border: 0;
+  background: none #333;
+  font-size: 1.4rem;
+  border-radius: 0;
+  color: #fff;
+  padding: 0;
+  font-family: 'Open Sans', sans-serif;
+  z-index: 160001;
+}
+
+.select2-drop .select2-search {
+  padding: 0;
+}
+
+.select2-drop .select2-search input {
+  border: 0;
+  background: #4d4d4d;
+  color: #45bbe6;
+  padding: 0.4em 2.1em 0.4em 1em !important;
+  height: auto;
   font-size: 1.5rem;
   line-height: 1.5;
 }
 
-.ui-selectmenu-menu {
-  z-index: 160001;
+.select2-drop ul {
+  padding: 0;
+  margin: 0;
 }
 
-.ui-selectmenu-menu ul {
-  font-size: 1.4rem;
-  border-radius: 0;
-  border: 0;
-  background: #333;
-  color: #fff;
-}
-
-.ui-selectmenu-menu ul li {
+.select2-drop ul li {
   border: 0 !important;
   margin: 0 !important;
   padding: 0.4em 2.1em 0.4em 1em !important;
 }
 
-.ui-selectmenu-menu ul li.ui-state-hover,
-.ui-selectmenu-menu ul li.ui-state-focus {
+.select2-drop ul li:hover,
+.select2-drop ul li.select2-highlighted {
   background: #4d4d4d;
   color: #45bbe6;
+}
+
+.select2-drop ul li.select2-no-results {
+  background: none #333;
+  color: #fff;
+  font-style: italic;
+  padding-right: 0.4em !important;
+}
+
+.select2-drop ul li.select2-no-results .wa-add-tax-btn {
+  font-style: normal;
+  padding: 5px 10px;
+  background: #00a0d2;
+  border-color: #0073aa;
+  box-shadow: inset 0 1px 0 rgba(120, 200, 230, 0.5), 0 1px 0 rgba(0, 0, 0, 0.15);
+  color: #fff;
+  display: inline-block;
+  text-decoration: none;
+  font-size: 13px;
+  line-height: 13px;
+  margin-left: 5px;
+  border-width: 1px;
+  border-style: solid;
+  -webkit-appearance: none;
+  border-radius: 3px;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.select2-drop ul li.select2-no-results .wa-add-tax-btn i {
+  width: auto;
+  height: auto;
+  font-size: 13px;
+  line-height: 13px;
+  margin: 0;
+}
+
+.select2-drop ul li.select2-no-results .wa-add-tax-btn:hover {
+  background: #0091cd;
+  border-color: #0073aa;
+  box-shadow: inset 0 1px 0 rgba(120, 200, 230, 0.6);
+  color: #fff;
+}
+
+.select2-drop ul li.select2-no-results .wa-add-tax-btn:active {
+  background: #0073aa;
+  border-color: #005082;
+  color: rgba(255, 255, 255, 0.95);
+  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.1);
 }
 
 #ui-datepicker-div {
@@ -7638,7 +7898,23 @@ body .ui-tooltip {
   box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.5), 0 1px 0 transparent;
 }
 
+.toast,
 .tipso_bubble {
   border-radius: 0 !important;
   font-family: 'Open Sans', sans-serif !important;
+}
+
+.toast .toast-title,
+.tipso_bubble .toast-title {
+  line-height: 1.2;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.toast .toast-message,
+.tipso_bubble .toast-message {
+  line-height: 1.2;
+  font-weight: 300;
+  font-style: italic;
+  font-size: 13px;
 }

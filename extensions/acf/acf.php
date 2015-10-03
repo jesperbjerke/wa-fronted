@@ -16,6 +16,7 @@ class WA_Fronted_ACF extends WA_Fronted{
 		add_action( 'wp_ajax_wa_get_acf_form', array( $this, 'wa_get_acf_form' ) );
 
 		add_filter( 'compile_options', array( $this, 'compile_acf_options'), 10, 3 );
+		add_filter( 'wa_fronted_revisions', array( $this, 'get_acf_revisions'), 10, 2 );
 	}
 
 	/**
@@ -100,6 +101,8 @@ class WA_Fronted_ACF extends WA_Fronted{
 						'type' => 'not_blank'
 					);
 				}
+
+				$compiled_options['field_name'] = $field_object['field_object']['name'];
 
 				switch($field_object['field_object']['type']){
 					case 'email':
@@ -379,6 +382,22 @@ class WA_Fronted_ACF extends WA_Fronted{
 			return $return;
 		}
 
+	}
+
+	/**
+	 * Get ACF field data based on revision
+	 * @param  Object $revisions WP Post Object
+	 * @param  int $post_id original post id
+	 * @return array            array of revisions
+	 */
+	public function get_acf_revisions($revisions, $post_id){
+		if(!empty($revisions)){
+			foreach($revisions as $index => $revision){
+				$revisions[$index]->acf_fields = get_field_objects($revision->ID);
+			}
+		}
+
+		return $revisions;
 	}
 
 	/**
