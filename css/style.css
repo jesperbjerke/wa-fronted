@@ -6725,7 +6725,7 @@ body .ui-tooltip {
   zoom: 1;
 }
 
-.medium-editor-toolbar ul li button, .medium-wa-image-upload-action, .edit-acf-field, #wa-fronted-toolbar > button, #acf-dialog #close-acf-dialog, #wa-fronted-settings-modal .close-wa-fronted-modal, #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .close-wa-fronted-modal, .medium-wa-image-edit-toolbar button, .select2-container .select2-choice, #ui-datepicker-div .ui-datepicker-header .ui-datepicker-prev,
+.medium-editor-toolbar ul li button, .medium-wa-image-upload-toolbar > button, .edit-acf-field, #wa-fronted-toolbar > button, #acf-dialog #close-acf-dialog, #wa-fronted-settings-modal .close-wa-fronted-modal, #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .close-wa-fronted-modal, .medium-wa-image-edit-toolbar button, .select2-container .select2-choice, #ui-datepicker-div .ui-datepicker-header .ui-datepicker-prev,
 #ui-datepicker-div .ui-datepicker-header .ui-datepicker-next {
   box-shadow: none !important;
   text-shadow: none !important;
@@ -6739,7 +6739,7 @@ body .ui-tooltip {
 }
 
 .medium-editor-toolbar ul li button.medium-editor-button-active,
-.medium-editor-button-active.medium-wa-image-upload-action,
+.medium-wa-image-upload-toolbar > button.medium-editor-button-active,
 .medium-editor-button-active.edit-acf-field,
 #wa-fronted-toolbar > button.medium-editor-button-active,
 #acf-dialog .medium-editor-button-active#close-acf-dialog,
@@ -6750,7 +6750,7 @@ body .ui-tooltip {
 #ui-datepicker-div .ui-datepicker-header .medium-editor-button-active.ui-datepicker-prev,
 #ui-datepicker-div .ui-datepicker-header .medium-editor-button-active.ui-datepicker-next,
 .medium-editor-toolbar ul li button.active,
-.active.medium-wa-image-upload-action,
+.medium-wa-image-upload-toolbar > button.active,
 .active.edit-acf-field,
 #wa-fronted-toolbar > button.active,
 #acf-dialog .active#close-acf-dialog,
@@ -6760,7 +6760,7 @@ body .ui-tooltip {
 .select2-container .active.select2-choice,
 #ui-datepicker-div .ui-datepicker-header .active.ui-datepicker-prev,
 #ui-datepicker-div .ui-datepicker-header .active.ui-datepicker-next,
-.medium-editor-toolbar ul li button:hover, .medium-wa-image-upload-action:hover, .edit-acf-field:hover, #wa-fronted-toolbar > button:hover, #acf-dialog #close-acf-dialog:hover, #wa-fronted-settings-modal .close-wa-fronted-modal:hover, #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .close-wa-fronted-modal:hover, .medium-wa-image-edit-toolbar button:hover, .select2-container .select2-choice:hover, #ui-datepicker-div .ui-datepicker-header .ui-datepicker-prev:hover,
+.medium-editor-toolbar ul li button:hover, .medium-wa-image-upload-toolbar > button:hover, .edit-acf-field:hover, #wa-fronted-toolbar > button:hover, #acf-dialog #close-acf-dialog:hover, #wa-fronted-settings-modal .close-wa-fronted-modal:hover, #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .close-wa-fronted-modal:hover, .medium-wa-image-edit-toolbar button:hover, .select2-container .select2-choice:hover, #ui-datepicker-div .ui-datepicker-header .ui-datepicker-prev:hover,
 #ui-datepicker-div .ui-datepicker-header .ui-datepicker-next:hover {
   background: #333;
   color: #45bbe6;
@@ -6854,34 +6854,34 @@ body.wa-modal-open {
   border-radius: 0;
 }
 
-.medium-wa-image-upload-action {
+.medium-wa-image-upload-toolbar {
   position: fixed;
   display: none;
 }
 
-.medium-wa-image-upload-action.medium-toolbar-arrow-over:before {
+.medium-wa-image-upload-toolbar.medium-toolbar-arrow-over:before {
   border-color: transparent transparent #222;
 }
 
-.medium-wa-image-upload-action.medium-toolbar-arrow-under:after {
+.medium-wa-image-upload-toolbar.medium-toolbar-arrow-under:after {
   top: 35px;
   border-color: #222 transparent transparent;
 }
 
-.medium-wa-image-upload-action:hover.medium-toolbar-arrow-under:after {
+.medium-wa-image-upload-toolbar:hover.medium-toolbar-arrow-under:after {
   top: 35px;
   border-color: #333 transparent transparent;
 }
 
-.medium-wa-image-upload-action:hover.medium-toolbar-arrow-over:before {
+.medium-wa-image-upload-toolbar:hover.medium-toolbar-arrow-over:before {
   border-color: transparent transparent #333;
 }
 
-.medium-wa-image-upload-action.show {
+.medium-wa-image-upload-toolbar.show {
   display: block;
 }
 
-.csstransforms .medium-wa-image-upload-action {
+.csstransforms .medium-wa-image-upload-toolbar {
   display: block;
   -webkit-transition: -webkit-transform 0.2s ease, opacity 0.2s ease;
           transition: transform 0.2s ease, opacity 0.2s ease;
@@ -6892,7 +6892,7 @@ body.wa-modal-open {
   opacity: 0;
 }
 
-.csstransforms .medium-wa-image-upload-action.show {
+.csstransforms .medium-wa-image-upload-toolbar.show {
   z-index: 1;
   -webkit-transform: translateY(0px);
       -ms-transform: translateY(0px);
@@ -6905,10 +6905,11 @@ body.wa-modal-open {
   display: none;
   margin-top: -42px;
   z-index: 99;
+  font-family: 'Open Sans', sans-serif;
 }
 
 .wa-fronted-selectmenu:after {
-  top: 35px;
+  top: 34px;
   border-color: #222 transparent transparent;
   border-width: 8px 8px 0 8px;
   position: absolute;
@@ -6922,7 +6923,7 @@ body.wa-modal-open {
 }
 
 .wa-fronted-selectmenu:hover:after {
-  top: 35px;
+  top: 34px;
   border-color: #333 transparent transparent;
 }
 
@@ -7028,6 +7029,7 @@ body.wa-modal-open {
   width: 100%;
   text-align: center;
   font: 400 13px/32px "Open Sans", sans-serif;
+  z-index: 159899;
 }
 
 #wa-fronted-toolbar > button {
@@ -7344,11 +7346,17 @@ body.wa-modal-open {
   font-family: 'Open Sans', sans-serif !important;
   margin: 0 0 5px;
   font-weight: 400;
+  font-size: 14px;
 }
 
 #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .revision-input-container button {
+  font-size: 14px;
   width: 15%;
   display: inline-block;
+  padding: 0;
+  line-height: 35px;
+  height: 35px;
+  text-align: center;
 }
 
 #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .revision-input-container button#wa-previous-revision {
@@ -7359,8 +7367,16 @@ body.wa-modal-open {
   float: right;
 }
 
+#wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .revision-input-container button.disabled {
+  visibility: hidden;
+}
+
 #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .revision-input-container input {
+  font-size: 14px;
   width: 70%;
+  padding: 0;
+  line-height: 35px;
+  height: 35px;
   display: inline-block;
   float: left;
   font-family: 'Open Sans', sans-serif !important;
@@ -7500,6 +7516,17 @@ body.wa-modal-open {
 .medium-wa-image-edit-toolbar button i {
   vertical-align: middle;
   margin-top: -5px;
+}
+
+#wa-fronted-img-drag-ghost {
+  position: fixed;
+  z-index: 999;
+  width: 75px;
+  height: auto;
+  opacity: 0.85;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+  -webkit-filter: grayscale(100%);
+          filter: grayscale(100%);
 }
 
 .select2-container .select2-choice {

@@ -1,7 +1,7 @@
 <h1 id="wa-fronted-wordpress-plugin">WA Fronted WordPress Plugin</h1>
 <p><a href="https://gitter.im/jesperbjerke/wa-fronted?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img src="https://badges.gitter.im/Join%20Chat.svg" alt="Join the chat at https://gitter.im/jesperbjerke/wa-fronted"></a>
 Discuss this project at Gitter</p>
-<p>Frontend editor for WordPress, an experiment with a goal to enhance usability and convenience of editing exisiting content.</p>
+<p>Frontend editor for WordPress, an experiment with a goal to enhance usability and convenience of editing content.</p>
 <blockquote>
 <p>This plugin is intended strictly for plugin and theme developers, it will <strong>not</strong> work &quot;out of the box&quot;. Are you an end-user? <a href="https://edituswp.com/">Look here!</a></p>
 </blockquote>
@@ -35,26 +35,25 @@ Discuss this project at Gitter</p>
 <li>[x] Ability to set default options in posttype level of array</li>
 <li>[x] Edit and add taxonomies (and native tags and categories)</li>
 <li>[x] Post revisions (step through and see changes live)</li>
+<li>[x] Drag image to move it within the editable area</li>
+<li>[x] Ability to set post parent to hierarchical post types</li>
 </ul>
 <h2 id="to-do-s">To do&#39;s</h2>
 <blockquote>
 <p>Things that are planned to be implemented in the near future (in no particular order)</p>
 </blockquote>
 <ul>
-<li>[ ] Smarter outputting of value (like if it&#39;s an image field and has no output options, determine by itself)</li>
-<li>[ ] Validate on server-side before save</li>
+<li>[ ] Autosave</li>
+<li>[ ] Ability to edit custom excerpt</li>
 <li>[ ] How-to guide for integration and extensions</li>
 <li>[ ] Translations</li>
-<li>[ ] Drag image to move it within the editable area</li>
-<li>[ ] PHP version check before init</li>
+<li>[ ] Enable select-dropdown for other fields than meta_select</li>
 </ul>
 <h2 id="proposed-features">Proposed features</h2>
 <blockquote>
 <p>These features requires further discussion, not yet set to be implemented</p>
 </blockquote>
 <ul>
-<li>[ ] Autosave</li>
-<li>[ ] Enhance UX by visualizing which area you are editing</li>
 <li>[ ] Make it possible to create new posts from frontend</li>
 <li>[ ] Change common ajax functions to make use of WP Rest API instead (when implemented into core)</li>
 <li>[ ] Spellchecking and word suggestion, auto correction</li>
@@ -69,6 +68,10 @@ Discuss this project at Gitter</p>
 <li>[ ] Live SEO analyzis and tips, Yoast integration add-on?</li>
 <li>[ ] Ability to create child-categories</li>
 </ul>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>PHP version &gt;= 4.3</li>
+</ul>
 <h2 id="collaboration-notes">Collaboration notes</h2>
 <ul>
 <li>I&#39;m using Sass for styling and <a href="https://prepros.io/">PrePros</a> for compiling (there&#39;s a free version if you wanna check it out)</li>
@@ -76,8 +79,10 @@ Discuss this project at Gitter</p>
 <li>I&#39;m using <a href="http://bower.io/">Bower</a> for keeping the following libraries up to date:<ul>
 <li><a href="https://github.com/yabwe/medium-editor">Medium Editor</a></li>
 <li><a href="https://github.com/trentrichardson/jQuery-Timepicker-Addon">jQuery Timepicker Addon</a></li>
-<li><a href="https://github.com/object505/tipso">tipso</a></li>
-<li><a href="https://github.com/CodeSeven/toastr">toastr</a></li>
+<li><a href="https://github.com/object505/tipso">Tipso</a></li>
+<li><a href="https://github.com/CodeSeven/toastr">Toastr</a></li>
+<li><a href="https://select2.github.io/">Select2</a></li>
+<li><a href="https://github.com/timdown/rangy">Rangy</a></li>
 </ul>
 </li>
 <li>Core features should be free and open source</li>

@@ -3,6 +3,7 @@
 //@prepros-prepend '../bower_components/tipso/src/tipso.min.js'
 //@prepros-prepend '../bower_components/toastr/toastr.js'
 //@prepros-prepend '../bower_components/select2/dist/js/select2.full.min.js'
+//@prepros-prepend '../bower_components/rangy/rangy-core.min.js'
 //@prepros-prepend 'eventmanager.js'
 //@prepros-prepend 'medium-wa-image-upload.js'
 //@prepros-prepend 'medium-wa-render-shortcode.js'
@@ -29,7 +30,7 @@ var wa_fronted;
             pos = Sel.text.length - SelLength;
         }
         return pos;
-    }
+    };
 
 	wa_fronted = {
 
@@ -163,6 +164,9 @@ var wa_fronted;
 			var self = this;
 
 			if(typeof self.options.editable_areas !== 'undefined' && self.options.editable_areas.length !== 0){
+				
+				rangy.init();
+
 				for(var i = 0; i < self.options.editable_areas.length; i++){
 					
 					var editors = $(self.options.editable_areas[i].container);
@@ -460,23 +464,25 @@ var wa_fronted;
 
 					document.body.appendChild(select_el);
 					var select_el = $(select_el);
-					select_el.selectmenu({
-						change: function( event, ui ) {
-							if(!self.specific_output_to(this_editor, this_options, ui.item.value, ui.item.value)){
-								this_editor.html(ui.item.value);
-								this_editor.attr('data-db-value', ui.item.value);
-							}
+					select_el.select2({
+						minimumResultsForSearch : 10
+					});
+					select_el.on('change', function( event ) {
+						var value = select_el.val();
+						if(!self.specific_output_to(this_editor, this_options, value, value)){
+							this_editor.html(value);
+							this_editor.attr('data-db-value', value);
 						}
 					});
 
 					var content_width = this_editor.width(),
 						content_pos   = this_editor.position(),
-						button_el     = select_el.selectmenu('instance').button,
-						menu_el       = select_el.selectmenu('instance').menu;
+						button_el     = select_el.data('select2').container,
+						menu_el       = select_el.data('select2').dropdown;
 
 					button_el
 						.css({
-							'left' : (content_pos.left + ((content_width / 2) - 13)) + 'px'
+							'left' : (content_pos.left + ((content_width / 2) - (button_el.width() / 2))) + 'px'
 						})
 						.addClass('wa-fronted-selectmenu');
 
@@ -485,7 +491,7 @@ var wa_fronted;
 					var hide_selectmenu = function(){
 						edit_select_timeout = setTimeout(function(){
 							button_el.removeClass('show');
-							select_el.selectmenu('close');
+							select_el.select2('close');
 						}, 500);
 					};
 
@@ -607,7 +613,10 @@ var wa_fronted;
 					function(response){
 						if(response.success){
 							location.reload();
+						}else if(typeof response.error !== 'undefined'){
+							toastr.error('Save unsuccessful', response.error);
 						}
+
 						self.hide_loading_spinner();
 					}
 				);
@@ -769,18 +778,23 @@ var wa_fronted;
 		 * Curtesy of https://github.com/jillix/medium-editor-custom-html/
 		 * @param {string} html
 		 */
-		insertHtmlAtCaret: function(html) {
-		    var self = this,
-		    	sel, 
-		    	range;
+		insertHtmlAtCaret: function(html, sel, range) {
+		    var self = this;
+
+		    sel = sel || false;
+		    range = range || false;
+
 		    if (window.getSelection) {
 		        // IE9 and non-IE
-		        if(typeof self.data.current_selection === 'undefined' || self.data.current_selection === false){
-		            sel = window.getSelection();
-		            range = sel.getRangeAt(0);
-		        }else{
-		            sel = self.data.current_selection;
-		            range = self.data.current_range;
+		        
+		        if(sel === false && range === false){
+			        if(typeof self.data.current_selection === 'undefined' || self.data.current_selection === false){
+			            sel = window.getSelection();
+			            range = sel.getRangeAt(0);
+			        }else{
+			            sel = self.data.current_selection;
+			            range = self.data.current_range;
+			        }
 		        }
 
 		        if(typeof range !== 'undefined' && range !== false){
@@ -799,6 +813,7 @@ var wa_fronted;
 		        range.insertNode(frag);
 
 		        self.current_selection = false;
+		    
 		    } else if (document.selection && document.selection.type != "Control") {
 		        // IE < 9
 		        document.selection.createRange().pasteHTML(html);

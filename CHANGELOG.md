@@ -1,11 +1,21 @@
 CHANGELOG
 =========
+## 0.9
+* Added ability to set post parent to hierarchical post types
+* Added ability to drag image to move it within the editable area
+* Added PHP version check before init
+* Made the image upload button into an extendable toolbar element
+* Added javascript filter `image_upload_toolbar`
+* Added javascript filter `image_edit_toolbar`
+* Added [Rangy](https://github.com/timdown/rangy)
+* Updated Plugin Update Checker to master branch
+
 ## 0.8.5
 * Added support for adding/managing taxonomies, categories and tags
 * Added post revision handling
 * Added php filter `wa_fronted_revisions`
-* Added javscript filter `revision_content`
-* Added javscript filter `revision_db_value`
+* Added javascript filter `revision_content`
+* Added javascript filter `revision_db_value`
 * Changed jQuery UI selectmenu to [select2](https://select2.github.io/)
 * Moved documentation to Wiki
 

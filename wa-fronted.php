@@ -3,7 +3,7 @@
 	Plugin Name: WA-Fronted
 	Plugin URI: http://github.com/jesperbjerke/wa-fronted
 	Description: Edit content directly from fronted in the contents actual place
-	Version: 0.8.5
+	Version: 0.9
 	Text Domain: wa-fronted
 	Domain Path: /lang
 	Author: Jesper Bjerke
@@ -628,6 +628,7 @@ class WA_Fronted {
 				'post_slug',
 				'post_status',
 				'post_date',
+				'post_parent',
 				'sticky',
 				'comment_status',
 				'taxonomies'
@@ -675,6 +676,29 @@ class WA_Fronted {
 												<input type="text" name="<?php echo $field_prefix; ?>post_date" id="<?php echo $field_prefix; ?>post_date" class="wa_fronted_datepicker" value="<?php echo $post->post_date; ?>">
 											</div>
 											<?php
+											break;
+										case 'post_parent':
+											if(is_post_type_hierarchical($post->post_type)){
+												$all_pages = get_posts(array(
+													'posts_per_page' => -1,
+													'orderby'        => 'title',
+													'post_type'      => $post->post_type,
+													'exclude'        => array( $post->ID )
+												));
+												?>
+												<div class="fieldgroup">
+													<label for="<?php echo $field_prefix; ?>post_parent"><?php _e('Post parent', 'wa-fronted'); ?></label>
+													<select name="<?php echo $field_prefix; ?>post_parent" id="<?php echo $field_prefix; ?>post_parent">
+														<option value="false"><?php _e('No parent', 'wa-fronted'); ?></option>
+														<?php foreach($all_pages as $page): ?>
+															<option value="<?php echo $page->ID; ?>" <?php echo ($page->ID == $post->post_parent) ? 'selected' : ''; ?>>
+																<?php echo $page->post_title; ?>
+															</option>
+														<?php endforeach; ?>
+													</select>
+												</div>
+												<?php									
+											}
 											break;
 										case 'sticky':
 										case 'comment_status':
@@ -819,6 +843,13 @@ class WA_Fronted {
 						break;
 					case $field_prefix . 'post_date':
 						$update_this['post_date'] = $value;
+						break;
+					case $field_prefix . 'post_parent':
+						if($value !== false && intval($value)){
+							$update_this['post_parent'] = $value;
+						}else{
+							$update_this['post_parent'] = 0;
+						}
 						break;
 					case $field_prefix . 'comment_status':
 						$update_this['comment_status'] = 'open';
@@ -1063,9 +1094,10 @@ if(!function_exists('wa_fronted_init')){
 			include_once('extensions/woocommerce/woocommerce.php');
 		}
 
-
 		$WA_Fronted = new WA_Fronted();
 	}	
 }
 
-add_action('plugins_loaded', 'wa_fronted_init', 999);
+if(phpversion() >= 4.3){
+	add_action('plugins_loaded', 'wa_fronted_init', 999);
+}

@@ -158,11 +158,14 @@ body{
 	}
 }
 
-.medium-wa-image-upload-action{
+.medium-wa-image-upload-toolbar{
 	position: fixed;
 	display: none;
-	@extend %button;
 
+	> button{
+		@extend %button;
+	}
+	
 	&.medium-toolbar-arrow-over:before {
 		border-color: transparent transparent $wp_admin_color;
 	}
@@ -207,9 +210,10 @@ body{
 	display: none;
 	margin-top: -42px;
 	z-index: 99;
+	font-family: 'Open Sans', sans-serif;
 
 	&:after {
-		top: 35px;
+		top: 34px;
 		border-color: $wp_admin_color transparent transparent;
 		border-width: 8px 8px 0 8px;
 		position: absolute;
@@ -224,7 +228,7 @@ body{
 
 	&:hover{
 		&:after {
-			top: 35px;
+			top: 34px;
 			border-color: #333 transparent transparent;
 		}
 	}
@@ -334,6 +338,7 @@ body{
 	width: 100%;
 	text-align: center;
 	font: 400 13px/32px "Open Sans",sans-serif;
+	z-index: 159899;
 
 	> button{
 		@extend %button;
@@ -633,11 +638,17 @@ body{
 				font-family: 'Open Sans', sans-serif !important;
 				margin: 0 0 5px;
 				font-weight: 400;
+				font-size: 14px;
 			}
 
 			button{
+				font-size: 14px;
 				width: 15%;
 				display: inline-block;
+				padding: 0;
+				line-height: 35px;
+				height: 35px;
+				text-align: center;
 
 				&#wa-previous-revision{
 					float: left;
@@ -646,10 +657,18 @@ body{
 				&#wa-next-revision{
 					float: right;
 				}
+
+				&.disabled{
+					visibility: hidden;
+				}
 			}
 
 			input{
+				font-size: 14px;
 				width: 70%;
+				padding: 0;
+				line-height: 35px;
+				height: 35px;
 				display: inline-block;
 				float: left;
 				font-family: 'Open Sans', sans-serif !important;
@@ -789,6 +808,16 @@ body{
 		    margin-top: -5px;
 		}
 	}
+}
+
+#wa-fronted-img-drag-ghost{
+	position: fixed;
+	z-index: 999;
+	width: 75px;
+	height: auto;
+	opacity: 0.85;
+	box-shadow: 0px 0px 10px rgba(#000, 0.2);
+	filter: grayscale(100%);
 }
 
 .select2-container{

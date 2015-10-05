@@ -3,18 +3,52 @@
  * editing inserting images in content as well as gallery shortcodes and featured image
  */
 function Wa_image_upload(this_options) {
-    this.editor_options        = this_options;
-    this.get_image_src_timeout = false;
-    this.handles               = false;
-    this.resizing_img          = false;
+    var self = this;
+    self.editor_options        = this_options;
+    self.get_image_src_timeout = false;
+    self.handles               = false;
+    self.resizing_img          = false;
 
-    this.button                = document.createElement('button');
-    this.button.className      = 'medium-wa-image-upload-action';
-    this.button.icon           = document.createElement('i');
-    this.button.icon.className = 'fa fa-picture-o';
-    this.button.appendChild(this.button.icon);
-    this.button.onclick        = this.onClick.bind(this);
-    document.body.appendChild(this.button);
+    self.render_upload_toolbar();
+}
+
+/**
+ * Adds and binds image upload toolbar
+ */
+Wa_image_upload.prototype.render_upload_toolbar = function() {
+    var self = this,
+        image_upload_toolbar           = document.createElement('div');
+        image_upload_toolbar.className = 'medium-wa-image-upload-toolbar';
+        image_upload_toolbar.buttons   = [
+            {
+                'id'    : 'add-image',
+                'icon'  : 'fa fa-picture-o',
+                'title' : 'Add media',
+                'func'  : function(){
+                    self.onClick();
+                }
+            }
+        ];
+
+    image_upload_toolbar.buttons = wa_fronted.apply_filters('image_upload_toolbar', image_upload_toolbar.buttons, self.editor_options);
+
+    for(var i = 0; i < image_upload_toolbar.buttons.length; i++){
+        var button      = image_upload_toolbar.buttons[i],
+            button_el   = document.createElement('button'),
+            button_icon = document.createElement('i');
+            
+            button_el.className   = 'wa-image-upload-' + button.id;
+            button_icon.className = button.icon;
+            button_icon.title     = button.title;
+
+        button_el.appendChild(button_icon);
+        image_upload_toolbar.appendChild(button_el);
+
+        button_el.addEventListener('click', button.func);
+    }
+
+    document.body.appendChild(image_upload_toolbar);
+    self.image_upload_toolbar = jQuery(image_upload_toolbar);
 }
 
 /**
@@ -196,7 +230,7 @@ Wa_image_upload.prototype.bindings = function(instance, editor_container){
     var self = this;
 
     jQuery('body').click(function(e){
-        jQuery(self.button).removeClass('show');
+        jQuery(self.image_upload_toolbar).removeClass('show');
         if(self.image_toolbar !== undefined && e.target.classList[0] !== 'resize_handles'){
             self.image_toolbar.removeClass('show');
         }
@@ -271,38 +305,40 @@ Wa_image_upload.prototype.enable_drop_upload = function(instance, editor_contain
                 'image/gif'
             ];
 
+        
         instance.subscribe('editableDrop', function (event, editable) {
+            if(!self.is_dragging){
+                event.preventDefault();
+                event.stopPropagation();
 
-            event.preventDefault();
-            event.stopPropagation();
-
-            if(event.dataTransfer.files.length !== 0){
-                wa_fronted.show_loading_spinner();
-                var file = event.dataTransfer.files[0];
-
-                if(jQuery.inArray(file.type, allowed_file_types) !== -1){
-                    var fileReader = new FileReader();
-
-                    fileReader.onload = function(evt){
-                        jQuery.post(
-                            global_vars.ajax_url,
-                            {
-                                'action'                : 'wa_create_image',
-                                'post_id'               : self.editor_options.post_id,
-                                'file_data'             : encodeURIComponent(evt.target.result),
-                                'file_name'             : file.name,
-                                'file_type'             : file.type,
-                                'wa_fronted_save_nonce' : global_vars.nonce
-                            }, 
-                            function(response){
-                                self.dropImage(event.target, response.attachment_obj, false);
-                            }
-                        );
-                    };
-
-                    fileReader.readAsDataURL(file);
-                }else{
+                if(event.dataTransfer.files.length !== 0){
                     wa_fronted.show_loading_spinner();
+                    var file = event.dataTransfer.files[0];
+
+                    if(jQuery.inArray(file.type, allowed_file_types) !== -1){
+                        var fileReader = new FileReader();
+
+                        fileReader.onload = function(evt){
+                            jQuery.post(
+                                global_vars.ajax_url,
+                                {
+                                    'action'                : 'wa_create_image',
+                                    'post_id'               : self.editor_options.post_id,
+                                    'file_data'             : encodeURIComponent(evt.target.result),
+                                    'file_name'             : file.name,
+                                    'file_type'             : file.type,
+                                    'wa_fronted_save_nonce' : global_vars.nonce
+                                }, 
+                                function(response){
+                                    self.dropImage(event.target, response.attachment_obj, false);
+                                }
+                            );
+                        };
+
+                        fileReader.readAsDataURL(file);
+                    }else{
+                        wa_fronted.show_loading_spinner();
+                    }
                 }
             }
         });
@@ -332,7 +368,7 @@ Wa_image_upload.prototype.enable_resizing = function(instance, editor_container)
             self.handles = jQuery(self.handles);
             self.on_resize_image();
             self.enable_image_toolbar(instance, editor_container);
-            // self.on_image_drag(instance, editor_container);
+            self.on_image_drag(instance, editor_container);
         }
 
         for(var i = 0; i < images.length; i++){
@@ -342,6 +378,12 @@ Wa_image_upload.prototype.enable_resizing = function(instance, editor_container)
                 this_image.on('hover', function( event ){
                     var hovering_img = jQuery(this);
                     self.resizing_img = hovering_img;
+
+                    var caption_container = self.resizing_img.parents('.wp-caption');
+                    if(caption_container.length !== 0){
+                        self.resizing_img.caption = caption_container;
+                    }
+                    
                     self.position_handles(hovering_img);
                 });
             }
@@ -380,14 +422,16 @@ Wa_image_upload.prototype.position_handles = function(container) {
         }
     });
 
-    // self.handles.on('mousedown', function(e){
-    //     if(e.target.classList[0] !== 'resize_handle'){
-    //         self.is_dragging = true;
-    //         self.resizing_img
-    //             .attr('draggable', true)
-    //             .trigger('dragstart');
-    //     }
-    // });
+    self.handles.on('mousedown', function(e){
+        if(e.target.classList[0] !== 'resize_handle'){
+            self.ghost = document.createElement('img');
+            self.ghost.src = self.resizing_img.attr('src');
+            self.ghost.id = 'wa-fronted-img-drag-ghost';
+            document.body.appendChild(self.ghost);
+            self.ghost = jQuery(self.ghost);
+            self.is_dragging = true;
+        }
+    });
 
     handle.off();
     handle.on('mousedown touchstart', function(event){
@@ -435,8 +479,16 @@ Wa_image_upload.prototype.on_resize_image = function() {
                 final_size.width = Math.round(final_size.height * (self.current_size.width / self.current_size.height));
             }
 
-            self.resizing_img.width(final_size.width);
-            self.resizing_img.height(final_size.height);
+            self.resizing_img
+                .width(final_size.width)
+                .height(final_size.height);
+
+            if(self.resizing_img.hasOwnProperty('caption')){
+                self.resizing_img.caption
+                    .width(final_size.width)
+                    .height(final_size.height);
+            }
+
 
             self.handles.css({
                 'width'  : final_size.width + 10,
@@ -472,27 +524,88 @@ Wa_image_upload.prototype.on_resize_image = function() {
     });
 }
 
-/*
+
 Wa_image_upload.prototype.on_image_drag = function(instance, editor_container) {
-    var self = this;
+    var self = this,
+        is_within_container = true,
+        has_moved = false;
+
+    editor_container.on('mouseout', function(){
+        if(self.is_dragging){
+            is_within_container = false;
+        }
+    });
+
+    editor_container.on('mouseenter', function(){
+        if(self.is_dragging){
+            is_within_container = true;
+        }
+    });
 
     jQuery(document).on('mousemove touchmove mouseup touchend', function(event){
-        if(self.is_dragging === true && (event.type === 'mousemove' || event.type === 'touchmove')){
-
+        if(self.is_dragging){
             event.stopPropagation();
             event.preventDefault();
 
-            console.log(editor_container.getCursorPosition());
-        
-        }else if(self.is_dragging === true && (event.type === 'mouseup' || event.type === 'touchend')){
+            var range = self.getMouseEventCaretRange(event.originalEvent),
+                sel = rangy.getSelection();
+            
+            sel.setSingleRange(range);
 
-            event.preventDefault();
-            self.is_dragging = false;
-        
+            if(event.type === 'mousemove' || event.type === 'touchmove'){
+            
+                self.ghost[0].style.top = event.clientY + 'px';
+                self.ghost[0].style.left = event.clientX + 'px';
+                has_moved = true;
+
+            }else if(event.type === 'mouseup' || event.type === 'touchend'){
+
+                if(is_within_container && has_moved){
+
+                    self.is_dragging = false;
+                    editor_container[0].focus();
+
+                    self.ghost.remove();
+                    self.ghost = false;
+
+                    var range = self.getMouseEventCaretRange(event.originalEvent),
+                        sel = rangy.getSelection();
+                
+                    sel.setSingleRange(range);
+                    editor_container[0].focus();
+
+                    var shortcode_wrapper = self.resizing_img.parents('.wa-shortcode-wrap'),
+                        img_link = self.resizing_img.parent('a'),
+                        html_to_insert = self.resizing_img[0].outerHTML;
+
+                    if(shortcode_wrapper.length !== 0){
+                        html_to_insert = shortcode_wrapper[0].outerHTML;
+                        shortcode_wrapper.remove();
+                    }else if(img_link.length !== 0){
+                        html_to_insert = img_link[0].outerHTML;
+                        img_link.remove();
+                    }else{
+                        self.resizing_img.remove();
+                    }
+
+                    self.resizing_img = false;
+                    
+                    wa_fronted.insertHtmlAtCaret(html_to_insert, sel, range);
+                    self.enable_resizing(self.instance, jQuery(self.instance.elements));
+
+                }else{
+
+                    self.is_dragging = false;
+                    self.ghost.remove();
+                    self.ghost = false;
+                    
+                }
+
+            }
         }
     });
 }
-*/
+
 
 /**
  * Adds and binds image editing toolbar
@@ -600,6 +713,8 @@ Wa_image_upload.prototype.enable_image_toolbar = function(instance, editor_conta
             }
         ];
 
+    image_toolbar.buttons = wa_fronted.apply_filters('image_edit_toolbar', image_toolbar.buttons, self.editor_options);
+
     for(var i = 0; i < image_toolbar.buttons.length; i++){
         var button      = image_toolbar.buttons[i],
             button_el   = document.createElement('button'),
@@ -609,7 +724,7 @@ Wa_image_upload.prototype.enable_image_toolbar = function(instance, editor_conta
             button_icon.className = button.icon;
             button_icon.title     = button.title;
 
-        button_el.appendChild(button_icon)
+        button_el.appendChild(button_icon);
         image_toolbar.appendChild(button_el);
 
         button_el.addEventListener('click', button.func);
@@ -692,7 +807,7 @@ Wa_image_upload.prototype.select = function(shortcode_string) {
 Wa_image_upload.prototype.showToolbar = function(event, editor_container) {
 	var self = this;
     self.positionImageToolbar(event);
-	jQuery(self.button).addClass('show');
+	jQuery(self.image_upload_toolbar).addClass('show');
     jQuery(window).scroll(function(){
         self.positionImageToolbar(event);
     });
@@ -914,31 +1029,66 @@ Wa_image_upload.prototype.getButton = function() {
  */
 Wa_image_upload.prototype.positionImageToolbar = function(e) {
 
-    this.button.style.left = '0';
+    var self = this;
 
-    var windowWidth     = this.base.options.contentWindow.innerWidth,
-        toolbarWidth    = this.button.offsetWidth,
+    self.image_upload_toolbar[0].style.left = '0';
+
+    var windowWidth     = self.base.options.contentWindow.innerWidth,
+        toolbarWidth    = self.image_upload_toolbar[0].offsetWidth,
         halfOffsetWidth = toolbarWidth / 2,
         buttonHeight    = 50,
         defaultLeft     = halfOffsetWidth,
         caretPos        = wa_fronted.getCaretPositionPx();
 
 	if (caretPos.y < buttonHeight) {
-        this.button.classList.add('medium-toolbar-arrow-over');
-        this.button.classList.remove('medium-toolbar-arrow-under');
-        this.button.style.top = caretPos.y + (buttonHeight - 5) + 'px';
+        self.image_upload_toolbar[0].classList.add('medium-toolbar-arrow-over');
+        self.image_upload_toolbar[0].classList.remove('medium-toolbar-arrow-under');
+        self.image_upload_toolbar[0].style.top = caretPos.y + (buttonHeight - 5) + 'px';
     } else {
-        this.button.classList.add('medium-toolbar-arrow-under');
-        this.button.classList.remove('medium-toolbar-arrow-over');
-        this.button.style.top = caretPos.y - (buttonHeight - 5) + 'px';
+        self.image_upload_toolbar[0].classList.add('medium-toolbar-arrow-under');
+        self.image_upload_toolbar[0].classList.remove('medium-toolbar-arrow-over');
+        self.image_upload_toolbar[0].style.top = caretPos.y - (buttonHeight - 5) + 'px';
     }
 
     if (caretPos.x < halfOffsetWidth) {
-        this.button.style.left = defaultLeft + halfOffsetWidth + 'px';
+        self.image_upload_toolbar[0].style.left = defaultLeft + halfOffsetWidth + 'px';
     } else if ((windowWidth - caretPos.x) < halfOffsetWidth) {
-        this.button.style.left = windowWidth + defaultLeft - halfOffsetWidth + 'px';
+        self.image_upload_toolbar[0].style.left = windowWidth + defaultLeft - halfOffsetWidth + 'px';
     } else {
-        this.button.style.left = caretPos.x - halfOffsetWidth + 'px';
+        self.image_upload_toolbar[0].style.left = caretPos.x - halfOffsetWidth + 'px';
     }
 
+};
+
+Wa_image_upload.prototype.getMouseEventCaretRange = function(evt) {
+    var range, x = evt.clientX, y = evt.clientY;
+    
+    // Try the simple IE way first
+    if (document.body.createTextRange) {
+        range = document.body.createTextRange();
+        range.moveToPoint(x, y);
+    } else if (typeof document.createRange != "undefined") {
+        // Try Mozilla's rangeOffset and rangeParent properties, which are exactly what we want
+        
+        if (typeof evt.rangeParent != "undefined") {
+            range = document.createRange();
+            range.setStart(evt.rangeParent, evt.rangeOffset);
+            range.collapse(true);
+        }
+    
+        // Try the standards-based way next
+        else if (document.caretPositionFromPoint) {
+            var pos = document.caretPositionFromPoint(x, y);
+            range = document.createRange();
+            range.setStart(pos.offsetNode, pos.offset);
+            range.collapse(true);
+        }
+    
+        // Next, the WebKit way
+        else if (document.caretRangeFromPoint) {
+            range = document.caretRangeFromPoint(x, y);
+        }
+    }
+    
+    return range;
 };
