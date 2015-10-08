@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
 	Plugin Name: WA-Fronted
 	Plugin URI: http://github.com/jesperbjerke/wa-fronted
@@ -28,7 +28,7 @@ $WA_Fronted_Updater = new $Plugin_Updater(
  */
 function auto_update_wa_fronted ( $update, $item ) {
     // Array of plugin slugs to always auto-update
-    $plugins = array ( 
+    $plugins = array (
         'wa-fronted'
     );
     if ( in_array( $item->slug, $plugins ) ) {
@@ -115,7 +115,7 @@ class WA_Fronted {
 
 		//determine options based on field_type
 		$field_type = $options['field_type'];
-		
+
 		if($field_type == 'post_title'){
 			if(!array_key_exists('toolbar', $new_options)){
 				$options['toolbar'] = false;
@@ -125,7 +125,7 @@ class WA_Fronted {
 				$options['media_upload'] = 'only';
 			}
 		}else if(strpos($field_type, 'meta_') !== false){
-			
+
 			if(!isset($this->supported_custom_fields)){
 				$this->supported_custom_fields = $this->get_supported_custom_fields();
 			}
@@ -166,7 +166,7 @@ class WA_Fronted {
 						if(!array_key_exists('media_upload', $new_options)){
 							$compiled_options['media_upload'] = false;
 						}
-						break;		
+						break;
 					case 'meta_wysiwyg':
 						if(!array_key_exists('toolbar', $new_options)){
 							$compiled_options['toolbar'] = 'full';
@@ -175,7 +175,7 @@ class WA_Fronted {
 						if(!array_key_exists('media_upload', $new_options)){
 							$compiled_options['media_upload'] = true;
 						}
-						break;	
+						break;
 					case 'meta_image':
 						$compiled_options['toolbar']      = false;
 						$compiled_options['media_upload'] = 'only';
@@ -191,7 +191,7 @@ class WA_Fronted {
 
 	/**
 	 * Checks permission with current users capabilities or role
-	 * @param  string $permission 
+	 * @param  string $permission
 	 * @return boolean
 	 */
 	protected function check_permission($permission){
@@ -241,16 +241,16 @@ class WA_Fronted {
 		}else{
 			$post_type = get_post_type();
 		}
-		
+
 		if(isset($options['defaults'])){
 			$default_options = array_merge($default_options, $options['defaults']);
 		}
-		
+
 
 		$continue = false;
 		if(isset($options['post_types'][$post_type])){
 			$post_type_options = $options['post_types'][$post_type];
-			
+
 			if(isset($post_type_options['defaults'])){
 				$default_options = array_merge($default_options, $post_type_options['defaults']);
 			}
@@ -271,14 +271,14 @@ class WA_Fronted {
 	}
 
 	/**
-	 * Queues script files and styles if logged in user has any editable areas and current page is not in admin. 
+	 * Queues script files and styles if logged in user has any editable areas and current page is not in admin.
 	 * Hookable through action 'wa_fronted_scripts'
 	 */
 	public function scripts_and_styles() {
 
 		if($_SESSION['wa_fronted_options'] !== false){
 			do_action('wa_fronted_before_scripts', $_SESSION['wa_fronted_options']);
-			
+
 			wp_enqueue_media();
 
 			wp_enqueue_script('jquery-ui-core');
@@ -289,8 +289,8 @@ class WA_Fronted {
 			wp_enqueue_script(
 				'jqueryui-timepicker-addon',
 				plugins_url( '/bower_components/jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js', __FILE__ ),
-				array( 
-					'jquery', 
+				array(
+					'jquery',
 					'jquery-ui-core',
 					'jquery-ui-datepicker'
 				),
@@ -301,11 +301,11 @@ class WA_Fronted {
 			wp_enqueue_script(
 				'wa-fronted-scripts',
 				plugins_url( '/js/min/scripts.min.js', __FILE__ ),
-				array( 
-					'jquery', 
-					'jquery-ui-core', 
+				array(
+					'jquery',
+					'jquery-ui-core',
 					'jquery-ui-draggable',
-					'jquery-ui-droppable', 
+					'jquery-ui-droppable',
 					'jquery-ui-datepicker',
 					'jqueryui-timepicker-addon'
 				),
@@ -325,20 +325,20 @@ class WA_Fronted {
 				)
 			);
 
-			wp_enqueue_style( 
-				'wa-fronted-medium-editor', 
+			wp_enqueue_style(
+				'wa-fronted-medium-editor',
 				plugins_url( '/bower_components/medium-editor/dist/css/medium-editor.min.css', __FILE__ )
 			);
-			wp_enqueue_style( 
-				'wa-fronted-medium-editor-theme', 
+			wp_enqueue_style(
+				'wa-fronted-medium-editor-theme',
 				plugins_url( '/bower_components/medium-editor/dist/css/themes/bootstrap.min.css', __FILE__ )
 			);
-			wp_enqueue_style( 
-				'wa-fronted-timepicker-addon', 
+			wp_enqueue_style(
+				'wa-fronted-timepicker-addon',
 				plugins_url( '/bower_components/jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.css', __FILE__ )
 			);
-			wp_enqueue_style( 
-				'wa-fronted-style', 
+			wp_enqueue_style(
+				'wa-fronted-style',
 				plugins_url( '/css/style.css', __FILE__ )
 			);
 
@@ -363,9 +363,9 @@ class WA_Fronted {
 					preg_match('/(?>\\[)(.*)(?>\\s)/s', $shortcode, $sub_matches);
 					$content = str_replace($shortcode, '
 						<!-- shortcode -->
-							<div 
-								class="wa-shortcode-wrap" 
-								data-shortcode-base="' . $sub_matches[1] . '" 
+							<div
+								class="wa-shortcode-wrap"
+								data-shortcode-base="' . $sub_matches[1] . '"
 								data-shortcode="' . rawurlencode($shortcode) . '">
 								' . $shortcode . '
 							</div>
@@ -413,11 +413,11 @@ class WA_Fronted {
 		preg_match('/(?>\\[)([^\\s]+)/s', $shortcode, $sub_matches);
 
 		if(!empty($sub_matches) && $sub_matches[1] !== ''){
-			$html = 
+			$html =
 				(($comments) ? '<!-- shortcode -->' : '') . '
-					<div 
-						class="wa-shortcode-wrap" 
-						data-shortcode-base="' . $sub_matches[1] . '" 
+					<div
+						class="wa-shortcode-wrap"
+						data-shortcode-base="' . $sub_matches[1] . '"
 						data-shortcode="' . rawurlencode($shortcode) . '">
 						' . do_shortcode($shortcode) . '
 					</div>
@@ -459,11 +459,11 @@ class WA_Fronted {
 				$field_type   = $this_data['options']['field_type'];
 				$post_id      = (int)$this_data['options']['post_id'];
 			}
-			
+
 			do_action('wa_fronted_autosave', $data);
-		
+
 		}
-		
+
 		wp_send_json($return);
 	}
 
@@ -519,7 +519,7 @@ class WA_Fronted {
 			$return['success'] = false;
 			$return['error']   = 'Sent data not valid';
 		}
-		
+
 		wp_send_json($return);
 	}
 
@@ -545,7 +545,7 @@ class WA_Fronted {
 
                 } elseif ( isset( $_wp_additional_image_sizes[ $_size ] ) ) {
 
-                    $sizes[ $_size ] = array( 
+                    $sizes[ $_size ] = array(
 						'width'  => $_wp_additional_image_sizes[ $_size ]['width'],
 						'height' => $_wp_additional_image_sizes[ $_size ]['height'],
 						'crop'   => $_wp_additional_image_sizes[ $_size ]['crop']
@@ -571,9 +571,9 @@ class WA_Fronted {
 
 	/**
 	 * Get image src from attachment_id and size
-	 * @param  int $attachment_id 
-	 * @param  string $size        
-	 * @return json                
+	 * @param  int $attachment_id
+	 * @param  string $size
+	 * @return json
 	 */
 	public function wa_get_image_src(){
 		$attachment_id = (int)$_POST['attachment_id'];
@@ -598,15 +598,15 @@ class WA_Fronted {
 				</button>
 
 				<button id="wa-fronted-settings" title="<?php _e('Post settings', 'wa-fronted'); ?>">
-					<i class="dashicons dashicons-admin-settings"></i> 
+					<i class="dashicons dashicons-admin-settings"></i>
 				</button>
 
-				<?php 
+				<?php
 				global $post;
 				if(post_type_supports( $post->post_type, 'revisions' )):
 				?>
 					<button id="wa-fronted-revisions" title="<?php _e('Post revisions', 'wa-fronted'); ?>" data-post-id="<?php echo $post->ID; ?>">
-						<i class="dashicons dashicons-backup"></i> 
+						<i class="dashicons dashicons-backup"></i>
 					</button>
 				<?php endif; ?>
 
@@ -641,8 +641,8 @@ class WA_Fronted {
 					<button class="close-wa-fronted-modal"><i class="fa fa-close"></i></button>
 
 					<form id="wa-fronted-settings" method="POST">
-						<?php 
-							if(is_array($field_groups) && !empty($field_groups)): 
+						<?php
+							if(is_array($field_groups) && !empty($field_groups)):
 								foreach($field_groups as $field_group):
 									switch($field_group):
 										case 'post_slug':
@@ -697,7 +697,7 @@ class WA_Fronted {
 														<?php endforeach; ?>
 													</select>
 												</div>
-												<?php									
+												<?php
 											}
 											break;
 										case 'sticky':
@@ -761,7 +761,7 @@ class WA_Fronted {
 														?>
 														<div class="fieldgroup">
 															<label for="<?php echo $field_prefix; ?>tax_<?php echo $taxonomy->name; ?>"><?php echo $taxonomy->label; ?></label>
-															
+
 															<select multiple name="<?php echo $field_prefix; ?>tax_<?php echo $taxonomy->name; ?>[]" id="<?php echo $field_prefix; ?>tax_<?php echo $taxonomy->name; ?>" <?php echo implode(' ', $data_attrs); ?>>
 																<?php if(!empty($terms)): ?>
 																	<?php foreach($terms as $term): ?>
@@ -783,7 +783,7 @@ class WA_Fronted {
 								endforeach;
 							endif;
 
-							do_action('wa_fronted_settings_form', $_SESSION['wa_fronted_options']); 
+							do_action('wa_fronted_settings_form', $_SESSION['wa_fronted_options']);
 							wp_nonce_field('wa_fronted_settings_save', 'wa_fronted_settings_nonce');
 						?>
 
@@ -800,7 +800,7 @@ class WA_Fronted {
 			<div id="wa-fronted-revisions-modal">
 				<div class="wa-fronted-revisions-modal-inner">
 					<button class="close-wa-fronted-modal"><i class="fa fa-close"></i></button>
-					
+
 					<div class="revision-input-container">
 						<h4><?php _e('Step through revisions', 'wa-fronted'); ?></h4>
 						<button id="wa-previous-revision"><i class="fa fa-chevron-left"></i></button>
@@ -882,7 +882,7 @@ class WA_Fronted {
 						$sticky_posts[] = (int)$update_this['ID'];
 						update_option('sticky_posts', $sticky_posts);
 					}
-					
+
 				}else if(!isset($_POST[$field_prefix . 'sticky']) && $is_sticky){
 					//Remove sticky
 					$sticky_posts = get_option('sticky_posts');
@@ -896,9 +896,9 @@ class WA_Fronted {
 
 			if(!empty($update_this)){
 				$update = wp_update_post(apply_filters('wa_fronted_settings_values', $update_this), true);
-				
+
 				do_action('wa_fronted_settings_form_save');
-				
+
 				wp_safe_redirect( get_permalink($update_this['ID']) );
 				exit;
 			}
@@ -917,9 +917,9 @@ class WA_Fronted {
 			$link    = $_POST['link'];
 			$is_ajax = true;
 		}
-		
+
 		$embed_code = wp_oembed_get($link);
-		
+
 		if($is_ajax){
 			wp_send_json(array(
 				'oembed' => $embed_code
@@ -940,9 +940,9 @@ class WA_Fronted {
 			$post_id = $_POST['post_id'];
 			$is_ajax = true;
 		}
-		
+
 		$attachment_id = get_post_thumbnail_id($post_id);
-		
+
 		if($is_ajax){
 			wp_send_json(array(
 				'post_id'       => $post_id,
@@ -950,14 +950,14 @@ class WA_Fronted {
 			));
 		}else{
 			return $attachment_id;
-		}	
+		}
 	}
 
 	/**
 	 * Sets post thumbnail and returns img element with new thumbnail
-	 * @param  int $attachment_id 
-	 * @param  string $image_size 
-	 * @param  int $post_id       
+	 * @param  int $attachment_id
+	 * @param  string $image_size
+	 * @param  int $post_id
 	 * @return array                 either an array with html img or error
 	 */
 	public function wa_set_thumbnail($attachment_id = false, $image_size = false, $post_id = false){
@@ -968,9 +968,9 @@ class WA_Fronted {
 			$image_size    = $_POST['image_size'];
 			$is_ajax       = true;
 		}
-		
+
 		$meta_id = set_post_thumbnail($post_id, $attachment_id);
-		
+
 		if($meta_id){
 			$return = array(
 				'html' => get_the_post_thumbnail($post_id, $image_size)
@@ -985,7 +985,7 @@ class WA_Fronted {
 			wp_send_json($return);
 		}else{
 			return $return;
-		}	
+		}
 	}
 
 	public function wa_create_image(){
@@ -1089,15 +1089,15 @@ if(!function_exists('wa_fronted_init')){
 			include_once('extensions/acf/acf.php');
 		}
 
-		//Checks if WooCommerce is installed				
+		//Checks if WooCommerce is installed
 		if(class_exists('WooCommerce')){
 			include_once('extensions/woocommerce/woocommerce.php');
 		}
 
 		$WA_Fronted = new WA_Fronted();
-	}	
+	}
 }
 
-if(phpversion() >= 4.3){
+if(phpversion() >= 5.43){
 	add_action('plugins_loaded', 'wa_fronted_init', 999);
 }

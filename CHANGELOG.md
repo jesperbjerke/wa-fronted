@@ -1,5 +1,12 @@
 CHANGELOG
 =========
+## 0.9.1
+* Updated Medium Editor to 5.8.3
+* Fixed typo in the PHP version check
+* Cleaned up and restructured README.md for 1.0 release
+* Added javascript and php function reference to the Wiki
+* Added extension how-to guide to the Wiki
+
 ## 0.9
 * Added ability to set post parent to hierarchical post types
 * Added ability to drag image to move it within the editable area

@@ -54,107 +54,107 @@ var wa_fronted;
 		/*
 		*  This function uses wp.hooks to mimics WP add_action
 		*
-		*  @param	
+		*  @param
 		*  @return
 		*/
 		add_action: function() {
-			
+
 			// allow multiple action parameters such as 'ready append'
 			var actions = arguments[0].split(' ');
-			
+
 			for( k in actions ) {
-			
+
 				// prefix action
 				arguments[0] = 'wa_fronted.' + actions[ k ];
-				
+
 				wp.hooks.addAction.apply(this, arguments);
 			}
-			
+
 			return this;
-			
+
 		},
-		
+
 		/*
 		*  This function uses wp.hooks to mimics WP remove_action
 		*
-		*  @param	
+		*  @param
 		*  @return
 		*/
 		remove_action: function() {
-			
+
 			// prefix action
 			arguments[0] = 'wa_fronted.' + arguments[0];
-			
+
 			wp.hooks.removeAction.apply(this, arguments);
-			
+
 			return this;
-			
+
 		},
-		
+
 		/*
 		*  This function uses wp.hooks to mimics WP do_action
 		*
-		*  @param	
+		*  @param
 		*  @return
 		*/
 		do_action: function() {
-			
+
 			// prefix action
 			arguments[0] = 'wa_fronted.' + arguments[0];
-			
+
 			wp.hooks.doAction.apply(this, arguments);
-			
+
 			return this;
-			
+
 		},
-		
+
 		/*
 		*  This function uses wp.hooks to mimics WP add_filter
 		*
-		*  @param	
+		*  @param
 		*  @return
 		*/
 		add_filter: function() {
-			
+
 			// prefix action
 			arguments[0] = 'wa_fronted.' + arguments[0];
-			
+
 			wp.hooks.addFilter.apply(this, arguments);
-			
+
 			return this;
-			
+
 		},
-		
+
 		/*
 		*  This function uses wp.hooks to mimics WP remove_filter
 		*
-		*  @param	
+		*  @param
 		*  @return
 		*/
 		remove_filter: function() {
-			
+
 			// prefix action
 			arguments[0] = 'wa_fronted.' + arguments[0];
-			
+
 			wp.hooks.removeFilter.apply(this, arguments);
-			
+
 			return this;
-			
+
 		},
-		
+
 		/*
 		*  This function uses wp.hooks to mimics WP apply_filters
 		*
-		*  @param	
+		*  @param
 		*  @return
 		*/
 		apply_filters: function() {
-			
+
 			// prefix action
 			arguments[0] = 'wa_fronted.' + arguments[0];
-			
+
 			return wp.hooks.applyFilters.apply(this, arguments);
-			
+
 		},
 
 		/**
@@ -164,11 +164,11 @@ var wa_fronted;
 			var self = this;
 
 			if(typeof self.options.editable_areas !== 'undefined' && self.options.editable_areas.length !== 0){
-				
+
 				rangy.init();
 
 				for(var i = 0; i < self.options.editable_areas.length; i++){
-					
+
 					var editors = $(self.options.editable_areas[i].container);
 
 					if(editors.length !== 0){
@@ -210,13 +210,13 @@ var wa_fronted;
 			});
 
 			$('#wa-fronted-revisions').click(function(){
-				
+
 				$('#wa-fronted-settings-modal').fadeOut('fast');
 				$('html, body').removeClass('wa-modal-open');
 
 				var post_id = $(this).attr('data-post-id');
 				self.get_revisions(post_id, function(revisions){
-					
+
 					if(revisions.length !== 0){
 
 						var current_revision = revisions.length -1;
@@ -234,7 +234,7 @@ var wa_fronted;
 								current_revision = current_revision - 1;
 								revision_input.val(revisions[current_revision].post_date);
 								self.switch_to_revision(revisions[current_revision]);
-								
+
 								if(current_revision === 0){
 									$(this).addClass('disabled');
 								}
@@ -249,7 +249,7 @@ var wa_fronted;
 								current_revision = current_revision + 1;
 								revision_input.val(revisions[current_revision].post_date);
 								self.switch_to_revision(revisions[current_revision]);
-								
+
 								if(current_revision === (revisions.length - 1)){
 									$(this).addClass('disabled');
 								}
@@ -296,10 +296,10 @@ var wa_fronted;
 							taxonomy        = curr_select.attr('data-tax'),
 							is_hierarchical = curr_select.attr('data-hierarchical');
 
-						no_results_string += ' <a class="wa-add-tax-btn" href="javascript:void(0)" onclick="wa_fronted.add_tax_term(\'' 
-							+ term + '\', \'' 
-							+ taxonomy + '\', ' 
-							+ is_hierarchical 
+						no_results_string += ' <a class="wa-add-tax-btn" href="javascript:void(0)" onclick="wa_fronted.add_tax_term(\''
+							+ term + '\', \''
+							+ taxonomy + '\', '
+							+ is_hierarchical
 							+ ')"><i class="dashicons dashicons-plus"></i> Add</a>';
 					}
 
@@ -328,17 +328,17 @@ var wa_fronted;
 				editor_options = {
 				    toolbar	: {
 				    	buttons : [
-					    	'bold', 
-					    	'italic', 
-					    	'underline', 
-					    	'anchor', 
+					    	'bold',
+					    	'italic',
+					    	'underline',
+					    	'anchor',
 					    	'h2',
-					    	'h3', 
-					    	'quote', 
-					    	'unorderedlist', 
-					    	'orderedlist', 
-					    	'justifyLeft', 
-					    	'justifyCenter', 
+					    	'h3',
+					    	'quote',
+					    	'unorderedlist',
+					    	'orderedlist',
+					    	'justifyLeft',
+					    	'justifyCenter',
 					    	'justifyRight',
 					    	'renderShortcode'
 					    ]
@@ -365,7 +365,7 @@ var wa_fronted;
 			}else if(this_options.toolbar !== 'full'){
 				editor_options.toolbar.buttons = (this_options.toolbar.replace(/\s+/g, '')).split(',');
 			}
-			
+
 			if(this_options.toolbar !== 'false' && this_options.toolbar !== false){
 				editor_options.toolbar.buttons = self.apply_filters('toolbar_buttons', editor_options.toolbar.buttons, this_options);
 			}
@@ -393,7 +393,7 @@ var wa_fronted;
 					if(editor_options.toolbar.hasOwnProperty('buttons') && editor_options.toolbar.buttons.indexOf('renderShortcode')){
 						editor_options.extensions.renderShortcode = new Wa_render_shortcode(this_options);
 					}
-					
+
 					editor_options.extensions = self.apply_filters('medium_extensions', editor_options.extensions, this_options);
 
 					editor = new MediumEditor(this_editor, editor_options);
@@ -409,7 +409,7 @@ var wa_fronted;
 								{
 									'action' : 'wa_get_oembed',
 									'link'	 : clipboardData
-								}, 
+								},
 								function(response){
 									if(response.oembed !== false){
 										var current_content = this_editor.html(),
@@ -426,7 +426,7 @@ var wa_fronted;
 
 					if(this_options.paragraphs === false){
 						this_editor.keypress(function(e){
-							return e.which != 13; 
+							return e.which != 13;
 						});
 						this_editor.on('focusout', function(e){
 							this_editor.html(this_editor.text());
@@ -442,7 +442,7 @@ var wa_fronted;
 					//Setup select dropdown
 
 					var select_el = document.createElement('select');
-					
+
 					select_el.id        = 'select_' + this_options.meta_key;
 					select_el.name      = 'select_' + this_options.meta_key;
 					select_el.className = 'wa_fronted_select';
@@ -450,10 +450,10 @@ var wa_fronted;
 					for(var i = 0; i < this_options.values.length; i++){
 						var this_value = this_options.values[i],
 							option_el = document.createElement('option');
-							
+
 							option_el.value     = this_value.value;
 							option_el.innerHTML = this_value.label;
-					
+
 							if(this_value.hasOwnProperty('selected') && this_value.selected){
 								option_el.selected = true;
 								this_editor.attr('data-db-value', this_value.value);
@@ -581,7 +581,7 @@ var wa_fronted;
 				save_this = [];
 
 			self.show_loading_spinner();
-			
+
 			if(!self.data.has_errors){
 
 				self.data.is_saving = true;
@@ -609,7 +609,7 @@ var wa_fronted;
 						'action'                : 'wa_fronted_save',
 						'data'                  : save_this,
 						'wa_fronted_save_nonce' : global_vars.nonce
-					}, 
+					},
 					function(response){
 						if(response.success){
 							location.reload();
@@ -644,7 +644,7 @@ var wa_fronted;
 		show_loading_spinner: function(){
 			$('#wa-fronted-spinner').fadeIn('fast');
 		},
-		
+
 		hide_loading_spinner: function(){
 			$('#wa-fronted-spinner').fadeOut('fast');
 		},
@@ -670,7 +670,7 @@ var wa_fronted;
 					'action'    : 'wa_render_shortcode',
 					'shortcode' : shortcode,
 					'comments'  : comments
-	            }, 
+	            },
 	            function(response){
 	                callback(response);
 	            }
@@ -721,7 +721,6 @@ var wa_fronted;
 
 		/**
 		 * Output to specific element or attribute
-		 * @todo read output options
 		 */
 		specific_output_to: function(this_editor, this_options, db_value, output_content){
 			if(!this_options.hasOwnProperty('output_to')){
@@ -786,7 +785,7 @@ var wa_fronted;
 
 		    if (window.getSelection) {
 		        // IE9 and non-IE
-		        
+
 		        if(sel === false && range === false){
 			        if(typeof self.data.current_selection === 'undefined' || self.data.current_selection === false){
 			            sel = window.getSelection();
@@ -813,7 +812,7 @@ var wa_fronted;
 		        range.insertNode(frag);
 
 		        self.current_selection = false;
-		    
+
 		    } else if (document.selection && document.selection.type != "Control") {
 		        // IE < 9
 		        document.selection.createRange().pasteHTML(html);
@@ -867,12 +866,12 @@ var wa_fronted;
 					'term'     : term,
 					'taxonomy' : taxonomy
 	            };
-			
+
 			self.show_loading_spinner();
-			
+
 			$.post(
 	            global_vars.ajax_url,
-	            term_params, 
+	            term_params,
 	            function(response){
 					$('<option value="' + response.term_id + '" selected>' + term + '</option>').appendTo('#wa_fronted_tax_' + taxonomy);
 					$('#wa_fronted_tax_' + taxonomy).trigger('change');
@@ -895,7 +894,7 @@ var wa_fronted;
 	            {
 					'action'  : 'wa_get_revisions',
 					'post_id' : post_id
-	            }, 
+	            },
 	            function(response){
 	            	self.hide_loading_spinner();
 	            	callback(response);
@@ -929,7 +928,7 @@ var wa_fronted;
 					if(!self.specific_output_to(editors[i].editor, editors[i].options, db_value, output_content)){
 						editors[i].editor.html(output_content);
 					}
-					
+
 					self.validate(editors[i].editor, editors[i].options);
 				}
 

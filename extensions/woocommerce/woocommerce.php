@@ -3,7 +3,6 @@ class WA_Fronted_WooCommerce extends WA_Fronted{
 
 	protected $supported_woo_fields;
 
-
 	public function __construct(){
 		add_action( 'wa_fronted_save', array( $this, 'woo_save' ) );
 		add_action( 'wa_fronted_settings_form', array( $this, 'woo_form' ) );

@@ -4,53 +4,52 @@ WA Fronted WordPress Plugin
 [![Join the chat at https://gitter.im/jesperbjerke/wa-fronted](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/jesperbjerke/wa-fronted?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 Discuss this project at Gitter
 
-Frontend editor for WordPress, an experiment with a goal to enhance usability and convenience of editing content.
+Frontend editor for WordPress, an free and open source project with a goal to enhance usability and convenience of editing content.
 
-> This plugin is intended strictly for plugin and theme developers, it will **not** work "out of the box". Are you an end-user? [Look here!](https://edituswp.com/)
+> This plugin requires plugin and theme developers to include pre-configured options in their products, it will **not** work "out of the box". Are you an end-user? [Look here!](https://edituswp.com/)
 
 ![](https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/screenshot-1.jpg)
 ![](https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/screenshot-2.jpg)
 ![](https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/screenshot-3.jpg)
 
-**[See the Wiki for documentation.](https://github.com/jesperbjerke/wa-fronted/wiki)**
-
 ## Features
 
-* [x] Automatic changing of image size to load when changing size of image in content
-* [x] Gallery shortcode editing
+* [x] Support for extensions and integrations
 * [x] Advanced Custom Fields support (see [supported ACF fields](https://github.com/jesperbjerke/wa-fronted/wiki/Supported-fields) for more details)
+* [x] WooCommerce support for simple product types (see [supported WooCommerce fields](https://github.com/jesperbjerke/wa-fronted/wiki/Supported-fields) for more details)
+* [x] Post revisions (step through and see changes live)
+* [x] Native custom fields support
+* [x] Live value validation
 * [x] Automatic oEmbed conversion upon paste
 * [x] Automatic url to link conversion
-* [x] Automatic updates
-* [x] Ability to edit featured image
-* [x] Show unsaved changes warning if leaving page
-* [x] Ability to edit other columns from the posts table (`post_name`, `post_date` and `post_status`)
-* [x] Extend pluggability further and support for extensions (enable to hook onto and modify js editor)
-* [x] Ability to set post as featured
-* [x] Allow/Disable comments
-* [x] WooCommerce support for simple product types (see [supported WooCommerce fields](https://github.com/jesperbjerke/wa-fronted/wiki/Supported-fields) for more details)
-* [x] Live value validation
 * [x] Image upload by dropping an image into the editable area
-* [x] Basic RTL support
-* [x] Native custom fields support
-* [x] Choice-based fields with dropdown-select
-* [x] Multiple `output_to` selectors and attrs
-* [x] Shortcodes support (other than gallery)
-* [x] Ability to edit fields saved in the wp_options table
-* [x] Ability to set default options in posttype level of array
-* [x] Edit and add taxonomies (and native tags and categories)
-* [x] Post revisions (step through and see changes live)
 * [x] Drag image to move it within the editable area
+* [x] Automatic changing of image size to load when changing size of image in content
+* [x] Edit featured image
+* [x] Gallery shortcode editing
+* [x] Shortcodes support (other than gallery)
+* [x] Automatic updates
+* [x] Show unsaved changes warning if leaving page
+* [x] Ability to edit other columns from the posts table
+* [x] Ability to set post as featured
 * [x] Ability to set post parent to hierarchical post types
+* [x] Allow/Disable comments
+* [x] Ability to edit fields saved in the wp_options table
+* [x] Edit and add taxonomies (and native tags and categories)
+* [x] Basic RTL support
+* [x] Choice-based fields with dropdown-select
+* [x] How-to guide for integration and extensions
 
 ## To do's
 > Things that are planned to be implemented in the near future (in no particular order)
 
 * [ ] Autosave
 * [ ] Ability to edit custom excerpt
-* [ ] How-to guide for integration and extensions
-* [ ] Translations
 * [ ] Enable select-dropdown for other fields than meta_select
+* [ ] Translation function for javascript
+
+## Help needed
+* [ ] Translating
 
 ## Proposed features
 > These features requires further discussion, not yet set to be implemented
@@ -60,17 +59,22 @@ Frontend editor for WordPress, an experiment with a goal to enhance usability an
 * [ ] Spellchecking and word suggestion, auto correction
 * [ ] Ability to update widget contents
 * [ ] Editing from archives/blog home
-* [ ] Markdown parser
-* [ ] Column-maker (made as an add-on?)
 * [ ] Extended WooCommerce support
 * [ ] More ACF fields support
 * [ ] Mirror style of current WP admin theme
 * [ ] Optimization for small screens
-* [ ] Live SEO analyzis and tips, Yoast integration add-on?
 * [ ] Ability to create child-categories
 
+## Proposed extensions
+* [ ] Live SEO analyzis and tips with Yoast integration
+* [ ] Column-maker (shortcake integration?)
+* [ ] Markdown parser
+
 ## Requirements
-* PHP version >= 4.3
+* PHP version >= 5.4.3
+
+## Documentation
+**[See the Wiki for documentation.](https://github.com/jesperbjerke/wa-fronted/wiki)**
 
 ## Collaboration notes
 * I'm using Sass for styling and [PrePros](https://prepros.io/) for compiling (there's a free version if you wanna check it out)

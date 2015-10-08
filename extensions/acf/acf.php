@@ -10,7 +10,7 @@ class WA_Fronted_ACF extends WA_Fronted{
 		add_action( 'wp_footer', array( $this, 'wa_acf_dialog' ) );
 
 		add_action( 'wp_ajax_wa_save_acf_form', 'acf_form_head' );
-		
+
 		add_action( 'wp_ajax_wa_get_acf_field_object', array( $this, 'wa_get_acf_field_object' ) );
 		add_action( 'wp_ajax_wa_get_acf_field_contents', array( $this, 'wa_get_acf_field_contents' ) );
 		add_action( 'wp_ajax_wa_get_acf_form', array( $this, 'wa_get_acf_form' ) );
