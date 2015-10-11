@@ -5,7 +5,7 @@
 //@prepros-prepend '../bower_components/select2/dist/js/select2.full.min.js'
 //@prepros-prepend '../bower_components/rangy/rangy-core.min.js'
 //@prepros-prepend 'eventmanager.js'
-//@prepros-prepend 'medium-wa-image-upload.js'
+//@prepros-prepend 'medium-wa-media-upload.js'
 //@prepros-prepend 'medium-wa-render-shortcode.js'
 //@prepros-append 'validate.js'
 
@@ -165,6 +165,7 @@ var wa_fronted;
 
 			if(typeof self.options.editable_areas !== 'undefined' && self.options.editable_areas.length !== 0){
 
+
 				rangy.init();
 
 				for(var i = 0; i < self.options.editable_areas.length; i++){
@@ -187,6 +188,12 @@ var wa_fronted;
 				//Setup toastr options
 				toastr.options.timeOut       = "7000";
 				toastr.options.positionClass = "toast-bottom-right";
+				toastr.options.closeButton   = true;
+
+				var post_id = $('#wa-fronted-revisions').attr('data-post-id');
+				if(post_id){
+					self.check_autosave(post_id);
+				}
 
 				self.do_action('on_init');
 				self.bind();
@@ -210,56 +217,11 @@ var wa_fronted;
 			});
 
 			$('#wa-fronted-revisions').click(function(){
-
 				$('#wa-fronted-settings-modal').fadeOut('fast');
 				$('html, body').removeClass('wa-modal-open');
 
 				var post_id = $(this).attr('data-post-id');
-				self.get_revisions(post_id, function(revisions){
-
-					if(revisions.length !== 0){
-
-						var current_revision = revisions.length -1;
-							revision_input 	= $('#wa_fronted_switch_revision');
-
-						revision_input.val(revisions[current_revision].post_date);
-
-						$('#wa-previous-revision, #wa-next-revision').off();
-
-						$('#wa-previous-revision').on('click', function(e){
-							e.preventDefault();
-							if(current_revision - 1 >= 0){
-								$('#wa-next-revision').removeClass('disabled');
-
-								current_revision = current_revision - 1;
-								revision_input.val(revisions[current_revision].post_date);
-								self.switch_to_revision(revisions[current_revision]);
-
-								if(current_revision === 0){
-									$(this).addClass('disabled');
-								}
-							}
-						});
-
-						$('#wa-next-revision').on('click', function(e){
-							e.preventDefault();
-							if(current_revision + 1 <= (revisions.length - 1)){
-								$('#wa-previous-revision').removeClass('disabled');
-
-								current_revision = current_revision + 1;
-								revision_input.val(revisions[current_revision].post_date);
-								self.switch_to_revision(revisions[current_revision]);
-
-								if(current_revision === (revisions.length - 1)){
-									$(this).addClass('disabled');
-								}
-							}
-						}).addClass('disabled');
-
-						$('#wa-fronted-revisions-modal').fadeIn('fast');
-					}
-
-				});
+				self.show_revision_modal(post_id);
 			});
 
 			$('.close-wa-fronted-modal').click(function(){
@@ -289,7 +251,7 @@ var wa_fronted;
 			$('#wa-fronted-settings-modal select').select2({
 				minimumResultsForSearch : 10,
 				formatNoMatches : function(term){
-					var no_results_string = 'No results found.';
+					var no_results_string = self.i18n('No results found.');
 
 					if(term !== ''){
 						var curr_select 	= $(this);
@@ -300,7 +262,7 @@ var wa_fronted;
 							+ term + '\', \''
 							+ taxonomy + '\', '
 							+ is_hierarchical
-							+ ')"><i class="dashicons dashicons-plus"></i> Add</a>';
+							+ ')"><i class="dashicons dashicons-plus"></i> ' + self.i18n('Add') + '</a>';
 					}
 
 					return no_results_string;
@@ -311,7 +273,7 @@ var wa_fronted;
 
 			window.onbeforeunload = function(){
 				if(self.data.has_changes && !self.data.is_saving){
-			  		return 'The changes you have made will be lost if you navigate away from this page.';
+			  		return self.i18n('The changes you have made will be lost if you navigate away from this page.');
 				}
 			};
 		},
@@ -390,8 +352,9 @@ var wa_fronted;
 						editor_options.extensions.image_upload = new Wa_image_upload(this_options);
 					}
 
-					if(editor_options.toolbar.hasOwnProperty('buttons') && editor_options.toolbar.buttons.indexOf('renderShortcode')){
+					if(editor_options.toolbar.hasOwnProperty('buttons') && editor_options.toolbar.buttons.indexOf('renderShortcode') !== -1){
 						editor_options.extensions.renderShortcode = new Wa_render_shortcode(this_options);
+						self.bind_shortcode_edit(this_editor);
 					}
 
 					editor_options.extensions = self.apply_filters('medium_extensions', editor_options.extensions, this_options);
@@ -440,7 +403,6 @@ var wa_fronted;
 				}else if(this_options.hasOwnProperty('values') && this_options.values.length > 1 && this_options.hasOwnProperty('meta_key') && this_options.native){
 
 					//Setup select dropdown
-
 					var select_el = document.createElement('select');
 
 					select_el.id        = 'select_' + this_options.meta_key;
@@ -538,7 +500,6 @@ var wa_fronted;
 				self.do_action('on_setup_editor', this_editor, this_options, all_options);
 			}
 
-
 			//If editor exists
 			if(editor !== false){
 				//Register changes to the editor and show savebutton
@@ -547,7 +508,7 @@ var wa_fronted;
 					self.data.timers[editor.id] = setTimeout(function(){
 						self.data.has_changes = true;
 						self.validate(this_editor, this_options);
-						self.auto_save(this_editor, this_options);
+						self.autosave(this_editor, this_options);
 						self.show_save_button();
 					}, 1000);
 				});
@@ -566,10 +527,49 @@ var wa_fronted;
 		 * Auto save post
 		 * @param  {jQuery Object} 	editor element of what to save
 		 * @param  {Object} 		options for this editor
-		 * @todo: auto save post
 		 */
-		auto_save: function(editor_container, options){
-			// console.log('auto save', editor_container, options);
+		autosave: function(editor_container, options){
+			var self = this;
+			// Setup timer so we dont spam database with autosaves
+			clearTimeout(self.data.timers.autosave);
+			self.data.timers.autosave = setTimeout(function(){
+				// Dont do autosave if we're already saving normally
+				if(!self.is_saving){
+					var editors = self.data.editable_areas,
+						save_this = [];
+
+					for(var i = 0; i < editors.length; i++){
+
+						var db_value = editors[i].editor.attr('data-db-value'),
+							content = '';
+
+						if(typeof db_value !== 'undefined' && db_value !== false){
+							content = db_value;
+						}else{
+							content = editors[i].editor.html();
+						}
+
+						save_this.push({
+							'content' : content,
+							'options' : editors[i].options
+						});
+					}
+
+					$.post(
+						global_vars.ajax_url,
+						{
+							'action'                : 'wa_fronted_autosave',
+							'data'                  : save_this,
+							'wa_fronted_save_nonce' : global_vars.nonce
+						},
+						function(response){
+							if(response.success){
+								toastr.info(self.i18n('A draft of this post has been saved automatically'), self.i18n('Draft autosaved'));
+							}
+						}
+					);
+				}
+			}, 10000);
 		},
 
 		/**
@@ -614,7 +614,7 @@ var wa_fronted;
 						if(response.success){
 							location.reload();
 						}else if(typeof response.error !== 'undefined'){
-							toastr.error('Save unsuccessful', response.error);
+							toastr.error(response.error, self.i18n('Save unsuccessful'));
 						}
 
 						self.hide_loading_spinner();
@@ -633,7 +633,7 @@ var wa_fronted;
 					}
 				}
 				self.hide_loading_spinner();
-				toastr.error('Save unsuccessful', 'There were validation errors!');
+				toastr.error(self.i18n('There were validation errors!'), self.i18n('Save unsuccessful'));
 			}
 		},
 
@@ -647,6 +647,138 @@ var wa_fronted;
 
 		hide_loading_spinner: function(){
 			$('#wa-fronted-spinner').fadeOut('fast');
+		},
+
+		/**
+		 * Binds all shortcode wraps in editor to show edit button on hover
+		 * @param  {jQuery Object} editor
+		 */
+		bind_shortcode_edit: function(editor){
+			var self = this;
+			editor = jQuery(editor);
+			editor.find('.wa-shortcode-wrap')
+				.off('hover')
+				.hover(
+					function(){
+						self.show_shortcode_button($(this), editor);
+					},
+					function(){
+						self.hide_shortcode_button();
+					}
+				);
+		},
+
+		/**
+		 * Binds and shows shortcode edit button
+		 * @param  {jQuery Object} element shortcode wrap element
+		 * @param  {jQuery Object} editor current editor element
+		 */
+		show_shortcode_button: function(element, editor){
+
+			var self 		  	= this,
+				wrap_children   = element.children(),
+				wrap_contents   = (wrap_children.length !== 0) ? $(wrap_children[0]) : element,
+				offset          = wrap_contents.offset(),
+				scroll_top      = jQuery(window).scrollTop(),
+				distance_to_top = offset.top - scroll_top,
+				pos_top         = offset.top;
+				
+			var shortcode_toolbar = $('#wa-fronted-edit-shortcode');
+
+			shortcode_toolbar.removeClass('arrow-over arrow-under');
+
+	        if(distance_to_top <= 42){
+	            pos_top = offset.top + wrap_contents.height() + 42;
+	            shortcode_toolbar.addClass('arrow-over');
+	        }else{
+	            shortcode_toolbar.addClass('arrow-under');
+	        }
+
+			shortcode_toolbar
+				.css({
+					'left' : (offset.left + ((wrap_contents.width() / 2) - (shortcode_toolbar.width() / 2))),
+					'top'  : pos_top
+				})
+				.addClass('show')
+				.hover(
+					function(){
+						$(this).addClass('show');
+					},
+					function(){
+						self.hide_shortcode_button();
+					}
+				);
+
+			var shortcode_button = shortcode_toolbar.find('#wa-fronted-edit-shortcode-button');
+
+			shortcode_button.addClass('show');
+			shortcode_button.off();
+			shortcode_button.one('click', function(e){
+				e.preventDefault();
+				self.show_shortcode_edit(element, editor);
+			});
+		},
+
+		hide_shortcode_button: function(){
+			$('#wa-fronted-edit-shortcode').removeClass('show');
+			$('#wa-fronted-edit-shortcode-button').addClass('show');
+			$('#wa-fronted-edit-shortcode .shortcode-input-wrapper').removeClass('show');
+		},
+
+		/**
+		 * Either calls appropriate action or shows shortcode edit input
+		 * @param  {jQuery Object} element shortcode wrap element
+		 * @param  {jQuery Object} editor current editor element
+		 */
+		show_shortcode_edit: function(element, editor){
+
+			var self 	  		  = this,
+				shortcode         = self.shortcode_from_attr(element),
+				shortcode_base    = element.attr('data-shortcode-base'),
+				shortcode_actions = self.apply_filters('shortcode_actions', ['gallery']);
+
+			if(shortcode_actions.indexOf(shortcode_base) !== -1){
+
+				self.do_action('shortcode_action_' + shortcode_base, shortcode, element);
+
+			}else{
+
+				var	wrap_children     = element.children(),
+					wrap_contents     = (wrap_children.length !== 0) ? $(wrap_children[0]) : element,
+					offset            = wrap_contents.offset(),
+					shortcode_toolbar = $('#wa-fronted-edit-shortcode');
+				
+				$('#wa-fronted-edit-shortcode-button').removeClass('show');
+
+				shortcode_toolbar.find('.shortcode-input-wrapper').addClass('show');
+
+				shortcode_toolbar.find('#submit-shortcode')
+					.off()
+					.one('click', function(e){
+						e.preventDefault();
+						self.show_loading_spinner();
+						var new_shortcode = shortcode_toolbar.find('#wa_fronted_shortcode_input').val();
+
+					    self.shortcode_to_html(new_shortcode, false, function(html){
+					    	if(html !== ''){
+					            self.replace_html(element, html);
+					            self.bind_shortcode_edit(editor);
+					    	}else{
+					    		toastr.error(self.i18n('Render unsuccessful'), self.i18n('Sent code is not a valid shortcode'));
+					    	}
+
+					    	self.hide_loading_spinner();
+					    });
+
+					});
+
+				shortcode_toolbar
+					.css({
+						'left' : (offset.left + ((wrap_contents.width() / 2) - (shortcode_toolbar.width() / 2)))
+					})
+					.find('input').val(shortcode).focus();
+
+			}
 		},
 
 		/**
@@ -937,6 +1069,131 @@ var wa_fronted;
 			self.data.has_changes = true;
 			self.show_save_button();
 
+		},
+
+		/**
+		 * Retrieves revisions and shows revisions switcher
+		 * @param  {int} post_id
+		 */
+		show_revision_modal: function(post_id, switch_to_latest){
+			var self = this;
+
+			switch_to_latest = switch_to_latest || false;
+
+			self.get_revisions(post_id, function(revisions){
+
+				if(revisions.length !== 0){
+
+					var current_revision = revisions.length - 1;
+						revision_input 	= $('#wa_fronted_switch_revision');
+
+					if(revisions[current_revision].post_name.indexOf('-autosave-v1') !== -1){
+						current_revision = current_revision - 1;
+					}
+
+					if(switch_to_latest){
+						current_revision = revisions.length - 1;
+						self.switch_to_revision(revisions[current_revision]);
+					}
+
+					revision_input.val(revisions[current_revision].post_date);
+
+					if(current_revision === (revisions.length - 1)){
+						$('#wa-previous-revision').removeClass('disabled');
+						$('#wa-next-revision').addClass('disabled');
+					}else if(current_revision === 0){
+						$('#wa-next-revision').removeClass('disabled');
+						$('#wa-previous-revision').addClass('disabled');
+					}else{
+						$('#wa-next-revision').removeClass('disabled');
+						$('#wa-previous-revision').removeClass('disabled');
+					}
+
+					$('#wa-previous-revision, #wa-next-revision').off();
+
+					$('#wa-previous-revision').on('click', function(e){
+						e.preventDefault();
+						if(current_revision - 1 >= 0){
+							$('#wa-next-revision').removeClass('disabled');
+
+							current_revision = current_revision - 1;
+							revision_input.val(revisions[current_revision].post_date);
+							self.switch_to_revision(revisions[current_revision]);
+
+							if(current_revision === 0){
+								$(this).addClass('disabled');
+							}
+						}
+					});
+
+					$('#wa-next-revision').on('click', function(e){
+						e.preventDefault();
+						if(current_revision + 1 <= (revisions.length - 1)){
+							$('#wa-previous-revision').removeClass('disabled');
+
+							current_revision = current_revision + 1;
+							revision_input.val(revisions[current_revision].post_date);
+							self.switch_to_revision(revisions[current_revision]);
+
+							if(current_revision === (revisions.length - 1)){
+								$(this).addClass('disabled');
+							}
+						}
+					});
+
+					$('#wa-fronted-revisions-modal').fadeIn('fast');
+				}
+
+			});
+		},
+
+		/**
+		 * Check if an autosave exists and tell the use if it does
+		 * @param  {int} post_id
+		 */
+		check_autosave: function(post_id){
+			var self = this;
+
+			$.post(
+	            global_vars.ajax_url,
+	            {
+					'action'  : 'wa_fronted_get_autosave',
+					'post_id' : post_id
+	            },
+	            function(response){
+	            	if(response.success && response.data !== false){
+	            		if(confirm(self.i18n('There is an autosave of this post that is more recent than the version below. View the autosave?'))){
+	            			self.show_revision_modal(post_id, true);
+	            		}
+	            	}
+	            }
+	        );
+
+		},
+
+		/**
+		 * Returns translated string if there is one, otherwise the original
+		 * @param  {string} string string to translate
+		 * @return {string}        translated string
+		 */
+		i18n: function(){
+
+			var args = Array.prototype.slice.call( arguments );
+			var string = args.shift();
+
+			if(global_vars.i18n.hasOwnProperty(string)){
+				string = global_vars.i18n[string];
+			}
+
+			if(string.indexOf('%s') !== -1){
+				if(Array.isArray(args) && args.length !== 0){
+					for(var i = 0; i < args.length; i++){
+						string = string.replace('%s', args[i]);
+					}
+				}
+			}
+		
+			return string;
 		}
 
 	};

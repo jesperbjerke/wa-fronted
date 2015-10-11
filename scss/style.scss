@@ -301,8 +301,6 @@ body{
 }
 
 .wa-shortcode-wrap{
-	cursor: pointer;
-
 	.gallery-item{
 		a{
 			cursor: pointer;
@@ -737,6 +735,7 @@ body{
 	}
 }
 
+#wa-fronted-edit-shortcode,
 .medium-wa-image-edit-toolbar{
 	position: absolute;
 	margin-top: -42px;
@@ -818,6 +817,52 @@ body{
 	opacity: 0.85;
 	box-shadow: 0px 0px 10px rgba(#000, 0.2);
 	filter: grayscale(100%);
+}
+
+#wa-fronted-edit-shortcode{
+	.wa-fronted-edit-shortcode-inner{
+		@extend %clear;
+
+		#wa-fronted-edit-shortcode-button{
+			display: none;
+			float: left;
+
+			&.show{
+				display: inline-block;
+			}
+		}
+
+		.shortcode-input-wrapper{
+			@extend %clear;
+			width: 0px;
+			overflow: hidden;
+			display: inline-block;
+			float: left;
+
+			input{
+				display: inline-block;
+				float: left;
+				width: 80%;
+				padding: 5px 10px;
+				line-height: 1.8;
+				font-size: 14px;
+				border: 0;
+				background-color: #333;
+				color: #fff;
+				font-family: 'Open Sans', sans-serif;
+			}
+
+			button{
+				display: inline-block;
+				float: left;
+				width: 20%;
+			}
+
+			&.show{
+				width: 300px;
+			}
+		}
+	}
 }
 
 .select2-container{

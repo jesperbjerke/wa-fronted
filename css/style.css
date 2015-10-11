@@ -6708,7 +6708,7 @@ body .ui-tooltip {
   border-radius: 8px;
 }
 
-#wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner:after, #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .revision-input-container:after {
+#wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner:after, #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .revision-input-container:after, #wa-fronted-edit-shortcode .wa-fronted-edit-shortcode-inner:after, #wa-fronted-edit-shortcode .wa-fronted-edit-shortcode-inner .shortcode-input-wrapper:after {
   visibility: hidden;
   display: block;
   font-size: 0;
@@ -6717,15 +6717,16 @@ body .ui-tooltip {
   height: 0;
 }
 
-* html #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner, #wa-fronted-revisions-modal * html .wa-fronted-revisions-modal-inner, * html #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .revision-input-container, #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner * html .revision-input-container {
+* html #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner, #wa-fronted-revisions-modal * html .wa-fronted-revisions-modal-inner, * html #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .revision-input-container, #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner * html .revision-input-container, * html #wa-fronted-edit-shortcode .wa-fronted-edit-shortcode-inner, #wa-fronted-edit-shortcode * html .wa-fronted-edit-shortcode-inner, * html #wa-fronted-edit-shortcode .wa-fronted-edit-shortcode-inner .shortcode-input-wrapper, #wa-fronted-edit-shortcode .wa-fronted-edit-shortcode-inner * html .shortcode-input-wrapper {
   zoom: 1;
 }
 
-*:first-child + html #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner, #wa-fronted-revisions-modal *:first-child + html .wa-fronted-revisions-modal-inner, *:first-child + html #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .revision-input-container, #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner *:first-child + html .revision-input-container {
+*:first-child + html #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner, #wa-fronted-revisions-modal *:first-child + html .wa-fronted-revisions-modal-inner, *:first-child + html #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .revision-input-container, #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner *:first-child + html .revision-input-container, *:first-child + html #wa-fronted-edit-shortcode .wa-fronted-edit-shortcode-inner, #wa-fronted-edit-shortcode *:first-child + html .wa-fronted-edit-shortcode-inner, *:first-child + html #wa-fronted-edit-shortcode .wa-fronted-edit-shortcode-inner .shortcode-input-wrapper, #wa-fronted-edit-shortcode .wa-fronted-edit-shortcode-inner *:first-child + html .shortcode-input-wrapper {
   zoom: 1;
 }
 
-.medium-editor-toolbar ul li button, .medium-wa-image-upload-toolbar > button, .edit-acf-field, #wa-fronted-toolbar > button, #acf-dialog #close-acf-dialog, #wa-fronted-settings-modal .close-wa-fronted-modal, #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .close-wa-fronted-modal, .medium-wa-image-edit-toolbar button, .select2-container .select2-choice, #ui-datepicker-div .ui-datepicker-header .ui-datepicker-prev,
+.medium-editor-toolbar ul li button, .medium-wa-image-upload-toolbar > button, .edit-acf-field, #wa-fronted-toolbar > button, #acf-dialog #close-acf-dialog, #wa-fronted-settings-modal .close-wa-fronted-modal, #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .close-wa-fronted-modal, #wa-fronted-edit-shortcode button,
+.medium-wa-image-edit-toolbar button, .select2-container .select2-choice, #ui-datepicker-div .ui-datepicker-header .ui-datepicker-prev,
 #ui-datepicker-div .ui-datepicker-header .ui-datepicker-next {
   box-shadow: none !important;
   text-shadow: none !important;
@@ -6745,6 +6746,7 @@ body .ui-tooltip {
 #acf-dialog .medium-editor-button-active#close-acf-dialog,
 #wa-fronted-settings-modal .medium-editor-button-active.close-wa-fronted-modal,
 #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .medium-editor-button-active.close-wa-fronted-modal,
+#wa-fronted-edit-shortcode button.medium-editor-button-active,
 .medium-wa-image-edit-toolbar button.medium-editor-button-active,
 .select2-container .medium-editor-button-active.select2-choice,
 #ui-datepicker-div .ui-datepicker-header .medium-editor-button-active.ui-datepicker-prev,
@@ -6756,11 +6758,13 @@ body .ui-tooltip {
 #acf-dialog .active#close-acf-dialog,
 #wa-fronted-settings-modal .active.close-wa-fronted-modal,
 #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .active.close-wa-fronted-modal,
+#wa-fronted-edit-shortcode button.active,
 .medium-wa-image-edit-toolbar button.active,
 .select2-container .active.select2-choice,
 #ui-datepicker-div .ui-datepicker-header .active.ui-datepicker-prev,
 #ui-datepicker-div .ui-datepicker-header .active.ui-datepicker-next,
-.medium-editor-toolbar ul li button:hover, .medium-wa-image-upload-toolbar > button:hover, .edit-acf-field:hover, #wa-fronted-toolbar > button:hover, #acf-dialog #close-acf-dialog:hover, #wa-fronted-settings-modal .close-wa-fronted-modal:hover, #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .close-wa-fronted-modal:hover, .medium-wa-image-edit-toolbar button:hover, .select2-container .select2-choice:hover, #ui-datepicker-div .ui-datepicker-header .ui-datepicker-prev:hover,
+.medium-editor-toolbar ul li button:hover, .medium-wa-image-upload-toolbar > button:hover, .edit-acf-field:hover, #wa-fronted-toolbar > button:hover, #acf-dialog #close-acf-dialog:hover, #wa-fronted-settings-modal .close-wa-fronted-modal:hover, #wa-fronted-revisions-modal .wa-fronted-revisions-modal-inner .close-wa-fronted-modal:hover, #wa-fronted-edit-shortcode button:hover,
+.medium-wa-image-edit-toolbar button:hover, .select2-container .select2-choice:hover, #ui-datepicker-div .ui-datepicker-header .ui-datepicker-prev:hover,
 #ui-datepicker-div .ui-datepicker-header .ui-datepicker-next:hover {
   background: #333;
   color: #45bbe6;
@@ -6998,10 +7002,6 @@ body.wa-modal-open {
       -ms-transform: translateY(0px);
           transform: translateY(0px);
   opacity: 1;
-}
-
-.wa-shortcode-wrap {
-  cursor: pointer;
 }
 
 .wa-shortcode-wrap .gallery-item a {
@@ -7442,16 +7442,19 @@ body.wa-modal-open {
   background-color: #444;
 }
 
+#wa-fronted-edit-shortcode,
 .medium-wa-image-edit-toolbar {
   position: absolute;
   margin-top: -42px;
   display: none;
 }
 
+#wa-fronted-edit-shortcode.show,
 .medium-wa-image-edit-toolbar.show {
   display: block;
 }
 
+.csstransforms #wa-fronted-edit-shortcode,
 .csstransforms .medium-wa-image-edit-toolbar {
   display: block;
   -webkit-transition: -webkit-transform 0.2s ease, opacity 0.2s ease;
@@ -7463,6 +7466,7 @@ body.wa-modal-open {
   opacity: 0;
 }
 
+.csstransforms #wa-fronted-edit-shortcode.show,
 .csstransforms .medium-wa-image-edit-toolbar.show {
   z-index: 1;
   -webkit-transform: translateY(0px);
@@ -7471,6 +7475,7 @@ body.wa-modal-open {
   opacity: 1;
 }
 
+#wa-fronted-edit-shortcode.arrow-under:after,
 .medium-wa-image-edit-toolbar.arrow-under:after {
   top: 35px;
   border-color: #222 transparent transparent;
@@ -7485,10 +7490,12 @@ body.wa-modal-open {
   content: "";
 }
 
+#wa-fronted-edit-shortcode.arrow-over,
 .medium-wa-image-edit-toolbar.arrow-over {
   margin-top: -34px;
 }
 
+#wa-fronted-edit-shortcode.arrow-over:before,
 .medium-wa-image-edit-toolbar.arrow-over:before {
   top: -8px;
   border-color: transparent transparent #222;
@@ -7503,6 +7510,7 @@ body.wa-modal-open {
   content: "";
 }
 
+#wa-fronted-edit-shortcode button,
 .medium-wa-image-edit-toolbar button {
   -webkit-transition: background-color 0.2s ease-in, color 0.2s ease-in;
           transition: background-color 0.2s ease-in, color 0.2s ease-in;
@@ -7513,6 +7521,7 @@ body.wa-modal-open {
   line-height: 2;
 }
 
+#wa-fronted-edit-shortcode button i,
 .medium-wa-image-edit-toolbar button i {
   vertical-align: middle;
   margin-top: -5px;
@@ -7527,6 +7536,45 @@ body.wa-modal-open {
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
   -webkit-filter: grayscale(100%);
           filter: grayscale(100%);
+}
+
+#wa-fronted-edit-shortcode .wa-fronted-edit-shortcode-inner #wa-fronted-edit-shortcode-button {
+  display: none;
+  float: left;
+}
+
+#wa-fronted-edit-shortcode .wa-fronted-edit-shortcode-inner #wa-fronted-edit-shortcode-button.show {
+  display: inline-block;
+}
+
+#wa-fronted-edit-shortcode .wa-fronted-edit-shortcode-inner .shortcode-input-wrapper {
+  width: 0px;
+  overflow: hidden;
+  display: inline-block;
+  float: left;
+}
+
+#wa-fronted-edit-shortcode .wa-fronted-edit-shortcode-inner .shortcode-input-wrapper input {
+  display: inline-block;
+  float: left;
+  width: 80%;
+  padding: 5px 10px;
+  line-height: 1.8;
+  font-size: 14px;
+  border: 0;
+  background-color: #333;
+  color: #fff;
+  font-family: 'Open Sans', sans-serif;
+}
+
+#wa-fronted-edit-shortcode .wa-fronted-edit-shortcode-inner .shortcode-input-wrapper button {
+  display: inline-block;
+  float: left;
+  width: 20%;
+}
+
+#wa-fronted-edit-shortcode .wa-fronted-edit-shortcode-inner .shortcode-input-wrapper.show {
+  width: 300px;
 }
 
 .select2-container .select2-choice {

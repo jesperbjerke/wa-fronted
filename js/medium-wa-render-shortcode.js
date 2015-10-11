@@ -19,17 +19,18 @@ var Wa_render_shortcode = MediumEditor.Extension.extend({
   	var container = jQuery(this.base.elements[0]);
     wa_fronted.show_loading_spinner();
     var curr_text = wa_fronted.getSelectionText();
-    wa_fronted.shortcode_to_html(curr_text, '', function(html){
+
+    wa_fronted.shortcode_to_html(curr_text, true, function(html){
 
     	if(html !== ''){
-			var current_content = container.html(),
-				regex_str	= escape_regexp(curr_text),
-				regex       = new RegExp(regex_str, 'm'),
-				new_content = current_content.replace(regex, html);
+            var current_content = container.html(),
+                regex_str       = escape_regexp(curr_text),
+                regex           = new RegExp(regex_str, 'm'),
+                new_content     = current_content.replace(regex, html);
 
-			container.html(new_content);
+            container.html(new_content);
     	}else{
-    		toastr.error('Render unsuccessful', 'Selected text is not a valid shortcode');
+    		toastr.error(wa_fronted.i18n('Render unsuccessful'), wa_fronted.i18n('Selected text is not a valid shortcode'));
     	}
 
     	wa_fronted.hide_loading_spinner();

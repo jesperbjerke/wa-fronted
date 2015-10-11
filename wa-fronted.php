@@ -3,9 +3,9 @@
 	Plugin Name: WA-Fronted
 	Plugin URI: http://github.com/jesperbjerke/wa-fronted
 	Description: Edit content directly from fronted in the contents actual place
-	Version: 0.9
+	Version: 0.9.5
 	Text Domain: wa-fronted
-	Domain Path: /lang
+	Domain Path: /languages
 	Author: Jesper Bjerke
 	Author URI: http://www.westart.se
 	Network: True
@@ -61,6 +61,8 @@ class WA_Fronted {
 		}
 
 		add_action( 'wp_ajax_wa_fronted_save', array( $this, 'wa_fronted_save' ) );
+		add_action( 'wp_ajax_wa_fronted_autosave', array( $this, 'wa_fronted_autosave' ) );
+		add_action( 'wp_ajax_wa_fronted_get_autosave', array( $this, 'wa_fronted_get_autosave' ) );
 		add_action( 'wp_ajax_wa_render_shortcode', array( $this, 'wa_render_shortcode' ) );
 		add_action( 'wp_ajax_wa_get_image_src', array( $this, 'wa_get_image_src' ) );
 		add_action( 'wp_ajax_wa_get_oembed', array( $this, 'wa_get_oembed' ) );
@@ -279,6 +281,8 @@ class WA_Fronted {
 		if($_SESSION['wa_fronted_options'] !== false){
 			do_action('wa_fronted_before_scripts', $_SESSION['wa_fronted_options']);
 
+			load_plugin_textdomain( 'wa-fronted', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
+
 			wp_enqueue_media();
 
 			wp_enqueue_script('jquery-ui-core');
@@ -318,6 +322,7 @@ class WA_Fronted {
 				'global_vars',
 				array(
 					'wp_lang'     => get_bloginfo('language'),
+					'i18n'		  => $this->get_js_i18n(),
 					'ajax_url'    => admin_url('admin-ajax.php'),
 					'options'     => $_SESSION['wa_fronted_options'],
 					'image_sizes' => $this->get_image_sizes(),
@@ -359,17 +364,21 @@ class WA_Fronted {
 			preg_match_all( '/'. $pattern .'/s', $content, $matches );
 			if(array_key_exists( 0, $matches )){
 				$shortcodes = $matches[0];
+				$filtered_shortcodes = array();
 				foreach($shortcodes as $shortcode){
-					preg_match('/(?>\\[)(.*)(?>\\s)/s', $shortcode, $sub_matches);
-					$content = str_replace($shortcode, '
-						<!-- shortcode -->
-							<div
-								class="wa-shortcode-wrap"
-								data-shortcode-base="' . $sub_matches[1] . '"
-								data-shortcode="' . rawurlencode($shortcode) . '">
-								' . $shortcode . '
-							</div>
-						<!-- /shortcode -->', $content);
+					if(!in_array($shortcode, $filtered_shortcodes)){
+						preg_match('/(?>\\[)([^\\s|^\\]]+)/s', $shortcode, $sub_matches);
+						$content = str_replace($shortcode, '
+							<!-- shortcode -->
+								<div
+									class="wa-shortcode-wrap"
+									data-shortcode-base="' . $sub_matches[1] . '"
+									data-shortcode="' . rawurlencode($shortcode) . '">
+									' . $shortcode . '
+								</div>
+							<!-- /shortcode -->', $content);
+						$filtered_shortcodes[] = $shortcode;
+					}
 				}
 			}
 		}
@@ -383,10 +392,11 @@ class WA_Fronted {
 	 */
 	protected function unfilter_shortcodes( $content ){
 		if($_SESSION['wa_fronted_options'] !== false){
-			$pattern = '(?=<!--\\sshortcode\\s-->)(.*)(?<=\\<!--\\s\\/shortcode\\s-->)';
+			$pattern = '(<!--\\sshortcode\\s-->)(.*?)(<!--\\s\\/shortcode\\s-->)';
 
 			preg_match_all( '/'. $pattern .'/s', $content, $matches );
-			if(array_key_exists( 0, $matches )){
+
+			if(array_key_exists( 0, $matches ) && !empty($matches[0])){
 				$rendered_shortcodes = $matches[0];
 				foreach($rendered_shortcodes as $rendered_shortcode){
 					preg_match('/(?<=data-shortcode=\\\\\")(.*?)(?=\\\\\".*)/s', $rendered_shortcode, $sub_matches);
@@ -400,6 +410,8 @@ class WA_Fronted {
 
 	/**
 	 * Renders a shortcode from either AJAX or paramenter and returns rendered html
+	 * @param string $shortcode shortcode to render
+	 * @param string $comments
 	 * @return string html content
 	 */
 	public function wa_render_shortcode($shortcode = false, $comments = false){
@@ -410,7 +422,7 @@ class WA_Fronted {
 			$is_ajax   = true;
 		}
 
-		preg_match('/(?>\\[)([^\\s]+)/s', $shortcode, $sub_matches);
+		preg_match('/(?>\\[)([^\\s|^\\]]+)/s', $shortcode, $sub_matches);
 
 		if(!empty($sub_matches) && $sub_matches[1] !== ''){
 			$html =
@@ -436,32 +448,164 @@ class WA_Fronted {
 
 	/**
 	 * Get autosaved content and compare saved dates
+	 * @param int $post_id post to get autosave from
 	 * @return array autosaved content
 	 */
-	public function wa_fronted_get_autosave(){
+	public function wa_fronted_get_autosave($post_id = false){
 
+		$is_ajax = false;
+		$return = array(
+			'success' => true,
+			'data'    => false
+		);
+
+		if($post_id == false){
+			if(isset($_POST['post_id'])){
+				$is_ajax = true;
+				$post_id = $_POST['post_id'];
+			}else{
+				$return['success'] = false;
+				$return['error'] = __('Missing post ID', 'wa-fronted');
+			}
+		}
+
+		$current_post = get_post($post_id);
+
+		if($current_post){
+			$last_modified = $current_post->post_modified;
+
+			global $wpdb;
+			$autosaves = $wpdb->get_results("
+				SELECT *
+				FROM $wpdb->posts
+				WHERE `post_parent` = {$post_id}
+					AND `post_type` = 'revision'
+					AND `post_name` LIKE '%autosave%'
+			");
+
+			if(!empty($autosaves)){
+				usort($autosaves, function($a, $b){
+					return $a->post_date > $b->post_date;
+				});
+
+				$autosave = $autosaves[0];
+				if($autosave->post_date > $last_modified){
+					$return['data'] = apply_filters('wa_fronted_get_autosave', $autosave);
+				}
+			}else{
+				$return['success'] = false;
+				$return['error'] = __('No autosaves', 'wa-fronted');
+			}
+		}else{
+			$return['success'] = false;
+			$return['error']   = __('Post not found', 'wa-fronted');
+		}
+
+		if($is_ajax){
+			wp_send_json($return);
+		}else{
+			return $return;
+		}
 	}
 
 	/**
 	 * Autosaves edited content to cookie
 	 * Hookable through action 'wa_fronted_autosave'
-	 * @todo: Add autosave function
 	 */
 	public function wa_fronted_autosave(){
 
-		$return = array();
+		$return = array(
+			'success' => true
+		);
 
-		if(isset($_POST['data'])){
+		if(isset($_POST['data']) && wp_verify_nonce( $_POST['wa_fronted_save_nonce'], 'wa_fronted_save_nonce' )){
 			$data = $_POST['data'];
 
+			$post_ids = array();
+
+			$autosave_data = array();
+
 			foreach($data as $this_data){
-				$safe_content = wp_kses_stripslashes($this->unfilter_shortcodes($this_data['content']));
+				$safe_content = trim(wp_kses_stripslashes($this->unfilter_shortcodes($this_data['content'])));
 				$field_type   = $this_data['options']['field_type'];
 				$post_id      = (int)$this_data['options']['post_id'];
+
+				if(!in_array($post_id, $post_ids)){
+					$post_ids[] = $post_id;
+
+					$autosave_data[$post_id] = array(
+						'post_author'    => get_current_user_id(),
+						'post_parent'    => $post_id,
+						'post_name'      => $post_id . '-autosave-v1',
+						'post_status'    => 'inherit',
+						'post_type'      => 'revision',
+						'comment_status' => 'closed',
+						'ping_status'    => 'closed'
+					);
+				} 
+
+				if($field_type == 'post_content' || $field_type == 'post_title' || $field_type == 'post_excerpt'){
+					$autosave_data[$post_id][$field_type] = $safe_content;
+				}
 			}
 
-			do_action('wa_fronted_autosave', $data);
+			$autosave_data = apply_filters('wa_fronted_autosave_data', $autosave_data, $data);
 
+			foreach($post_ids as $post_id){
+				$new_post_id;
+				$this_autosave_data = $autosave_data[$post_id];
+
+				if(!isset($this_autosave_data['post_content'])){
+					$this_autosave_data['post_content'] = get_the_content($post_id);
+				}
+				
+				if(!isset($this_autosave_data['post_title'])){
+					$this_autosave_data['post_title'] = get_the_title($post_id);
+				}
+				
+				if(!isset($this_autosave_data['post_excerpt'])){
+					$this_autosave_data['post_excerpt'] = get_the_excerpt($post_id);
+				}
+
+				//Get existing autosave so we dont clutter the database
+				global $wpdb;
+				$autosaves = $wpdb->get_results("
+					SELECT *
+					FROM $wpdb->posts
+					WHERE `post_parent` = {$post_id}
+						AND `post_type` = 'revision'
+						AND `post_name` LIKE '%autosave%'
+				");
+
+				if(!empty($autosaves)){
+					usort($autosaves, function($a, $b){
+						return $a->post_date > $b->post_date;
+					});
+
+					$autosave = $autosaves[0];
+
+
+					$this_autosave_data['ID']            = $autosave->ID;
+					$this_autosave_data['post_date']     = current_time('mysql');
+					$this_autosave_data['post_date_gmt'] = current_time('mysql', true);
+
+					$new_post_id = wp_update_post($this_autosave_data);
+
+				}else{
+					$new_post_id = wp_insert_post($this_autosave_data);
+				}
+
+				if(!$new_post_id){
+					$return['success'] = false;
+					$return['error']   = __('Could not create autosave', 'wa-fronted');
+				}else{
+					do_action('wa_fronted_autosave', $data, $new_post_id);
+				}
+			}
+
+		}else{
+			$return['success'] = false;
+			$return['error']   = __('Sent data not valid', 'wa-fronted');
 		}
 
 		wp_send_json($return);
@@ -471,7 +615,6 @@ class WA_Fronted {
 	 * Saves field content sent by ajax
 	 * Hookable through action 'wa_fronted_save'
 	 * @return json $result
-	 * @todo: Add save of meta_{META KEY}
 	 */
 	public function wa_fronted_save(){
 
@@ -517,7 +660,7 @@ class WA_Fronted {
 
 		}else{
 			$return['success'] = false;
-			$return['error']   = 'Sent data not valid';
+			$return['error']   = __('Sent data not valid', 'wa-fronted');
 		}
 
 		wp_send_json($return);
@@ -797,15 +940,28 @@ class WA_Fronted {
 				</div>
 			</div>
 
-			<div id="wa-fronted-revisions-modal">
-				<div class="wa-fronted-revisions-modal-inner">
-					<button class="close-wa-fronted-modal"><i class="fa fa-close"></i></button>
+			<?php if(post_type_supports( $post->post_type, 'revisions' )): ?>
+				<div id="wa-fronted-revisions-modal">
+					<div class="wa-fronted-revisions-modal-inner">
+						<button class="close-wa-fronted-modal"><i class="fa fa-close"></i></button>
 
-					<div class="revision-input-container">
-						<h4><?php _e('Step through revisions', 'wa-fronted'); ?></h4>
-						<button id="wa-previous-revision"><i class="fa fa-chevron-left"></i></button>
-						<input type="text" name="wa_fronted_switch_revision" id="wa_fronted_switch_revision" readonly>
-						<button id="wa-next-revision"><i class="fa fa-chevron-right"></i></button>
+						<div class="revision-input-container">
+							<h4><?php _e('Step through revisions', 'wa-fronted'); ?></h4>
+							<button id="wa-previous-revision"><i class="fa fa-chevron-left"></i></button>
+							<input type="text" name="wa_fronted_switch_revision" id="wa_fronted_switch_revision" readonly>
+							<button id="wa-next-revision"><i class="fa fa-chevron-right"></i></button>
+						</div>
+					</div>
+				</div>
+			<?php endif; ?>
+			
+			<div id="wa-fronted-edit-shortcode">
+				<div class="wa-fronted-edit-shortcode-inner">
+					<button id="wa-fronted-edit-shortcode-button" class="show"><i class="fa fa-edit"></i></button>
+					
+					<div class="shortcode-input-wrapper">
+						<input type="text" name="wa_fronted_shortcode_input" id="wa_fronted_shortcode_input">
+						<button id="submit-shortcode"><i class="dashicons dashicons-yes"></i></button>
 					</div>
 				</div>
 			</div>
@@ -1062,7 +1218,7 @@ class WA_Fronted {
 	/**
 	 * Retrieve post revisions and its meta data
 	 */
-	public static function wa_get_revisions($post_id = false){
+	public function wa_get_revisions($post_id = false){
 		$post_id = (isset($_POST['post_id'])) ? $_POST['post_id'] : $post_id;
 		$revisions = apply_filters('wa_fronted_revisions', wp_get_post_revisions($post_id), $post_id);
 
@@ -1075,6 +1231,47 @@ class WA_Fronted {
 		}else{
 			return $revisions;
 		}
+	}
+
+	/**
+	 * Get javascript strings that should be translated
+	 */
+	public function get_js_i18n(){
+		return apply_filters('wa_get_js_i18n', array(
+			'No results found.'                                                                                => __('No results found.', 'wa-fronted'),
+			'Add'                                                                                              => __('Add', 'wa-fronted'),
+			'The changes you have made will be lost if you navigate away from this page.'                      => __('The changes you have made will be lost if you navigate away from this page.', 'wa-fronted'),
+			'A draft of this post has been saved automatically'                                                => __('A draft of this post has been saved automatically', 'wa-fronted'),
+			'Draft autosaved'                                                                                  => __('Draft autosaved', 'wa-fronted'),
+			'There were validation errors!'                                                                    => __('There were validation errors!', 'wa-fronted'),
+			'Save unsuccessful'                                                                                => __('Save unsuccessful', 'wa-fronted'),
+			'There is an autosave of this post that is more recent than the version below. View the autosave?' => __('There is an autosave of this post that is more recent than the version below. View the autosave?', 'wa-fronted'),
+			'Cannot be empty'                                                                                  => __('Cannot be empty', 'wa-fronted'),
+			'Must be a date'                                                                                   => __('Must be a date', 'wa-fronted'),
+			'Must be a valid email address'                                                                    => __('Must be a valid email address', 'wa-fronted'),
+			'Must be a number'                                                                                 => __('Must be a number', 'wa-fronted'),
+			'Must contain a number'                                                                            => __('Must contain a number', 'wa-fronted'),
+			'Can only be letters or numbers'                                                                   => __('Can only be letters or numbers', 'wa-fronted'),
+			'Must be an url'                                                                                   => __('Must be an url', 'wa-fronted'),
+			'Must be a phone number'                                                                           => __('Must be a phone number', 'wa-fronted'),
+			'Must be more than %s characters'                                                                  => __('Must be more than %s characters', 'wa-fronted'),
+			'Must be less than %s characters'                                                                  => __('Must be less than %s characters', 'wa-fronted'),
+			'Must be %s characters'                                                                            => __('Must be %s characters', 'wa-fronted'),
+			'Must be greater than %s'                                                                          => __('Must be greater than %s', 'wa-fronted'),
+			'Must be less than %s'                                                                             => __('Must be less than %s', 'wa-fronted'),
+			'Must be between %s and %s'                                                                        => __('Must be between %s and %s', 'wa-fronted'),
+			'Must be %s'                                                                                       => __('Must be %s', 'wa-fronted'),
+			'Add media'                                                                                        => __('Add media', 'wa-fronted'),
+			'Align left'                                                                                       => __('Align left', 'wa-fronted'),
+			'Align center'                                                                                     => __('Align center', 'wa-fronted'),
+			'Align right'                                                                                      => __('Align right', 'wa-fronted'),
+			'Edit'                                                                                             => __('Edit', 'wa-fronted'),
+			'Remove'                                                                                           => __('Remove', 'wa-fronted'),
+			'render shortcode'                                                                                 => __('render shortcode', 'wa-fronted'),
+			'Render unsuccessful'                                                                              => __('Render unsuccessful', 'wa-fronted'),
+			'Selected text is not a valid shortcode'                                                           => __('Selected text is not a valid shortcode', 'wa-fronted'),
+			'Sent code is not a valid shortcode'                                                               => __('Sent code is not a valid shortcode', 'wa-fronted')
+		));
 	}
 }
 
@@ -1097,6 +1294,7 @@ if(!function_exists('wa_fronted_init')){
 		$WA_Fronted = new WA_Fronted();
 	}
 }
+
 
 if(phpversion() >= 5.43){
 	add_action('plugins_loaded', 'wa_fronted_init', 999);

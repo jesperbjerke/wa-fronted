@@ -1,5 +1,18 @@
 CHANGELOG
 =========
+## 0.9.5
+* Added autosaving
+* Added filter `wa_fronted_get_autosave`
+* Added filter `wa_fronted_autosave_data`
+* Added filter `wa_get_js_i18n`
+* Added translation function for javascript
+* Added ability to edit rendered shortcodes
+* Added filter `shortcode_actions`
+* Added action `shortcode_action_{shortcode base}`
+* Fixed faulty regex in `wa_render_shortcode`
+* Fixed faulty regex in `filter_shortcodes` if there were multiple occurrences of the exact same shortcode
+* Fixed faulty regex in `unfilter_shortcodes`
+
 ## 0.9.1
 * Updated Medium Editor to 5.8.3
 * Fixed typo in the PHP version check

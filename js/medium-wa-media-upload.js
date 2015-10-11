@@ -23,7 +23,7 @@ Wa_image_upload.prototype.render_upload_toolbar = function() {
             {
                 'id'    : 'add-image',
                 'icon'  : 'fa fa-picture-o',
-                'title' : 'Add media',
+                'title' : wa_fronted.i18n('Add media'),
                 'func'  : function(){
                     self.onClick();
                 }
@@ -251,19 +251,17 @@ Wa_image_upload.prototype.bindings = function(instance, editor_container){
 
     self.enable_resizing(instance, editor_container);
 
+    wa_fronted.add_action('shortcode_action_gallery', function(shortcode, element){
+        self.setup_wp_media(
+            'gallery-edit', 
+            shortcode, 
+            element
+        );
+        self.frame.open();
+    });
+
     editor_container.click(function(e){
-        if(jQuery(e.target).parents('.wa-shortcode-wrap').length !== 0){
-            e.preventDefault();
-            var shortcode_wrap = jQuery(e.target).parents('.wa-shortcode-wrap');
-            if(shortcode_wrap.attr('data-shortcode-base') === 'gallery'){
-                self.setup_wp_media(
-                    'gallery-edit', 
-                    wa_fronted.shortcode_from_attr(shortcode_wrap), 
-                    shortcode_wrap
-                );
-                self.frame.open();
-            }
-        }else if(wa_fronted.getSelectionText() === '' && e.target.tagName !== 'IMG'){
+        if(wa_fronted.getSelectionText() === '' && e.target.tagName !== 'IMG'){
             e.preventDefault();
             self.setup_wp_media('insert');
             
@@ -620,7 +618,7 @@ Wa_image_upload.prototype.enable_image_toolbar = function(instance, editor_conta
             {
                 'id' : 'alignleft',
                 'icon' : 'dashicons dashicons-align-left',
-                'title' : 'Align left',
+                'title' : wa_fronted.i18n('Align left'),
                 'func' : function(){
                     var img_el = self.resizing_img[0],
                         img_caption_wrap = self.resizing_img.parents('.wa-shortcode-wrap');
@@ -636,7 +634,7 @@ Wa_image_upload.prototype.enable_image_toolbar = function(instance, editor_conta
             {
                 'id' : 'aligncenter',
                 'icon' : 'dashicons dashicons-align-center',
-                'title' : 'Align center',
+                'title' : wa_fronted.i18n('Align center'),
                 'func' : function(){
                     var img_el = self.resizing_img[0],
                         img_caption_wrap = self.resizing_img.parents('.wa-shortcode-wrap');
@@ -652,7 +650,7 @@ Wa_image_upload.prototype.enable_image_toolbar = function(instance, editor_conta
             {
                 'id' : 'alignright',
                 'icon' : 'dashicons dashicons-align-right',
-                'title' : 'Align right',
+                'title' : wa_fronted.i18n('Align right'),
                 'func' : function(){
                     var img_el = self.resizing_img[0],
                         img_caption_wrap = self.resizing_img.parents('.wa-shortcode-wrap');
@@ -668,7 +666,7 @@ Wa_image_upload.prototype.enable_image_toolbar = function(instance, editor_conta
             {
                 'id' : 'edit',
                 'icon' : 'dashicons dashicons-edit',
-                'title' : 'Edit',
+                'title' : wa_fronted.i18n('Edit'),
                 'func' : function(){
 
                     var img_link = self.resizing_img.parents('a'),
@@ -694,7 +692,7 @@ Wa_image_upload.prototype.enable_image_toolbar = function(instance, editor_conta
             {
                 'id' : 'remove',
                 'icon' : 'dashicons dashicons-no',
-                'title' : 'Remove',
+                'title' : wa_fronted.i18n('Remove'),
                 'func' : function(){
 
                     var img_link = self.resizing_img.parents('a'),
@@ -846,6 +844,7 @@ Wa_image_upload.prototype.insertGallery = function(frame, shortcode_wrap){
                 }
 
                 wa_fronted.trigger(self.instance, 'editableInput');
+                wa_fronted.bind_shortcode_edit(self.instance.elements[0]);
             }
         );
     }

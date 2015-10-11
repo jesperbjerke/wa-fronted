@@ -113,49 +113,49 @@ var wa_fronted = wa_fronted || {};
 
 		switch(val_type){
 			case 'not_blank':
-				msg = 'Cannot be empty';
+				msg = wa_fronted.i18n('Cannot be empty');
 				break;
 			case 'is_date':
-				msg = 'Must be a date';
+				msg = wa_fronted.i18n('Must be a date');
 				break;
 			case 'is_email':
-				msg = 'Must be a valid email address';
+				msg = wa_fronted.i18n('Must be a valid email address');
 				break;
 			case 'is_num':
-				msg = 'Must be a number';
+				msg = wa_fronted.i18n('Must be a number');
 				break;
 			case 'contains_num':
-				msg = 'Must contain a number';
+				msg = wa_fronted.i18n('Must contain a number');
 				break;
 			case 'is_alphanum':
-				msg = 'Can only be letters or numbers';
+				msg = wa_fronted.i18n('Can only be letters or numbers');
 				break;
 			case 'is_url':
-				msg = 'Must be an url';
+				msg = wa_fronted.i18n('Must be an url');
 				break;
 			case 'is_tel':
-				msg = 'Must be a phone number';
+				msg = wa_fronted.i18n('Must be a phone number');
 				break;
 			case 'min_length':
-				msg = 'Must be more than ' + compare + ' characters';
+				msg = wa_fronted.i18n('Must be more than %s characters', compare);
 				break;
 			case 'max_length':
-				msg = 'Must be less than ' + compare + ' characters';
+				msg = wa_fronted.i18n('Must be less than %s characters', compare);
 				break;
 			case 'is_length':
-				msg = 'Must be ' + compare + ' characters';
+				msg = wa_fronted.i18n('Must be %s characters', compare);
 				break;
 			case 'min':
-				msg = 'Must be greater than ' + compare;
+				msg = wa_fronted.i18n('Must be greater than ', compare);
 				break;
 			case 'max':
-				msg = 'Must be less than ' + compare;
+				msg = wa_fronted.i18n('Must be less than ', compare);
 				break;
 			case 'between':
-				msg = 'Must be between ' + compare[0] + ' and ' + compare[1];
+				msg = wa_fronted.i18n('Must be between %s and %s', compare[0], compare[1]);
 				break;
 			case 'equal_to':
-				msg = 'Must be ' + compare;
+				msg = wa_fronted.i18n('Must be ', compare);
 				break;
 			default:
 				msg = wa_fronted.apply_filters( 'validation_msg', msg, val_type, compare );

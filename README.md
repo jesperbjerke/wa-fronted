@@ -17,6 +17,7 @@ Frontend editor for WordPress, an free and open source project with a goal to en
 * [x] Support for extensions and integrations
 * [x] Advanced Custom Fields support (see [supported ACF fields](https://github.com/jesperbjerke/wa-fronted/wiki/Supported-fields) for more details)
 * [x] WooCommerce support for simple product types (see [supported WooCommerce fields](https://github.com/jesperbjerke/wa-fronted/wiki/Supported-fields) for more details)
+* [x] Autosave
 * [x] Post revisions (step through and see changes live)
 * [x] Native custom fields support
 * [x] Live value validation
@@ -43,10 +44,8 @@ Frontend editor for WordPress, an free and open source project with a goal to en
 ## To do's
 > Things that are planned to be implemented in the near future (in no particular order)
 
-* [ ] Autosave
 * [ ] Ability to edit custom excerpt
 * [ ] Enable select-dropdown for other fields than meta_select
-* [ ] Translation function for javascript
 
 ## Help needed
 * [ ] Translating
