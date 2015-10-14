@@ -9,6 +9,7 @@ Frontend editor for WordPress, a free and open source project with a goal to enh
 > This plugin requires plugin and theme developers to include pre-configured options in their products, it will **not** work "out of the box". Are you an end-user? [Look here!](https://edituswp.com/)
 
 **[Live Demo](http://fronted.westart.se)**
+
 **[Documentation](https://github.com/jesperbjerke/wa-fronted/wiki)**
 
 ![](https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/4GUJJnK01o.gif)
