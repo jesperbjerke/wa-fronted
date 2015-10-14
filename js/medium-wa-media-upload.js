@@ -262,7 +262,6 @@ Wa_image_upload.prototype.bindings = function(instance, editor_container){
 
     editor_container.click(function(e){
         if(wa_fronted.getSelectionText() === '' && e.target.tagName !== 'IMG'){
-            e.preventDefault();
             self.setup_wp_media('insert');
             
             clearTimeout(showTimer);
@@ -421,13 +420,21 @@ Wa_image_upload.prototype.position_handles = function(container) {
     });
 
     self.handles.on('mousedown', function(e){
-        if(e.target.classList[0] !== 'resize_handle'){
-            self.ghost = document.createElement('img');
+        if(e.target.classList[0] !== 'resize_handle'){ 
+            self.ghost     = document.createElement('img');
             self.ghost.src = self.resizing_img.attr('src');
-            self.ghost.id = 'wa-fronted-img-drag-ghost';
+            self.ghost.id  = 'wa-fronted-img-drag-ghost';
+
             document.body.appendChild(self.ghost);
-            self.ghost = jQuery(self.ghost);
-            self.is_dragging = true;
+
+            self.ghost               = jQuery(self.ghost);
+            self.is_within_container = true,
+            self.has_moved           = false
+            self.is_dragging         = true;
+            self.orig_mouse_pos      = {
+                'y' : e.clientY,
+                'x' : e.clientX
+            };
         }
     });
 
@@ -524,19 +531,17 @@ Wa_image_upload.prototype.on_resize_image = function() {
 
 
 Wa_image_upload.prototype.on_image_drag = function(instance, editor_container) {
-    var self = this,
-        is_within_container = true,
-        has_moved = false;
+    var self = this;
 
     editor_container.on('mouseout', function(){
         if(self.is_dragging){
-            is_within_container = false;
+            self.is_within_container = false;
         }
     });
 
     editor_container.on('mouseenter', function(){
         if(self.is_dragging){
-            is_within_container = true;
+            self.is_within_container = true;
         }
     });
 
@@ -551,17 +556,25 @@ Wa_image_upload.prototype.on_image_drag = function(instance, editor_container) {
             sel.setSingleRange(range);
 
             if(event.type === 'mousemove' || event.type === 'touchmove'){
+
+                if(!self.has_moved){
+                    if(self.orig_mouse_pos.y < event.clientY - 2 || self.orig_mouse_pos.y > event.clientY + 2 || self.orig_mouse_pos.x < event.clientX - 2 || self.orig_mouse_pos.x > event.clientX + 2){
+                        self.has_moved = true;
+                        self.image_toolbar.removeClass('show');
+                    }
+                }
             
-                self.ghost[0].style.top = event.clientY + 'px';
-                self.ghost[0].style.left = event.clientX + 'px';
-                has_moved = true;
+                if(self.has_moved){
+                    self.ghost[0].style.top = event.clientY + 'px';
+                    self.ghost[0].style.left = event.clientX + 'px';
+                }
 
             }else if(event.type === 'mouseup' || event.type === 'touchend'){
 
-                if(is_within_container && has_moved){
+                if(self.is_within_container && self.has_moved){
 
                     self.is_dragging = false;
-                    editor_container[0].focus();
+                    // editor_container[0].focus();
 
                     self.ghost.remove();
                     self.ghost = false;
@@ -570,7 +583,8 @@ Wa_image_upload.prototype.on_image_drag = function(instance, editor_container) {
                         sel = rangy.getSelection();
                 
                     sel.setSingleRange(range);
-                    editor_container[0].focus();
+                    
+                    // editor_container[0].focus();
 
                     var shortcode_wrapper = self.resizing_img.parents('.wa-shortcode-wrap'),
                         img_link = self.resizing_img.parent('a'),
@@ -628,7 +642,7 @@ Wa_image_upload.prototype.enable_image_toolbar = function(instance, editor_conta
                         console.log(img_el);
                     }
 
-                    img_el.className = img_el.className.className.replace(/align\w+/, 'alignleft');
+                    img_el.className = img_el.className.replace(/align\w+/, 'alignleft');
                 }
             },
             {
@@ -644,7 +658,7 @@ Wa_image_upload.prototype.enable_image_toolbar = function(instance, editor_conta
                         console.log(img_el);
                     }
 
-                    img_el.className = img_el.className.className.replace(/align\w+/, 'aligncenter');
+                    img_el.className = img_el.className.replace(/align\w+/, 'aligncenter');
                 }
             },
             {

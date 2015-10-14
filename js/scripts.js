@@ -307,13 +307,15 @@ var wa_fronted;
 					},
 					buttonLabels      : 'fontawesome',
 					imageDragging     : false,
-					cleanPastedHTML   : true,
 					placeholder       : false,
-					// forcePlainText : true,
+					paste : {
+						cleanPastedHTML : true
+					},
 					autoLink          : true,
 					anchorPreview     : false,
 					anchor            : {
-				    	linkValidation : true
+				    	linkValidation : true,
+				    	targetCheckbox : false
 				    },
 				    extensions 		  : {}
 				};

@@ -4,17 +4,20 @@ WA Fronted WordPress Plugin
 [![Join the chat at https://gitter.im/jesperbjerke/wa-fronted](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/jesperbjerke/wa-fronted?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 Discuss this project at Gitter
 
-Frontend editor for WordPress, an free and open source project with a goal to enhance usability and convenience of editing content.
+Frontend editor for WordPress, a free and open source project with a goal to enhance usability and convenience of editing content.
 
 > This plugin requires plugin and theme developers to include pre-configured options in their products, it will **not** work "out of the box". Are you an end-user? [Look here!](https://edituswp.com/)
 
-![](https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/screenshot-1.jpg)
-![](https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/screenshot-2.jpg)
-![](https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/screenshot-3.jpg)
+**[Live Demo](http://fronted.westart.se)**
+**[Documentation](https://github.com/jesperbjerke/wa-fronted/wiki)**
+
+![](https://github.com/jesperbjerke/wa-fronted/blob/master/screenshots/4GUJJnK01o.gif)
 
 ## Features
 
 * [x] Support for extensions and integrations
+* [x] Supports Custom Post Types
+* [x] Supports Custom Fields (see [supported fields](https://github.com/jesperbjerke/wa-fronted/wiki/Supported-fields) for more details)
 * [x] Advanced Custom Fields support (see [supported ACF fields](https://github.com/jesperbjerke/wa-fronted/wiki/Supported-fields) for more details)
 * [x] WooCommerce support for simple product types (see [supported WooCommerce fields](https://github.com/jesperbjerke/wa-fronted/wiki/Supported-fields) for more details)
 * [x] Autosave
@@ -46,6 +49,11 @@ Frontend editor for WordPress, an free and open source project with a goal to en
 
 * [ ] Ability to edit custom excerpt
 * [ ] Enable select-dropdown for other fields than meta_select
+* [ ] Optimization for small screens and touch devices
+* [ ] Make it possible to create new posts from frontend
+* [ ] Ability to set multiple user roles in `permission` option
+* [ ] Automatic config of `post_content` and `post_title` if no overrides
+* [ ] CTRL + click on text link in editor to open in new tab
 
 ## Help needed
 * [ ] Translating
@@ -53,7 +61,6 @@ Frontend editor for WordPress, an free and open source project with a goal to en
 ## Proposed features
 > These features requires further discussion, not yet set to be implemented
 
-* [ ] Make it possible to create new posts from frontend
 * [ ] Change common ajax functions to make use of WP Rest API instead (when implemented into core)
 * [ ] Spellchecking and word suggestion, auto correction
 * [ ] Ability to update widget contents
@@ -61,7 +68,6 @@ Frontend editor for WordPress, an free and open source project with a goal to en
 * [ ] Extended WooCommerce support
 * [ ] More ACF fields support
 * [ ] Mirror style of current WP admin theme
-* [ ] Optimization for small screens
 * [ ] Ability to create child-categories
 
 ## Proposed extensions

@@ -354,6 +354,7 @@ body{
 
 	#wa-fronted-save{
 		display: none;
+		font-weight: 600;
 	}
 }
 
@@ -740,6 +741,7 @@ body{
 	position: absolute;
 	margin-top: -42px;
 	display: none;
+	top: 0;
 
 	&.show{
 		display: block;
@@ -1232,5 +1234,20 @@ body{
 		font-weight: 300;
 		font-style: italic;
 		font-size: 13px;
+	}
+
+	.toast-close-button:hover, 
+	.toast-close-button:focus {
+		background: none transparent !important;
+	}
+}
+
+#toast-container{
+	> div {
+		box-shadow: 0 0 12px rgba(#000, 0.4);
+		
+		&:hover{
+			box-shadow: 0 0 12px rgba(#000, 0.8);
+		}
 	}
 }

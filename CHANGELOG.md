@@ -1,5 +1,13 @@
 CHANGELOG
 =========
+## 1.0
+* Fixed shortcode edit and image edit toolbar taking up space in footer
+* Fixed problem with image dragging and showing the image edit toolbar
+* Fixed shortcodes not rendering when showing revisions
+* Fixed a few CSS kinks
+* Fixed image align left and center
+* Made an [online demo](http://fronted.westart.se)
+
 ## 0.9.5
 * Added autosaving
 * Added filter `wa_fronted_get_autosave`

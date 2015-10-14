@@ -3,7 +3,7 @@
 	Plugin Name: WA-Fronted
 	Plugin URI: http://github.com/jesperbjerke/wa-fronted
 	Description: Edit content directly from fronted in the contents actual place
-	Version: 0.9.5
+	Version: 1.0
 	Text Domain: wa-fronted
 	Domain Path: /languages
 	Author: Jesper Bjerke
@@ -54,9 +54,9 @@ class WA_Fronted {
 			add_action( 'wp_enqueue_scripts', array( $this, 'scripts_and_styles' ) );
 			add_action( 'wp_footer', array( $this, 'wa_fronted_toolbar' ) );
 			add_action( 'wp_footer', array( $this, 'wa_fronted_footer' ) );
-			add_filter( 'the_content', array( $this, 'filter_shortcodes' ) );
 			add_action( 'wp_logout', array( $this, 'wa_wp_logout' ) );
-
+			add_filter( 'the_content', array( $this, 'filter_shortcodes' ) );
+			
 			do_action( 'wa_fronted_inited' );
 		}
 
@@ -74,14 +74,14 @@ class WA_Fronted {
 	}
 
 	/**
-	 * On wp init, start session and check for posted data
+	 * On wp init, start session
 	 */
 	public function wa_wp_init(){
 		session_start();
 	}
 
 	/**
-	 * After wp is fully loaded, get options if on frontend and logged in
+	 * After wp is fully loaded, get options if on frontend and logged in and check for posted data
 	 */
 	public function wa_has_wp(){
 		$_SESSION['wa_fronted_options'] = $this->get_options();
@@ -346,6 +346,8 @@ class WA_Fronted {
 				'wa-fronted-style',
 				plugins_url( '/css/style.css', __FILE__ )
 			);
+
+			wp_enqueue_style( 'wa-fronted-fonts', 'https://fonts.googleapis.com/css?family=Open+Sans:400,700,400italic,600,300&subset=latin,latin-ext', array(), null );
 
 			do_action('wa_fronted_after_scripts', $_SESSION['wa_fronted_options']);
 		}
@@ -1222,9 +1224,17 @@ class WA_Fronted {
 		$post_id = (isset($_POST['post_id'])) ? $_POST['post_id'] : $post_id;
 		$revisions = apply_filters('wa_fronted_revisions', wp_get_post_revisions($post_id), $post_id);
 
+		add_filter( 'the_content', array( $this, 'filter_shortcodes' ) );
+
 		usort($revisions, function($a, $b) {
 		    return $a->post_date - $b->post_date;
 		});
+
+		if(!empty($revisions)){
+			foreach($revisions as $key => $revision){
+				$revisions[$key]->post_content = apply_filters('the_content', $revisions[$key]->post_content);
+			}
+		}
 
 		if(isset($_POST['post_id'])){
 			wp_send_json($revisions);

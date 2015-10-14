@@ -7047,6 +7047,7 @@ body.wa-modal-open {
 
 #wa-fronted-toolbar #wa-fronted-save {
   display: none;
+  font-weight: 600;
 }
 
 #wa-fronted-spinner {
@@ -7447,6 +7448,7 @@ body.wa-modal-open {
   position: absolute;
   margin-top: -42px;
   display: none;
+  top: 0;
 }
 
 #wa-fronted-edit-shortcode.show,
@@ -7992,4 +7994,19 @@ body.wa-modal-open {
   font-weight: 300;
   font-style: italic;
   font-size: 13px;
+}
+
+.toast .toast-close-button:hover,
+.toast .toast-close-button:focus,
+.tipso_bubble .toast-close-button:hover,
+.tipso_bubble .toast-close-button:focus {
+  background: none transparent !important;
+}
+
+#toast-container > div {
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+}
+
+#toast-container > div:hover {
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.8);
 }
