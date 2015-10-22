@@ -161,6 +161,9 @@ tinymce.PluginManager.add( 'fronted_shortcode', function( editor ) {
 	});
 
 	editor.settings.toolbar.push('render_shortcode');
-	shortcode_edit.bind_shortcode_edit(editor.targetElm);
+
+	jQuery(window).load(function(){
+		shortcode_edit.bind_shortcode_edit(editor.targetElm);
+	});
 
 });

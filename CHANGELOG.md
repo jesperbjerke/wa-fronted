@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+## 1.2
+* Fixed shortcodes not being filtered on save
+* Fixed shortcode edit button not binding on load
+
 ## 1.1
 * Switched Medium Editor to TinyMCE in order to be closer to WP Core
 * Added filter `featured_image_toolbar`

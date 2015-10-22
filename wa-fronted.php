@@ -3,7 +3,7 @@
 	Plugin Name: WA-Fronted
 	Plugin URI: http://github.com/jesperbjerke/wa-fronted
 	Description: Edit content directly from fronted in the contents actual place
-	Version: 1.1
+	Version: 1.2
 	Text Domain: wa-fronted
 	Domain Path: /languages
 	Author: Jesper Bjerke
@@ -416,20 +416,19 @@ class WA_Fronted {
 	 * @return string $content
 	 */
 	protected function unfilter_shortcodes( $content ){
-		if(is_array(WA_Fronted::$options) && !empty(WA_Fronted::$options) && WA_Fronted::$options !== false){
-			$pattern = '(<!--\\sshortcode\\s-->)(.*?)(<!--\\s\\/shortcode\\s-->)';
+		$pattern = '(<!--\\sshortcode\\s-->)(.*?)(<!--\\s\\/shortcode\\s-->)';
 
-			preg_match_all( '/'. $pattern .'/s', $content, $matches );
+		preg_match_all( '/'. $pattern .'/s', $content, $matches );
 
-			if(array_key_exists( 0, $matches ) && !empty($matches[0])){
-				$rendered_shortcodes = $matches[0];
-				foreach($rendered_shortcodes as $rendered_shortcode){
-					preg_match('/(?<=data-shortcode=\\\\\")(.*?)(?=\\\\\".*)/s', $rendered_shortcode, $sub_matches);
-					$unrendered_shortcode = rawurldecode($sub_matches[0]);
-					$content = str_replace($rendered_shortcode, $unrendered_shortcode, $content);
-				}
+		if(array_key_exists( 0, $matches ) && !empty($matches[0])){
+			$rendered_shortcodes = $matches[0];
+			foreach($rendered_shortcodes as $rendered_shortcode){
+				preg_match('/(?<=data-shortcode=\\\\\")(.*?)(?=\\\\\".*)/s', $rendered_shortcode, $sub_matches);
+				$unrendered_shortcode = rawurldecode($sub_matches[0]);
+				$content = str_replace($rendered_shortcode, $unrendered_shortcode, $content);
 			}
 		}
+
 		return $content;
 	}
 
