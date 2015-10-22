@@ -32,19 +32,19 @@ class WA_Fronted_ACF extends WA_Fronted{
 	 * @param  mixed $options either false or json encoded options
 	 */
 	public function acf_scripts( $options ){
-		if(function_exists('acf_enqueue_uploader')){
-			acf_enqueue_uploader();
+		// if(function_exists('acf_enqueue_uploader')){
+		// 	acf_enqueue_uploader();
+		// }
 
-			wp_enqueue_script(
-				'wa-fronted-acf-scripts',
-				plugins_url( '/acf.min.js', __FILE__ ),
-				array( 
-					'wa-fronted-scripts'
-				),
-				'0.1',
-				true
-			);
-		}
+		wp_enqueue_script(
+			'wa-fronted-acf-scripts',
+			plugins_url( '/acf.min.js', __FILE__ ),
+			array( 
+				'wa-fronted-scripts'
+			),
+			'0.1',
+			true
+		);
 	}
 
 	/**
@@ -215,7 +215,7 @@ class WA_Fronted_ACF extends WA_Fronted{
 	 * Output wrapper for acf dialog/popup
 	 */
 	public function wa_acf_dialog(){
-		if($_SESSION['wa_fronted_options'] !== false):
+		if(is_array(WA_Fronted::$options) && !empty(WA_Fronted::$options) && WA_Fronted::$options !== false):
 		?>
 			<div id="acf-dialog" class="wp-core-ui" style="display:none;">
 				<button id="close-acf-dialog"><i class="fa fa-close"></i></button>

@@ -3,7 +3,7 @@
 	Plugin Name: WA-Fronted
 	Plugin URI: http://github.com/jesperbjerke/wa-fronted
 	Description: Edit content directly from fronted in the contents actual place
-	Version: 1.0
+	Version: 1.1
 	Text Domain: wa-fronted
 	Domain Path: /languages
 	Author: Jesper Bjerke
@@ -41,6 +41,7 @@ add_filter( 'auto_update_plugin', 'auto_update_wa_fronted', 10, 2 );
 
 class WA_Fronted {
 
+	static $options;
 	protected $supported_custom_fields;
 
 	/**
@@ -49,12 +50,11 @@ class WA_Fronted {
 	 */
 	public function __construct(){
 		if(is_user_logged_in() && !is_admin()){
-			add_action( 'init', array( $this, 'wa_wp_init' ) );
 			add_action( 'wp', array( $this, 'wa_has_wp' ) );
 			add_action( 'wp_enqueue_scripts', array( $this, 'scripts_and_styles' ) );
 			add_action( 'wp_footer', array( $this, 'wa_fronted_toolbar' ) );
 			add_action( 'wp_footer', array( $this, 'wa_fronted_footer' ) );
-			add_action( 'wp_logout', array( $this, 'wa_wp_logout' ) );
+			add_action( 'wp_print_footer_scripts', array( $this, 'link_modal' ) );
 			add_filter( 'the_content', array( $this, 'filter_shortcodes' ) );
 			
 			do_action( 'wa_fronted_inited' );
@@ -68,37 +68,27 @@ class WA_Fronted {
 		add_action( 'wp_ajax_wa_get_oembed', array( $this, 'wa_get_oembed' ) );
 		add_action( 'wp_ajax_wa_get_thumbnail_id', array( $this, 'wa_get_thumbnail_id' ) );
 		add_action( 'wp_ajax_wa_set_thumbnail', array( $this, 'wa_set_thumbnail' ) );
+		add_action( 'wp_ajax_wa_delete_post_thumbnail', array( $this, 'wa_delete_post_thumbnail' ) );
 		add_action( 'wp_ajax_wa_create_image', array( $this, 'wa_create_image' ) );
 		add_action( 'wp_ajax_wa_add_tax_term', array( $this, 'wa_add_tax_term' ) );
 		add_action( 'wp_ajax_wa_get_revisions', array( $this, 'wa_get_revisions' ) );
 	}
 
 	/**
-	 * On wp init, start session
-	 */
-	public function wa_wp_init(){
-		session_start();
-	}
-
-	/**
 	 * After wp is fully loaded, get options if on frontend and logged in and check for posted data
 	 */
 	public function wa_has_wp(){
-		$_SESSION['wa_fronted_options'] = $this->get_options();
+		WA_Fronted::$options = $this->get_options();
+
+		require_once( ABSPATH . '/wp-admin/includes/post.php' );
+		require_once( ABSPATH . '/wp-admin/includes/admin.php' );
 
 		//Check post data and validate form nonce
 		if(isset($_POST['wa_fronted_settings_nonce']) && wp_verify_nonce($_POST['wa_fronted_settings_nonce'], 'wa_fronted_settings_save')){
 			$this->settings_form_save();
 		}
 
-		do_action( 'wa_fronted_after_init', $_SESSION['wa_fronted_options'] );
-	}
-
-	/**
-	 * Destroy session
-	 */
-	public function wa_wp_logout(){
-		session_destroy();
+		do_action( 'wa_fronted_after_init', WA_Fronted::$options );
 	}
 
 	/**
@@ -109,22 +99,26 @@ class WA_Fronted {
 	 */
 	protected function compile_options($default_options, $new_options){
 
-		$options = array_merge($default_options, $new_options);
+		$compiled_options = array_merge($default_options, $new_options);
 
-		if($options['field_type'] == false){
+		if($compiled_options['field_type'] == false){
 			trigger_error('"field_type" cannot be empty', E_USER_ERROR);
 		}
 
 		//determine options based on field_type
-		$field_type = $options['field_type'];
+		$field_type = $compiled_options['field_type'];
 
 		if($field_type == 'post_title'){
 			if(!array_key_exists('toolbar', $new_options)){
-				$options['toolbar'] = false;
+				$compiled_options['toolbar'] = false;
 			}
 		}else if($field_type == 'post_thumbnail'){
 			if(!array_key_exists('media_upload', $new_options)){
-				$options['media_upload'] = 'only';
+				$compiled_options['media_upload'] = 'only';
+			}
+		}else if($field_type == 'post_content'){
+			if(!array_key_exists('shortcodes', $new_options)){
+				$compiled_options['shortcodes'] = true;
 			}
 		}else if(strpos($field_type, 'meta_') !== false){
 
@@ -177,6 +171,10 @@ class WA_Fronted {
 						if(!array_key_exists('media_upload', $new_options)){
 							$compiled_options['media_upload'] = true;
 						}
+
+						if(!array_key_exists('shortcodes', $new_options)){
+							$compiled_options['shortcodes'] = true;
+						}
 						break;
 					case 'meta_image':
 						$compiled_options['toolbar']      = false;
@@ -188,7 +186,7 @@ class WA_Fronted {
 			}
 		}
 
-		return apply_filters('compile_options', $options, $default_options, $new_options);
+		return apply_filters('compile_options', $compiled_options, $default_options, $new_options);
 	}
 
 	/**
@@ -225,10 +223,11 @@ class WA_Fronted {
 
 		$default_options = array(
 			'native'       => true,
-			'direction'    => 'ltl',
+			'direction'    => 'ltr',
 			'media_upload' => true,
 			'toolbar'      => 'full',
 			'post_id'      => $post->ID,
+			'shortcodes'   => false,
 			'field_type'   => false,
 			'permission'   => 'default',
 			'image_size'   => 'post-thumbnail',
@@ -266,7 +265,7 @@ class WA_Fronted {
 		}
 
 		if($continue){
-			return json_encode($post_type_options);
+			return $post_type_options;
 		}else{
 			return false;
 		}
@@ -277,13 +276,38 @@ class WA_Fronted {
 	 * Hookable through action 'wa_fronted_scripts'
 	 */
 	public function scripts_and_styles() {
+		
+		if(is_array(WA_Fronted::$options) && !empty(WA_Fronted::$options) && WA_Fronted::$options !== false){
+			global $post, $wp_version, $tinymce_version, $concatenate_scripts, $compress_scripts;
 
-		if($_SESSION['wa_fronted_options'] !== false){
-			do_action('wa_fronted_before_scripts', $_SESSION['wa_fronted_options']);
+			if ( ! isset( $concatenate_scripts ) ) {
+				script_concat_settings();
+			}
+
+			require_once( ABSPATH . '/wp-admin/includes/post.php' );
+
+			do_action('wa_fronted_before_scripts', WA_Fronted::$options);
 
 			load_plugin_textdomain( 'wa-fronted', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
 
-			wp_enqueue_media();
+			wp_enqueue_media( array('post' => $post) );
+
+			add_thickbox();
+
+			wp_deregister_script( 'tinymce' );
+			wp_enqueue_script( 
+				'tinymce', 
+				includes_url( 'js/tinymce' ) . '/wp-tinymce.php?c=1', 
+				array(), 
+				$tinymce_version, 
+				true 
+			);
+			
+			wp_enqueue_script( 'wplink' );
+			wp_localize_script( 'wplink', 'ajaxurl', admin_url( 'admin-ajax.php' ) );
+
+			wp_enqueue_script( 'wp-lists' );
+			wp_localize_script( 'wp-lists', 'ajaxurl', admin_url( 'admin-ajax.php' ) );
 
 			wp_enqueue_script('jquery-ui-core');
 			wp_enqueue_script('jquery-ui-draggable');
@@ -311,7 +335,12 @@ class WA_Fronted {
 					'jquery-ui-draggable',
 					'jquery-ui-droppable',
 					'jquery-ui-datepicker',
-					'jqueryui-timepicker-addon'
+					'jqueryui-timepicker-addon',
+					'tinymce',
+					'wp-util', 
+					'editor', 
+					'wplink', 
+					'wp-lists'
 				),
 				'0.1',
 				true
@@ -324,20 +353,16 @@ class WA_Fronted {
 					'wp_lang'     => get_bloginfo('language'),
 					'i18n'		  => $this->get_js_i18n(),
 					'ajax_url'    => admin_url('admin-ajax.php'),
-					'options'     => $_SESSION['wa_fronted_options'],
+					'options'     => json_encode(WA_Fronted::$options),
 					'image_sizes' => $this->get_image_sizes(),
 					'nonce'       => wp_create_nonce('wa_fronted_save_nonce')
 				)
 			);
 
-			wp_enqueue_style(
-				'wa-fronted-medium-editor',
-				plugins_url( '/bower_components/medium-editor/dist/css/medium-editor.min.css', __FILE__ )
-			);
-			wp_enqueue_style(
-				'wa-fronted-medium-editor-theme',
-				plugins_url( '/bower_components/medium-editor/dist/css/themes/bootstrap.min.css', __FILE__ )
-			);
+			wp_enqueue_style( 'buttons' );
+			wp_enqueue_style( 'dashicons' );
+			wp_enqueue_style( 'open-sans' );
+
 			wp_enqueue_style(
 				'wa-fronted-timepicker-addon',
 				plugins_url( '/bower_components/jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.css', __FILE__ )
@@ -347,9 +372,7 @@ class WA_Fronted {
 				plugins_url( '/css/style.css', __FILE__ )
 			);
 
-			wp_enqueue_style( 'wa-fronted-fonts', 'https://fonts.googleapis.com/css?family=Open+Sans:400,700,400italic,600,300&subset=latin,latin-ext', array(), null );
-
-			do_action('wa_fronted_after_scripts', $_SESSION['wa_fronted_options']);
+			do_action('wa_fronted_after_scripts', WA_Fronted::$options);
 		}
 	}
 
@@ -361,7 +384,7 @@ class WA_Fronted {
 	 * @return string $content rerendered content
 	 */
 	public function filter_shortcodes( $content, $post_id = false, $field = false ){
-		if($_SESSION['wa_fronted_options'] !== false){
+		if(is_array(WA_Fronted::$options) && !empty(WA_Fronted::$options) && WA_Fronted::$options !== false){
 			$pattern = get_shortcode_regex();
 			preg_match_all( '/'. $pattern .'/s', $content, $matches );
 			if(array_key_exists( 0, $matches )){
@@ -393,7 +416,7 @@ class WA_Fronted {
 	 * @return string $content
 	 */
 	protected function unfilter_shortcodes( $content ){
-		if($_SESSION['wa_fronted_options'] !== false){
+		if(is_array(WA_Fronted::$options) && !empty(WA_Fronted::$options) && WA_Fronted::$options !== false){
 			$pattern = '(<!--\\sshortcode\\s-->)(.*?)(<!--\\s\\/shortcode\\s-->)';
 
 			preg_match_all( '/'. $pattern .'/s', $content, $matches );
@@ -566,7 +589,7 @@ class WA_Fronted {
 				}
 				
 				if(!isset($this_autosave_data['post_excerpt'])){
-					$this_autosave_data['post_excerpt'] = get_the_excerpt($post_id);
+					$this_autosave_data['post_excerpt'] = apply_filters( 'get_the_excerpt', get_post_field('post_excerpt', $post_id, 'raw'));
 				}
 
 				//Get existing autosave so we dont clutter the database
@@ -734,7 +757,7 @@ class WA_Fronted {
 	 * Output markup for save button and loading spinner
 	 */
 	public function wa_fronted_toolbar(){
-		if($_SESSION['wa_fronted_options'] !== false):
+		if(is_array(WA_Fronted::$options) && !empty(WA_Fronted::$options) && WA_Fronted::$options !== false):
 		?>
 			<div id="wa-fronted-toolbar">
 				<button id="wa-fronted-save" title="<?php _e('Save', 'wa-fronted'); ?>">
@@ -755,7 +778,7 @@ class WA_Fronted {
 					</button>
 				<?php endif; ?>
 
-				<?php do_action('wa_fronted_toolbar', $_SESSION['wa_fronted_options']); ?>
+				<?php do_action('wa_fronted_toolbar', WA_Fronted::$options); ?>
 			</div>
 		<?php
 		endif;
@@ -765,8 +788,12 @@ class WA_Fronted {
 	 * Runs in wp_footer, adds spinner and settings modal
 	 */
 	public function wa_fronted_footer(){
-		if($_SESSION['wa_fronted_options'] !== false):
+		if(is_array(WA_Fronted::$options) && !empty(WA_Fronted::$options) && WA_Fronted::$options !== false):
 			global $post;
+			
+			require_once( ABSPATH . '/wp-admin/includes/post.php' );
+			require_once( ABSPATH . '/wp-admin/includes/admin.php' );
+			
 			$field_prefix = 'wa_fronted_';
 
 			$default_fieldgroups = array(
@@ -928,7 +955,7 @@ class WA_Fronted {
 								endforeach;
 							endif;
 
-							do_action('wa_fronted_settings_form', $_SESSION['wa_fronted_options']);
+							do_action('wa_fronted_settings_form', WA_Fronted::$options);
 							wp_nonce_field('wa_fronted_settings_save', 'wa_fronted_settings_nonce');
 						?>
 
@@ -936,7 +963,7 @@ class WA_Fronted {
 
 						<div class="wa-fronted-modal-footer">
 							<button type="submit" class="button button-primary button-large submit-wa-fronted-modal"><i class="dashicons dashicons-yes"></i> Update</button>
-							<?php do_action('wa_fronted_settings_modal_footer', $_SESSION['wa_fronted_options']); ?>
+							<?php do_action('wa_fronted_settings_modal_footer', WA_Fronted::$options); ?>
 						</div>
 					</form>
 				</div>
@@ -976,10 +1003,21 @@ class WA_Fronted {
 	}
 
 	/**
+	 * Adds native link modal
+	 */
+	public function link_modal() {
+		if ( ! class_exists( '_WP_Editors' ) ) {
+			require( ABSPATH . WPINC . '/class-wp-editor.php' );
+		}
+
+		_WP_Editors::wp_link_dialog();
+	}
+
+	/**
 	 * AJAX function for saving settings form
 	 */
 	protected function settings_form_save(){
-		if($_SESSION['wa_fronted_options'] !== false){
+		if(is_array(WA_Fronted::$options) && !empty(WA_Fronted::$options) && WA_Fronted::$options !== false){
 
 			$field_prefix = 'wa_fronted_';
 			$update_this  = array(
@@ -1146,6 +1184,22 @@ class WA_Fronted {
 		}
 	}
 
+	public function wa_delete_post_thumbnail($post_id = false){
+		$is_ajax = false;
+		if(!$post_id){
+			$post_id       = $_POST['post_id'];
+			$is_ajax       = true;
+		}
+
+		$return = delete_post_thumbnail( $post_id );
+
+		if($is_ajax){
+			wp_send_json(array('success' => $return));
+		}else{
+			return $return;
+		}	
+	}
+
 	public function wa_create_image(){
 		if(wp_verify_nonce( $_POST['wa_fronted_save_nonce'], 'wa_fronted_save_nonce' ) && isset($_POST['file_data']) && isset($_POST['file_name']) && isset($_POST['file_type'])){
 
@@ -1301,7 +1355,7 @@ if(!function_exists('wa_fronted_init')){
 			include_once('extensions/woocommerce/woocommerce.php');
 		}
 
-		$WA_Fronted = new WA_Fronted();
+		new WA_Fronted();
 	}
 }
 

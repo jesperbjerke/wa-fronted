@@ -1,5 +1,16 @@
 CHANGELOG
 =========
+## 1.1
+* Switched Medium Editor to TinyMCE in order to be closer to WP Core
+* Added filter `featured_image_toolbar`
+* Added filter `on_tinymce_setup`
+* Added option `shortcodes`
+* Changed filter `medium_extensions` to `editor_plugins`
+* Changed options saved to session to be saved to WA_Fronted::options instead
+* Changed so that WA_Fronted::$options is not JSON encoded until it's sent to javascript
+* Fixed issue #13
+* Fixed faulty compilation of options based on field types
+
 ## 1.0
 * Fixed shortcode edit and image edit toolbar taking up space in footer
 * Fixed problem with image dragging and showing the image edit toolbar

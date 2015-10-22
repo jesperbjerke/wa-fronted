@@ -1,0 +1,87 @@
+.mce-tinymce.mce-tinymce-inline.mce-floatpanel {
+	border-radius: 0;
+	border: 0;
+
+	.mce-panel {
+		background: $wp_admin_color;
+		color: #fff;
+		padding: 0;
+
+		.mce-flow-layout-item{
+ 			margin: 0;
+
+	 		.mce-btn {
+				margin: 0;
+				border: 0;
+				height: 30px;
+				border-radius: 0;
+
+	 			button {
+	 				padding: 5px;
+	 				color: #fff;
+	 				text-shadow: none;
+	 			}
+
+	 			&.mce-active,
+	 			&:active,
+	 			&:hover,
+	 			&:focus{
+					background: #333;
+			  		box-shadow: none;
+	 				
+	 				button {
+			  			color: #45bbe6;
+	 				}
+	 			}
+	 		}
+ 		}
+	}
+
+	&.mce-arrow-down{
+		margin-top: -5px;
+
+		&:after {
+			top: 30px;
+			border-color: $wp_admin_color transparent transparent;
+			border-width: 8px 8px 0 8px;
+			position: absolute;
+			left: 50%;
+			display: block;
+			margin-left: -8px;
+			width: 0;
+			height: 0;
+			border-style: solid;
+			content: "";
+		}
+	}
+
+	&.mce-arrow-up{
+		margin-top: 11px;
+
+		&:before {
+			top: 0;
+			margin-top: -7px;
+			border-color: transparent transparent $wp_admin_color;
+			border-width: 0 8px 8px 8px;
+			position: absolute;
+			left: 50%;
+			display: block;
+			margin-left: -8px;
+			width: 0;
+			height: 0;
+			border-style: solid;
+			content: "";
+		}
+	}
+}
+
+.mce-tooltip{
+	.mce-tooltip-arrow{
+		top: 1px;
+	}
+	.mce-tooltip-inner{
+		padding: 5px 8px 8px 8px;
+		border-radius: 0;
+		box-shadow: none;
+	}
+}

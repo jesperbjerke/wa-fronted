@@ -1,21 +1,37 @@
+/**
+ * Tiny MCE scripts
+ */
+//@prepros-prepend 'tinymce/tinymce.shortcode.js'
+//@prepros-prepend 'tinymce/tinymce.image.js'
+//@prepros-prepend 'tinymce/tinymce.theme.js'
+
+/**
+ * 3rd party libs
+ */
 //@prepros-prepend 'modernizr.custom.js'
-//@prepros-prepend '../bower_components/medium-editor/dist/js/medium-editor.min.js'
 //@prepros-prepend '../bower_components/tipso/src/tipso.min.js'
 //@prepros-prepend '../bower_components/toastr/toastr.js'
 //@prepros-prepend '../bower_components/select2/dist/js/select2.full.min.js'
 //@prepros-prepend '../bower_components/rangy/rangy-core.min.js'
+
+/**
+ * Custom packages
+ */
+//@prepros-prepend 'featured-image.js'
 //@prepros-prepend 'eventmanager.js'
-//@prepros-prepend 'medium-wa-media-upload.js'
-//@prepros-prepend 'medium-wa-render-shortcode.js'
 //@prepros-append 'validate.js'
+
 
 function escape_regexp(s) {
     return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-};
+}
 
 var wa_fronted;
 
 (function($){
+
+	window.wp = window.wp || {};
+	var tinymce = window.tinymce;
 
     $.fn.getCursorPosition = function() {
         var el = $(this).get(0);
@@ -165,23 +181,22 @@ var wa_fronted;
 
 			if(typeof self.options.editable_areas !== 'undefined' && self.options.editable_areas.length !== 0){
 
-
 				rangy.init();
 
+				var editor_setup = function(index, el){
+					el = $(el);
+					el.addClass('wa-fronted-editor');
+					self.setup_editor(el, self.options.editable_areas[i], self.options);
+					self.data.editable_areas.push({
+						editor  : el,
+						options : self.options.editable_areas[i]
+					});
+				};
+
 				for(var i = 0; i < self.options.editable_areas.length; i++){
-
 					var editors = $(self.options.editable_areas[i].container);
-
 					if(editors.length !== 0){
-						$.each(editors, function(index, el){
-							el = $(el);
-							el.addClass('wa-fronted-editor');
-							self.setup_editor(el, self.options.editable_areas[i], self.options);
-							self.data.editable_areas.push({
-								editor  : el,
-								options : self.options.editable_areas[i]
-							});
-						});
+						$.each(editors, editor_setup);
 					}
 				}
 
@@ -288,36 +303,93 @@ var wa_fronted;
 
 			var self = this,
 				editor_options = {
-				    toolbar	: {
-				    	buttons : [
-					    	'bold',
-					    	'italic',
-					    	'underline',
-					    	'anchor',
-					    	'h2',
-					    	'h3',
-					    	'quote',
-					    	'unorderedlist',
-					    	'orderedlist',
-					    	'justifyLeft',
-					    	'justifyCenter',
-					    	'justifyRight',
-					    	'renderShortcode'
-					    ]
-					},
-					buttonLabels      : 'fontawesome',
-					imageDragging     : false,
-					placeholder       : false,
-					paste : {
-						cleanPastedHTML : true
-					},
-					autoLink          : true,
-					anchorPreview     : false,
-					anchor            : {
-				    	linkValidation : true,
-				    	targetCheckbox : false
-				    },
-				    extensions 		  : {}
+					selector : this_options.container,
+					theme : 'fronted',
+				    toolbar	: [
+						'bold',
+						'italic',
+						'strikethrough',
+						'bullist',
+						'numlist',
+						'blockquote',
+						'alignleft',
+						'aligncenter',
+						'alignright',
+						'link',
+						'unlink',
+						'h2',
+						'h3'
+					],
+					plugins : [
+						'wplink',
+						'wpview',
+						'paste',
+						'hr',
+						'lists'
+			        ],
+					inline : true,
+					relative_urls : false,
+					convert_urls : false,
+					paste_as_text : true,
+					browser_spellcheck : true,
+					directionality : this_options.direction,
+					wpeditimage_html5_captions : true,
+					fronted_options : this_options,
+					setup: function( editor ) {
+						window.wpActiveEditor = editor.id;
+
+						if(this_options.paragraphs !== true){
+							editor.on('keydown', function(e){
+								if(e.which === 13){
+									e.preventDefault();
+									e.stopPropagation();
+									return false;
+								}else{
+									return true;
+								}
+							});
+							editor.on('blur', function(e){
+								editor.setContent(editor.getContent({format : 'text'}));
+							});
+						}
+
+						//Hook onto paste event and determine if pasted content is valid oEmbed
+						editor.on('paste', function(event){
+							var clipboardData = event.clipboardData.getData('text/plain');
+							if(clipboardData && (clipboardData.indexOf('http://') !== -1 || clipboardData.indexOf('https://') !== -1)){
+								event.preventDefault();
+								self.show_loading_spinner();
+								$.post(
+									global_vars.ajax_url,
+									{
+										'action' : 'wa_get_oembed',
+										'link'	 : clipboardData
+									},
+									function(response){
+										if(response.oembed !== false){
+											editor.insertContent(response.oembed);
+										}else{
+											editor.insertContent('<a href="' + clipboardData + '">' + clipboardData + '</a>');
+										}
+										self.hide_loading_spinner();
+									}
+								);
+							}
+						});
+
+						// Register changes to the editor and show savebutton
+						editor.on('change', function (event) {
+							clearTimeout(self.data.timers[editor.id]);
+							self.data.timers[editor.id] = setTimeout(function(){
+								self.data.has_changes = true;
+								self.validate(this_editor, this_options);
+								self.autosave(this_editor, this_options);
+								self.show_save_button();
+							}, 1000);
+						});
+
+						self.do_action('on_tinymce_setup', editor, this_options, all_options);
+					}
 				};
 
 			if(this_options.toolbar === undefined){
@@ -327,11 +399,11 @@ var wa_fronted;
 			if(this_options.toolbar === 'false' || this_options.toolbar === false){
 				editor_options.toolbar = false;
 			}else if(this_options.toolbar !== 'full'){
-				editor_options.toolbar.buttons = (this_options.toolbar.replace(/\s+/g, '')).split(',');
+				editor_options.toolbar = (this_options.toolbar.replace(/\s+/g, '')).split(',');
 			}
 
 			if(this_options.toolbar !== 'false' && this_options.toolbar !== false){
-				editor_options.toolbar.buttons = self.apply_filters('toolbar_buttons', editor_options.toolbar.buttons, this_options);
+				editor_options.toolbar = self.apply_filters('toolbar_buttons', editor_options.toolbar, this_options);
 			}
 
 			this_editor.click(function(){
@@ -344,63 +416,21 @@ var wa_fronted;
 				}
 			});
 
-			var editor = false;
-
 			if(this_options.media_upload !== 'only' && this_options.native){
 
 				if(this_options.field_type !== 'meta_select'){
 
 					if(this_options.media_upload === true){
-						editor_options.extensions.image_upload = new Wa_image_upload(this_options);
+						editor_options.plugins.push('fronted_image');
 					}
 
-					if(editor_options.toolbar.hasOwnProperty('buttons') && editor_options.toolbar.buttons.indexOf('renderShortcode') !== -1){
-						editor_options.extensions.renderShortcode = new Wa_render_shortcode(this_options);
-						self.bind_shortcode_edit(this_editor);
+					if(this_options.shortcodes === true){
+						editor_options.plugins.push('fronted_shortcode');
 					}
 
-					editor_options.extensions = self.apply_filters('medium_extensions', editor_options.extensions, this_options);
+					editor_options.plugins = self.apply_filters('editor_plugins', editor_options.plugins, this_options);
 
-					editor = new MediumEditor(this_editor, editor_options);
-
-					//Hook onto paste event and determine if pasted content is valid oEmbed
-					editor.subscribe('editablePaste', function (event, editable) {
-						event.preventDefault();
-						var clipboardData = event.clipboardData.getData('text/plain');
-						if(clipboardData && (clipboardData.indexOf('http://') !== -1 || clipboardData.indexOf('https://') !== -1)){
-							self.show_loading_spinner();
-							$.post(
-								global_vars.ajax_url,
-								{
-									'action' : 'wa_get_oembed',
-									'link'	 : clipboardData
-								},
-								function(response){
-									if(response.oembed !== false){
-										var current_content = this_editor.html(),
-											regex_str	= escape_regexp(clipboardData),
-											regex       = new RegExp(regex_str, 'm'),
-											new_content = current_content.replace(regex, response.oembed);
-										this_editor.html(new_content);
-									}
-									self.hide_loading_spinner();
-								}
-							);
-						}
-					});
-
-					if(this_options.paragraphs === false){
-						this_editor.keypress(function(e){
-							return e.which != 13;
-						});
-						this_editor.on('focusout', function(e){
-							this_editor.html(this_editor.text());
-						});
-					}
-
-					if(this_options.direction === 'rtl'){
-						this_editor.attr('dir', 'rtl');
-					}
+					tinymce.init(editor_options);
 
 				}else if(this_options.hasOwnProperty('values') && this_options.values.length > 1 && this_options.hasOwnProperty('meta_key') && this_options.native){
 
@@ -489,40 +519,12 @@ var wa_fronted;
 				}
 
 			}else if(this_options.media_upload === 'only' && this_options.native){
-				editor_options.toolbar    = false;
-				editor_options.spellcheck = false;
-				editor_options.extensions = {
-			    	'image_upload' : new Wa_image_upload(this_options)
-			    }
 
-				editor_options.extensions = self.apply_filters('medium_extensions', editor_options.extensions, this_options);
+				new fronted_featured_img(this_editor, this_options);
 
-				editor = new MediumEditor(this_editor, editor_options);
 			}else{
 				self.do_action('on_setup_editor', this_editor, this_options, all_options);
 			}
-
-			//If editor exists
-			if(editor !== false){
-				//Register changes to the editor and show savebutton
-				editor.subscribe('editableInput', function (event, editable) {
-					clearTimeout(self.data.timers[editor.id]);
-					self.data.timers[editor.id] = setTimeout(function(){
-						self.data.has_changes = true;
-						self.validate(this_editor, this_options);
-						self.autosave(this_editor, this_options);
-						self.show_save_button();
-					}, 1000);
-				});
-			}
-		},
-
-		/**
-		 * Trigger custom Medium-Editor event
-		 * @param  {string} event 		name of custom event
-		 */
-		trigger: function(instance, event){
-			instance.events.customEvents[event][0]();
 		},
 
 		/**
@@ -541,20 +543,21 @@ var wa_fronted;
 						save_this = [];
 
 					for(var i = 0; i < editors.length; i++){
+						if(editors[i].options.field_type !== 'post_thumbnail'){
+							var db_value = editors[i].editor.attr('data-db-value'),
+								content = '';
 
-						var db_value = editors[i].editor.attr('data-db-value'),
-							content = '';
+							if(typeof db_value !== 'undefined' && db_value !== false){
+								content = db_value;
+							}else{
+								content = tinymce.editors[editors[i].editor[0].id].getContent();
+							}
 
-						if(typeof db_value !== 'undefined' && db_value !== false){
-							content = db_value;
-						}else{
-							content = editors[i].editor.html();
+							save_this.push({
+								'content' : content,
+								'options' : editors[i].options
+							});
 						}
-
-						save_this.push({
-							'content' : content,
-							'options' : editors[i].options
-						});
 					}
 
 					$.post(
@@ -589,20 +592,21 @@ var wa_fronted;
 				self.data.is_saving = true;
 
 				for(var i = 0; i < editors.length; i++){
+					if(editors[i].options.field_type !== 'post_thumbnail'){
+						var db_value = editors[i].editor.attr('data-db-value'),
+							content = '';
 
-					var db_value = editors[i].editor.attr('data-db-value'),
-						content = '';
+						if(typeof db_value !== 'undefined' && db_value !== false){
+							content = db_value;
+						}else{
+							content = tinymce.editors[editors[i].editor[0].id].getContent();
+						}
 
-					if(typeof db_value !== 'undefined' && db_value !== false){
-						content = db_value;
-					}else{
-						content = editors[i].editor.html();
+						save_this.push({
+							'content' : content,
+							'options' : editors[i].options
+						});
 					}
-
-					save_this.push({
-						'content' : content,
-						'options' : editors[i].options
-					});
 				}
 
 				$.post(
@@ -652,138 +656,6 @@ var wa_fronted;
 		},
 
 		/**
-		 * Binds all shortcode wraps in editor to show edit button on hover
-		 * @param  {jQuery Object} editor
-		 */
-		bind_shortcode_edit: function(editor){
-			var self = this;
-			editor = jQuery(editor);
-			editor.find('.wa-shortcode-wrap')
-				.off('hover')
-				.hover(
-					function(){
-						self.show_shortcode_button($(this), editor);
-					},
-					function(){
-						self.hide_shortcode_button();
-					}
-				);
-		},
-
-		/**
-		 * Binds and shows shortcode edit button
-		 * @param  {jQuery Object} element shortcode wrap element
-		 * @param  {jQuery Object} editor current editor element
-		 */
-		show_shortcode_button: function(element, editor){
-
-			var self 		  	= this,
-				wrap_children   = element.children(),
-				wrap_contents   = (wrap_children.length !== 0) ? $(wrap_children[0]) : element,
-				offset          = wrap_contents.offset(),
-				scroll_top      = jQuery(window).scrollTop(),
-				distance_to_top = offset.top - scroll_top,
-				pos_top         = offset.top;
-				
-			var shortcode_toolbar = $('#wa-fronted-edit-shortcode');
-
-			shortcode_toolbar.removeClass('arrow-over arrow-under');
-
-	        if(distance_to_top <= 42){
-	            pos_top = offset.top + wrap_contents.height() + 42;
-	            shortcode_toolbar.addClass('arrow-over');
-	        }else{
-	            shortcode_toolbar.addClass('arrow-under');
-	        }
-
-			shortcode_toolbar
-				.css({
-					'left' : (offset.left + ((wrap_contents.width() / 2) - (shortcode_toolbar.width() / 2))),
-					'top'  : pos_top
-				})
-				.addClass('show')
-				.hover(
-					function(){
-						$(this).addClass('show');
-					},
-					function(){
-						self.hide_shortcode_button();
-					}
-				);
-
-			var shortcode_button = shortcode_toolbar.find('#wa-fronted-edit-shortcode-button');
-
-			shortcode_button.addClass('show');
-			shortcode_button.off();
-			shortcode_button.one('click', function(e){
-				e.preventDefault();
-				self.show_shortcode_edit(element, editor);
-			});
-		},
-
-		hide_shortcode_button: function(){
-			$('#wa-fronted-edit-shortcode').removeClass('show');
-			$('#wa-fronted-edit-shortcode-button').addClass('show');
-			$('#wa-fronted-edit-shortcode .shortcode-input-wrapper').removeClass('show');
-		},
-
-		/**
-		 * Either calls appropriate action or shows shortcode edit input
-		 * @param  {jQuery Object} element shortcode wrap element
-		 * @param  {jQuery Object} editor current editor element
-		 */
-		show_shortcode_edit: function(element, editor){
-
-			var self 	  		  = this,
-				shortcode         = self.shortcode_from_attr(element),
-				shortcode_base    = element.attr('data-shortcode-base'),
-				shortcode_actions = self.apply_filters('shortcode_actions', ['gallery']);
-
-			if(shortcode_actions.indexOf(shortcode_base) !== -1){
-
-				self.do_action('shortcode_action_' + shortcode_base, shortcode, element);
-
-			}else{
-
-				var	wrap_children     = element.children(),
-					wrap_contents     = (wrap_children.length !== 0) ? $(wrap_children[0]) : element,
-					offset            = wrap_contents.offset(),
-					shortcode_toolbar = $('#wa-fronted-edit-shortcode');
-				
-				$('#wa-fronted-edit-shortcode-button').removeClass('show');
-
-				shortcode_toolbar.find('.shortcode-input-wrapper').addClass('show');
-
-				shortcode_toolbar.find('#submit-shortcode')
-					.off()
-					.one('click', function(e){
-						e.preventDefault();
-						self.show_loading_spinner();
-						var new_shortcode = shortcode_toolbar.find('#wa_fronted_shortcode_input').val();
-
-					    self.shortcode_to_html(new_shortcode, false, function(html){
-					    	if(html !== ''){
-					            self.replace_html(element, html);
-					            self.bind_shortcode_edit(editor);
-					    	}else{
-					    		toastr.error(self.i18n('Render unsuccessful'), self.i18n('Sent code is not a valid shortcode'));
-					    	}
-
-					    	self.hide_loading_spinner();
-					    });
-
-					});
-
-				shortcode_toolbar
-					.css({
-						'left' : (offset.left + ((wrap_contents.width() / 2) - (shortcode_toolbar.width() / 2)))
-					})
-					.find('input').val(shortcode).focus();
-
-			}
-		},
-
-		/**
 		 * Decodes shortcode from [data-shortcode] attribute on target element
 		 * @param  {Object} element 	jQuery object
 		 * @return {string}         	shortcode
@@ -821,20 +693,32 @@ var wa_fronted;
 		    if (sel.rangeCount) {
 
 		        var range = sel.getRangeAt(0);
-		        var needsToWorkAroundNewlineBug = (range.startContainer.nodeName.toLowerCase() == 'p' && range.startOffset == 0);
 
-		        if (needsToWorkAroundNewlineBug) {
-		            x = range.startContainer.offsetLeft;
-		            y = range.startContainer.offsetTop;
-		        } else {
-		            if (range.getClientRects) {
-		                var rects = range.getClientRects();
-		                if (rects.length > 0) {
-		                    x = rects[0].left;
-		                    y = rects[0].top;
-		                }
-		            }
-		        }
+	            if (range.getClientRects) {
+	                var rects = range.getClientRects();
+	                if (rects.length > 0) {
+	                    x = rects[0].left;
+	                    y = rects[0].top;
+	                }
+	            }
+
+	            if (x == 0 && y == 0) {
+	                var span = window.document.createElement("span");
+	                if (span.getClientRects) {
+	                    // Ensure span has dimensions and position by
+	                    // adding a zero-width space character
+	                    span.appendChild( window.document.createTextNode("\u200b") );
+	                    range.insertNode(span);
+	                    rect = span.getClientRects()[0];
+	                    x = rect.left;
+	                    y = rect.top;
+	                    var spanParent = span.parentNode;
+	                    spanParent.removeChild(span);
+
+	                    // Glue any broken text nodes back together
+	                    spanParent.normalize();
+	                }
+	            }
 		    }
 		    return { x: x, y: y };
 		},

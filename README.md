@@ -21,6 +21,7 @@ Frontend editor for WordPress, a free and open source project with a goal to enh
 * [x] Supports Custom Fields (see [supported fields](https://github.com/jesperbjerke/wa-fronted/wiki/Supported-fields) for more details)
 * [x] Advanced Custom Fields support (see [supported ACF fields](https://github.com/jesperbjerke/wa-fronted/wiki/Supported-fields) for more details)
 * [x] WooCommerce support for simple product types (see [supported WooCommerce fields](https://github.com/jesperbjerke/wa-fronted/wiki/Supported-fields) for more details)
+* [x] Utilizes TinyMCE (thanks to [isuelde](https://github.com/iseulde/wp-front-end-editor))
 * [x] Autosave
 * [x] Post revisions (step through and see changes live)
 * [x] Native custom fields support
@@ -55,6 +56,7 @@ Frontend editor for WordPress, a free and open source project with a goal to enh
 * [ ] Ability to set multiple user roles in `permission` option
 * [ ] Automatic config of `post_content` and `post_title` if no overrides
 * [ ] CTRL + click on text link in editor to open in new tab
+* [ ] Add session check
 
 ## Help needed
 * [ ] Translating
@@ -83,10 +85,9 @@ Frontend editor for WordPress, a free and open source project with a goal to enh
 **[See the Wiki for documentation.](https://github.com/jesperbjerke/wa-fronted/wiki)**
 
 ## Collaboration notes
-* I'm using Sass for styling and [PrePros](https://prepros.io/) for compiling (there's a free version if you wanna check it out)
-* JS files are minified and concatenated with [PrePros](https://prepros.io/), so without it you'll have to load the other js files individually (see prepros-prepend comments in the beginning of scripts.js)
+* I'm using Sass for styling and [PrePros](https://prepros.io/) for compiling (there's a free version if you wanna check it out, but any SASS and JS compiler should work)
+* JS files are minified and concatenated with [PrePros](https://prepros.io/), so without it you'll have to load the other js files individually (see `@prepros` comments in the beginning of scripts.js)
 * I'm using [Bower](http://bower.io/) for keeping the following libraries up to date:
-  * [Medium Editor](https://github.com/yabwe/medium-editor)
   * [jQuery Timepicker Addon](https://github.com/trentrichardson/jQuery-Timepicker-Addon)
   * [Tipso](https://github.com/object505/tipso)
   * [Toastr](https://github.com/CodeSeven/toastr)

@@ -1,4 +1,16 @@
 <h1 id="changelog">CHANGELOG</h1>
+<h2 id="1-1">1.1</h2>
+<ul>
+<li>Switched Medium Editor to TinyMCE in order to be closer to WP Core</li>
+<li>Added filter <code>featured_image_toolbar</code></li>
+<li>Added filter <code>on_tinymce_setup</code></li>
+<li>Added option <code>shortcodes</code></li>
+<li>Changed filter <code>medium_extensions</code> to <code>editor_plugins</code></li>
+<li>Changed options saved to session to be saved to WA_Fronted::options instead</li>
+<li>Changed so that WA_Fronted::$options is not JSON encoded until it&#39;s sent to javascript</li>
+<li>Fixed issue #13</li>
+<li>Fixed faulty compilation of options based on field types</li>
+</ul>
 <h2 id="1-0">1.0</h2>
 <ul>
 <li>Fixed shortcode edit and image edit toolbar taking up space in footer</li>
