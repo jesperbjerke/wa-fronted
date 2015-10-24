@@ -400,8 +400,15 @@ tinymce.ThemeManager.add( 'fronted', function( editor ) {
 
 		editor.on( 'selectionchange nodechange', function( event ) {
 			var element = event.element || editor.selection.getNode(),
-				view = editor.plugins.wpview.getView();
+				view = editor.plugins.wpview.getView(),
+				gallery_wrap = jQuery(element).parents('.wa-shortcode-wrap[data-shortcode-base="gallery"]');
 
+			if (gallery_wrap.length !== 0) {
+				event.preventDefault();
+				editor.selection.select(gallery_wrap[0]);
+				editor.selection.collapse();			
+				panel.hide();
+			}
 
 			if ( editor.selection.isCollapsed() && ! view ) {
 				panel.hide();

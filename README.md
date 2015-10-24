@@ -24,7 +24,6 @@ Frontend editor for WordPress, a free and open source project with a goal to enh
 * [x] Utilizes TinyMCE (thanks to [isuelde](https://github.com/iseulde/wp-front-end-editor))
 * [x] Autosave
 * [x] Post revisions (step through and see changes live)
-* [x] Native custom fields support
 * [x] Live value validation
 * [x] Automatic oEmbed conversion upon paste
 * [x] Automatic url to link conversion
@@ -32,19 +31,17 @@ Frontend editor for WordPress, a free and open source project with a goal to enh
 * [x] Drag image to move it within the editable area
 * [x] Automatic changing of image size to load when changing size of image in content
 * [x] Edit featured image
-* [x] Gallery shortcode editing
-* [x] Shortcodes support (other than gallery)
-* [x] Automatic updates
+* [x] Shortcodes rendering & editing
 * [x] Show unsaved changes warning if leaving page
-* [x] Ability to edit other columns from the posts table
+* [x] Ability to edit other common columns from the posts table
 * [x] Ability to set post as featured
 * [x] Ability to set post parent to hierarchical post types
 * [x] Allow/Disable comments
 * [x] Ability to edit fields saved in the wp_options table
-* [x] Edit and add taxonomies (and native tags and categories)
+* [x] Edit and add taxonomies (both custom and native)
 * [x] Basic RTL support
 * [x] Choice-based fields with dropdown-select
-* [x] How-to guide for integration and extensions
+* [x] CTRL + click on link in editor to open in new tab/window
 
 ## To do's
 > Things that are planned to be implemented in the near future (in no particular order)
@@ -55,8 +52,7 @@ Frontend editor for WordPress, a free and open source project with a goal to enh
 * [ ] Make it possible to create new posts from frontend
 * [ ] Ability to set multiple user roles in `permission` option
 * [ ] Automatic config of `post_content` and `post_title` if no overrides
-* [ ] CTRL + click on text link in editor to open in new tab
-* [ ] Add session check
+* [ ] Add logged in session check
 
 ## Help needed
 * [ ] Translating

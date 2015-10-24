@@ -1,7 +1,9 @@
 /* global tinymce */
 window.wp = window.wp || {};
+
 tinymce.PluginManager.add( 'fronted_image', function( editor ) {
 	var tinymce = window.tinymce;
+
 	var html5 = editor.getParam( 'wpeditimage_html5_captions' ),
 		captionWrap = html5 ? 'figure' : 'dl',
 		captionImg = html5 ? 'section' : 'dt',
@@ -9,7 +11,7 @@ tinymce.PluginManager.add( 'fronted_image', function( editor ) {
 		is_dragging = false;
 
 	function parseShortcode( content ) {
-		return content.replace( /(?:<p>)?\[(?:wp_)?caption([^\]]+)\]([\s\S]+?)\[\/(?:wp_)?caption\](?:<\/p>)?/g, function( a, b, c ) {
+		content = content.replace( /(?:<p>)?\[(?:wp_)?caption([^\]]+)\]([\s\S]+?)\[\/(?:wp_)?caption\](?:<\/p>)?/g, function( a, b, c ) {
 			var id, align, classes, caption, img, width,
 				trim = tinymce.trim;
 
@@ -75,6 +77,8 @@ tinymce.PluginManager.add( 'fronted_image', function( editor ) {
 				'</div>'
 			);
 		});
+
+		return content;
 	}
 
 	function getShortcode( content ) {
@@ -462,6 +466,78 @@ tinymce.PluginManager.add( 'fronted_image', function( editor ) {
 		editor.focus();
 	}
 
+	/**
+	 * Insert gallery into content
+	 * @param  {Object} wp.media frame
+	 * @param  {jQuery Object} shortcode_wrap [optional] wrapping element
+	 */
+	function insertGallery(frame, shortcode_wrap){
+	    shortcode_wrap = shortcode_wrap || false;
+
+	    var gallery_controller = frame.states.get('gallery-edit');
+	        library = gallery_controller.get('library');
+
+	    if(library.length !== 0){
+	        var shortcode = wp.media.gallery.shortcode(library).string();
+
+	        wa_fronted.shortcode_to_html(
+	            shortcode, 
+	            ((shortcode_wrap === false) ? true : false), 
+	            function(response){
+	                if(shortcode_wrap !== false){
+	                    wa_fronted.replace_html(shortcode_wrap, response);
+	                }else{
+	                    editor.selection.setContent(response);
+	                }
+
+	                if(editor.hasOwnProperty('shortcode_edit')){
+	                	editor.shortcode_edit.bind_shortcode_edit(editor.targetElm);
+	                }
+	            }
+	        );
+	    }
+	}
+
+    /**
+	 * Gets initial gallery-edit images. Function modified from wp.media.gallery.edit
+	 * @param {string} shortcode_string
+	 * @return {Object} wp.media selection
+	 */
+    function select_gallery_imgs(shortcode_string) {
+	    var shortcode = wp.shortcode.next('gallery', shortcode_string),
+	        defaultPostId = wp.media.gallery.defaults.id,
+	        attachments, selection;
+	 
+	    // Bail if we didn't match the shortcode or all of the content.
+	    if ( ! shortcode )
+	        return false;
+	 
+	    // Ignore the rest of the match object.
+	    shortcode = shortcode.shortcode;
+	 
+	    if ( _.isUndefined( shortcode.get('id') ) && ! _.isUndefined( defaultPostId ) )
+	        shortcode.set( 'id', defaultPostId );
+	 
+	    attachments = wp.media.gallery.attachments( shortcode );
+	    selection = new wp.media.model.Selection( attachments.models, {
+	        props:    attachments.props.toJSON(),
+	        multiple: true
+	    });
+	     
+	    selection.gallery = attachments.gallery;
+	 
+	    // Fetch the query's attachments, and then break ties from the
+	    // query to allow for sorting.
+	    selection.more().done( function() {
+	        // Break ties with the query.
+	        selection.props.set({ query: false });
+	        selection.unmirror();
+	        selection.props.unset('orderby');
+	    });
+	 
+	    return selection;
+	}
+
 	var resizing = {
 		/**
 		 * Calculate aspect ratio
@@ -828,7 +904,7 @@ tinymce.PluginManager.add( 'fronted_image', function( editor ) {
 			is_dragging = true;
 
 			// Prevent dragging images out of the caption elements
-			if ( node.nodeName === 'IMG' && dom.getParent( node, '.wp-caption' ) ) {
+			if ( node.nodeName === 'IMG' && (dom.getParent( node, '.wp-caption' ) || dom.getParent( node, '.gallery-icon')) ) {
 				event.preventDefault();
 			}
 		});
@@ -909,6 +985,16 @@ tinymce.PluginManager.add( 'fronted_image', function( editor ) {
 				dom.insertAfter( p, node );
 				editor.selection.setCursorLocation( p, 0 );
 				editor.nodeChanged();
+			}else if(event.value.indexOf('[gallery ') !== -1){
+				event.preventDefault();
+				wa_fronted.show_loading_spinner();
+				wa_fronted.shortcode_to_html(event.value, true, function(html){
+					editor.insertContent(html)
+					if(editor.hasOwnProperty('shortcode_edit')){
+	                	editor.shortcode_edit.bind_shortcode_edit(editor.targetElm);
+	                }
+					wa_fronted.hide_loading_spinner();
+				});
 			}
 		} else if ( cmd === 'JustifyLeft' || cmd === 'JustifyRight' || cmd === 'JustifyCenter' || cmd === 'alignnone' ) {
 			node = editor.selection.getNode();
@@ -1056,6 +1142,31 @@ tinymce.PluginManager.add( 'fronted_image', function( editor ) {
 			wp.media.editor.open( editor.id );
 		}
 	} );
+
+	wa_fronted.add_action('shortcode_action_gallery', function( shortcode, element ){
+		//Check so that element is within the current editor
+		if(element.parents('#' + editor.id).length !== 0){
+			var frame = wp.media({
+	            frame     : 'post',
+	            state     : 'gallery-edit',
+	            title     : wp.media.view.l10n.editGalleryTitle,
+	            editing   : true,
+	            multiple  : true,
+	            selection : select_gallery_imgs(shortcode)
+	        });
+
+			frame.state('gallery-edit').on( 'update', function() {
+		        insertGallery(frame, element);
+		    });
+
+		    frame.on( 'close', function() {
+				editor.focus();
+				frame.detach();
+			});
+
+			frame.open();
+		}
+	});
 
 	return {
 		_do_shcode: parseShortcode,

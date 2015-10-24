@@ -4,7 +4,7 @@ window.wp = window.wp || {};
 tinymce.PluginManager.add( 'fronted_shortcode', function( editor ) {
 	var tinymce = window.tinymce;
 
-	var shortcode_edit = {
+	editor.shortcode_edit = {
 		/**
 		 * Binds all shortcode wraps in editor to show edit button on hover
 		 * @param  {jQuery Object} editor
@@ -30,6 +30,8 @@ tinymce.PluginManager.add( 'fronted_shortcode', function( editor ) {
 		 * @param  {jQuery Object} editor current editor element
 		 */
 		show_shortcode_button: function(element, editor){
+
+			element = jQuery(element);
 
 			var self 		  	= this,
 				wrap_children   = element.children(),
@@ -118,7 +120,7 @@ tinymce.PluginManager.add( 'fronted_shortcode', function( editor ) {
 					    wa_fronted.shortcode_to_html(new_shortcode, false, function(html){
 					    	if(html !== ''){
 					            wa_fronted.replace_html(element, html);
-					            self.bind_shortcode_edit(editor);
+					            self.bind_shortcode_edit(editor.targetElm);
 					    	}else{
 					    		toastr.error(wa_fronted.i18n('Render unsuccessful'), wa_fronted.i18n('Sent code is not a valid shortcode'));
 					    	}
@@ -154,7 +156,7 @@ tinymce.PluginManager.add( 'fronted_shortcode', function( editor ) {
 		    		toastr.error(wa_fronted.i18n('Render unsuccessful'), wa_fronted.i18n('Selected text is not a valid shortcode'));
 		    	}
 
-		    	shortcode_edit.bind_shortcode_edit(editor.targetElm);
+		    	editor.shortcode_edit.bind_shortcode_edit(editor.targetElm);
 		    	wa_fronted.hide_loading_spinner();
 		    });
 		}
@@ -163,7 +165,7 @@ tinymce.PluginManager.add( 'fronted_shortcode', function( editor ) {
 	editor.settings.toolbar.push('render_shortcode');
 
 	jQuery(window).load(function(){
-		shortcode_edit.bind_shortcode_edit(editor.targetElm);
+		editor.shortcode_edit.bind_shortcode_edit(editor.targetElm);
 	});
 
 });

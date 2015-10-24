@@ -247,7 +247,6 @@ class WA_Fronted {
 			$default_options = array_merge($default_options, $options['defaults']);
 		}
 
-
 		$continue = false;
 		if(isset($options['post_types'][$post_type])){
 			$post_type_options = $options['post_types'][$post_type];
@@ -302,7 +301,7 @@ class WA_Fronted {
 				$tinymce_version, 
 				true 
 			);
-			
+
 			wp_enqueue_script( 'wplink' );
 			wp_localize_script( 'wplink', 'ajaxurl', admin_url( 'admin-ajax.php' ) );
 
@@ -351,7 +350,7 @@ class WA_Fronted {
 				'global_vars',
 				array(
 					'wp_lang'     => get_bloginfo('language'),
-					'i18n'		  => $this->get_js_i18n(),
+					'i18n'        => $this->get_js_i18n(),
 					'ajax_url'    => admin_url('admin-ajax.php'),
 					'options'     => json_encode(WA_Fronted::$options),
 					'image_sizes' => $this->get_image_sizes(),
@@ -393,16 +392,20 @@ class WA_Fronted {
 				foreach($shortcodes as $shortcode){
 					if(!in_array($shortcode, $filtered_shortcodes)){
 						preg_match('/(?>\\[)([^\\s|^\\]]+)/s', $shortcode, $sub_matches);
-						$content = str_replace($shortcode, '
-							<!-- shortcode -->
-								<div
-									class="wa-shortcode-wrap"
-									data-shortcode-base="' . $sub_matches[1] . '"
-									data-shortcode="' . rawurlencode($shortcode) . '">
-									' . $shortcode . '
-								</div>
-							<!-- /shortcode -->', $content);
-						$filtered_shortcodes[] = $shortcode;
+						if($sub_matches[1] !== 'caption'){
+							$content = str_replace($shortcode, '
+								<!-- shortcode -->
+									<div
+										class="wa-shortcode-wrap"
+										data-shortcode-base="' . $sub_matches[1] . '"
+										data-shortcode="' . rawurlencode($shortcode) . '">
+										' . $shortcode . '
+									</div>
+								<!-- /shortcode -->', $content);
+							$filtered_shortcodes[] = $shortcode;
+						}else{
+							$content = str_replace($shortcode, '<div class="mceTemp">' . $shortcode . '</div>', $content);
+						}
 					}
 				}
 			}

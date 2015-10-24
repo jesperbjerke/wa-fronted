@@ -388,6 +388,13 @@ var wa_fronted;
 							}, 1000);
 						});
 
+						editor.on('click', function(event){
+							if(event.target.nodeName === 'A' && event.ctrlKey){
+								var win = window.open(event.target.href, '_blank');
+  								win.focus();
+							}
+						});
+
 						self.do_action('on_tinymce_setup', editor, this_options, all_options);
 					}
 				};

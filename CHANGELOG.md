@@ -1,8 +1,12 @@
 CHANGELOG
 =========
 ## 1.2
+* Added CTRL + click link in editor to open in new tab/window
 * Fixed shortcodes not being filtered on save
 * Fixed shortcode edit button not binding on load
+* Fixed gallery images triggering resize handles and image toolbar
+* Fixed gallery not being rendered on insert
+* Fixed gallery editing and shortcode binding
 
 ## 1.1
 * Switched Medium Editor to TinyMCE in order to be closer to WP Core
