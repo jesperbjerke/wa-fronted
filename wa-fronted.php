@@ -911,7 +911,7 @@ class WA_Fronted {
 
 														$terms = get_terms($taxonomy->name, array(
 															'hide_empty' => false,
-															'fields' => all
+															'fields' => 'all'
 														));
 
 														$set_terms = wp_get_post_terms( $post->ID, $taxonomy->name, array(
