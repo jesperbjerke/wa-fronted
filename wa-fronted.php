@@ -900,10 +900,10 @@ class WA_Fronted {
 											foreach($available_taxonomies as $taxonomy):
 												if($taxonomy->public && $taxonomy->show_ui):
 
-													$terms = get_terms($taxonomy->name, array(
-														'hide_empty' => false,
-														'fields' => all
-													));
+														$terms = get_terms($taxonomy->name, array(
+															'hide_empty' => false,
+															'fields' => 'all'
+														));
 
 													$set_terms = wp_get_post_terms( $post->ID, $taxonomy->name, array(
 														'fields' => 'ids'
