@@ -21,12 +21,12 @@
 //@prepros-prepend 'eventmanager.js'
 //@prepros-append 'validate.js'
 
-
 function escape_regexp(s) {
     return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 }
 
-var wa_fronted;
+window.wa_fronted = {};
+var wa_fronted = window.wa_fronted;
 
 (function($){
 
@@ -321,11 +321,14 @@ var wa_fronted;
 						'h3'
 					],
 					plugins : [
-						'wplink',
-						'wpview',
-						'paste',
 						'hr',
-						'lists'
+						'lists',
+						'media',
+						'paste',
+						'wordpress',
+						'wplink',
+						'wpdialogs',
+						'wpview'
 			        ],
 					inline : true,
 					relative_urls : false,
@@ -336,7 +339,6 @@ var wa_fronted;
 					wpeditimage_html5_captions : true,
 					fronted_options : this_options,
 					setup: function( editor ) {
-						window.wpActiveEditor = editor.id;
 
 						if(this_options.paragraphs !== true){
 							editor.on('keydown', function(e){
@@ -393,6 +395,10 @@ var wa_fronted;
 								var win = window.open(event.target.href, '_blank');
   								win.focus();
 							}
+						});
+
+						editor.on('focus', function(event){
+							window.wpActiveEditor = editor.id;
 						});
 
 						self.do_action('on_tinymce_setup', editor, this_options, all_options);

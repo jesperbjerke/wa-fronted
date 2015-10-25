@@ -3,7 +3,7 @@
 	Plugin Name: WA-Fronted
 	Plugin URI: http://github.com/jesperbjerke/wa-fronted
 	Description: Edit content directly from fronted in the contents actual place
-	Version: 1.2
+	Version: 1.2.1
 	Text Domain: wa-fronted
 	Domain Path: /languages
 	Author: Jesper Bjerke
@@ -54,7 +54,7 @@ class WA_Fronted {
 			add_action( 'wp_enqueue_scripts', array( $this, 'scripts_and_styles' ) );
 			add_action( 'wp_footer', array( $this, 'wa_fronted_toolbar' ) );
 			add_action( 'wp_footer', array( $this, 'wa_fronted_footer' ) );
-			add_action( 'wp_print_footer_scripts', array( $this, 'link_modal' ) );
+			add_action( 'wp_print_footer_scripts', array( $this, 'wa_fronted_footer_scripts' ) );
 			add_filter( 'the_content', array( $this, 'filter_shortcodes' ) );
 			
 			do_action( 'wa_fronted_inited' );
@@ -988,7 +988,8 @@ class WA_Fronted {
 			
 			<div id="wa-fronted-edit-shortcode">
 				<div class="wa-fronted-edit-shortcode-inner">
-					<button id="wa-fronted-edit-shortcode-button" class="show"><i class="fa fa-edit"></i></button>
+					<button id="wa-fronted-edit-shortcode-button" class="show"><i class="dashicons dashicons-edit"></i></button>
+					<button id="wa-fronted-remove-shortcode-button" class="show"><i class="dashicons dashicons-no"></i></button>
 					
 					<div class="shortcode-input-wrapper">
 						<input type="text" name="wa_fronted_shortcode_input" id="wa_fronted_shortcode_input">
@@ -1007,12 +1008,14 @@ class WA_Fronted {
 	/**
 	 * Adds native link modal
 	 */
-	public function link_modal() {
+	public function wa_fronted_footer_scripts() {
 		if ( ! class_exists( '_WP_Editors' ) ) {
 			require( ABSPATH . WPINC . '/class-wp-editor.php' );
 		}
 
 		_WP_Editors::wp_link_dialog();
+
+		do_action('wa_fronted_footer_scripts');
 	}
 
 	/**

@@ -1,5 +1,31 @@
 /* global tinymce */
 window.wp = window.wp || {};
+window.send_to_editor = window.send_to_editor || function(html){
+	if(html.indexOf('[') !== -1){
+		wa_fronted.show_loading_spinner();
+		var replace = (typeof wa_fronted.is_editing_shortcode !== 'undefined' && wa_fronted.is_editing_shortcode !== false);
+		wa_fronted.shortcode_to_html(html, (replace !== true), function(shortcode_html){
+			if(shortcode_html !== ''){
+				if(replace){
+					wa_fronted.replace_html(wa_fronted.is_editing_shortcode, shortcode_html);
+				}else{
+	            	tinymce.activeEditor.selection.setContent(shortcode_html);
+				}
+	    	}else{
+	    		tinymce.activeEditor.selection.setContent(html);
+	    	}
+
+	    	if(tinymce.activeEditor.hasOwnProperty('shortcode_edit')){
+	    		tinymce.activeEditor.shortcode_edit.bind_shortcode_edit(tinymce.activeEditor.targetElm);
+	    	}
+	    	wa_fronted.is_editing_shortcode = false;
+			wa_fronted.hide_loading_spinner();
+		});
+	}else{		
+		tinymce.activeEditor.selection.setContent(html);
+	}
+};
+
 tinymce.ThemeManager.add( 'fronted', function( editor ) {
 	var tinymce = window.tinymce;
 	var self = this,
@@ -399,13 +425,14 @@ tinymce.ThemeManager.add( 'fronted', function( editor ) {
 		} );
 
 		editor.on( 'selectionchange nodechange', function( event ) {
-			var element = event.element || editor.selection.getNode(),
-				view = editor.plugins.wpview.getView(),
-				gallery_wrap = jQuery(element).parents('.wa-shortcode-wrap[data-shortcode-base="gallery"]');
+			var element 	   = event.element || editor.selection.getNode(),
+				view           = editor.plugins.wpview.getView(),
+				jq_element     = jQuery(element),
+				shortcode_wrap = (jq_element.hasClass('wa-shortcode-wrap')) ? jq_element : jq_element.parents('.wa-shortcode-wrap');
 
-			if (gallery_wrap.length !== 0) {
+			if (shortcode_wrap.length !== 0) {
 				event.preventDefault();
-				editor.selection.select(gallery_wrap[0]);
+				editor.selection.select(shortcode_wrap[0]);
 				editor.selection.collapse();			
 				panel.hide();
 			}

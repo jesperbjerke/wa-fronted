@@ -989,7 +989,7 @@ tinymce.PluginManager.add( 'fronted_image', function( editor ) {
 				event.preventDefault();
 				wa_fronted.show_loading_spinner();
 				wa_fronted.shortcode_to_html(event.value, true, function(html){
-					editor.insertContent(html)
+					editor.insertContent(html);
 					if(editor.hasOwnProperty('shortcode_edit')){
 	                	editor.shortcode_edit.bind_shortcode_edit(editor.targetElm);
 	                }

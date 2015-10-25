@@ -1,5 +1,11 @@
 CHANGELOG
 =========
+## 1.2.1
+* Added button to remove shortcode
+* Added action `wa_fronted_footer_scripts`
+* Added modifications to support [Shortcake](https://github.com/fusioneng/Shortcake) integration
+* Changed a select2 selectors to be more specific in order to avoid conflicts
+
 ## 1.2
 * Added CTRL + click link in editor to open in new tab/window
 * Fixed shortcodes not being filtered on save

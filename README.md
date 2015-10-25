@@ -31,7 +31,7 @@ Frontend editor for WordPress, a free and open source project with a goal to enh
 * [x] Drag image to move it within the editable area
 * [x] Automatic changing of image size to load when changing size of image in content
 * [x] Edit featured image
-* [x] Shortcodes rendering & editing
+* [x] Shortcode rendering & editing
 * [x] Show unsaved changes warning if leaving page
 * [x] Ability to edit other common columns from the posts table
 * [x] Ability to set post as featured
@@ -54,9 +54,6 @@ Frontend editor for WordPress, a free and open source project with a goal to enh
 * [ ] Automatic config of `post_content` and `post_title` if no overrides
 * [ ] Add logged in session check
 
-## Help needed
-* [ ] Translating
-
 ## Proposed features
 > These features requires further discussion, not yet set to be implemented
 
@@ -71,7 +68,6 @@ Frontend editor for WordPress, a free and open source project with a goal to enh
 
 ## Proposed extensions
 * [ ] Live SEO analyzis and tips with Yoast integration
-* [ ] Column-maker (shortcake integration?)
 * [ ] Markdown parser
 
 ## Requirements

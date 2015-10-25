@@ -789,7 +789,7 @@ body{
 				float: left;
 				width: 80%;
 				padding: 5px 10px;
-				line-height: 1.8;
+				line-height: 1.7;
 				font-size: 14px;
 				border: 0;
 				background-color: #333;
@@ -810,7 +810,13 @@ body{
 	}
 }
 
-.select2-container{
+.media-modal.wp-core-ui{
+	ul{
+		list-style: none;
+	}
+}
+#wa-fronted-settings .select2-container,
+.select2-container.wa_fronted_select{
 	.select2-choice{
 		@extend %button;
   		padding: 0.4em 2.1em 0.4em 1em !important;
