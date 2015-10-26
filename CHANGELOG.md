@@ -1,5 +1,14 @@
 CHANGELOG
 =========
+## 1.3
+* Added [Shortcake](https://github.com/fusioneng/Shortcake) integration
+* Added ability to send boolean through `permission` setting (see issue [#17](https://github.com/jesperbjerke/wa-fronted/issues/17))
+* Changed page reload after save to show notification toast instead
+* Changed when scripts are loaded so we only need to check for options once
+* Fixed revisions not sorted by date properly
+* Fixed shortcode rendering and binding when stepping through revisions
+* Fixed autosaving running even though post is already saving
+
 ## 1.2.1
 * Added button to remove shortcode
 * Added action `wa_fronted_footer_scripts`
@@ -22,7 +31,7 @@ CHANGELOG
 * Changed filter `medium_extensions` to `editor_plugins`
 * Changed options saved to session to be saved to WA_Fronted::options instead
 * Changed so that WA_Fronted::$options is not JSON encoded until it's sent to javascript
-* Fixed issue #13
+* Fixed issue [#13](https://github.com/jesperbjerke/wa-fronted/issues/13)
 * Fixed faulty compilation of options based on field types
 
 ## 1.0

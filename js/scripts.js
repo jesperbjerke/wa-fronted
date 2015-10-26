@@ -551,7 +551,7 @@ var wa_fronted = window.wa_fronted;
 			clearTimeout(self.data.timers.autosave);
 			self.data.timers.autosave = setTimeout(function(){
 				// Dont do autosave if we're already saving normally
-				if(!self.is_saving){
+				if(!self.data.is_saving){
 					var editors = self.data.editable_areas,
 						save_this = [];
 
@@ -631,11 +631,12 @@ var wa_fronted = window.wa_fronted;
 					},
 					function(response){
 						if(response.success){
-							location.reload();
+							toastr.success(self.i18n('Contents have been saved successfully'), self.i18n('Save successful'));
 						}else if(typeof response.error !== 'undefined'){
 							toastr.error(response.error, self.i18n('Save unsuccessful'));
 						}
 
+						self.data.is_saving = false;
 						self.hide_loading_spinner();
 					}
 				);
@@ -960,6 +961,10 @@ var wa_fronted = window.wa_fronted;
 						editors[i].editor.html(output_content);
 					}
 
+					var this_tinymce = tinymce.get(editors[i].editor.attr('id'));
+					if(this_tinymce !== null && this_tinymce.hasOwnProperty('shortcode_edit')){
+						this_tinymce.shortcode_edit.bind_shortcode_edit(editors[i].editor);
+					}
 					self.validate(editors[i].editor, editors[i].options);
 				}
 

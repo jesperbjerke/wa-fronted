@@ -21,6 +21,7 @@ Frontend editor for WordPress, a free and open source project with a goal to enh
 * [x] Supports Custom Fields (see [supported fields](https://github.com/jesperbjerke/wa-fronted/wiki/Supported-fields) for more details)
 * [x] Advanced Custom Fields support (see [supported ACF fields](https://github.com/jesperbjerke/wa-fronted/wiki/Supported-fields) for more details)
 * [x] WooCommerce support for simple product types (see [supported WooCommerce fields](https://github.com/jesperbjerke/wa-fronted/wiki/Supported-fields) for more details)
+* [x] Supports [Shortcake](https://github.com/fusioneng/Shortcake)
 * [x] Utilizes TinyMCE (thanks to [isuelde](https://github.com/iseulde/wp-front-end-editor))
 * [x] Autosave
 * [x] Post revisions (step through and see changes live)

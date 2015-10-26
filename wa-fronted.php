@@ -3,7 +3,7 @@
 	Plugin Name: WA-Fronted
 	Plugin URI: http://github.com/jesperbjerke/wa-fronted
 	Description: Edit content directly from fronted in the contents actual place
-	Version: 1.2.1
+	Version: 1.3
 	Text Domain: wa-fronted
 	Domain Path: /languages
 	Author: Jesper Bjerke
@@ -45,18 +45,11 @@ class WA_Fronted {
 	protected $supported_custom_fields;
 
 	/**
-	 * Add hooks and actions and registers ajax function for saving
-	 * Also adds filters for rendering shortcodes
+	 * Add hooks and actions and registers ajax functions
 	 */
 	public function __construct(){
 		if(is_user_logged_in() && !is_admin()){
 			add_action( 'wp', array( $this, 'wa_has_wp' ) );
-			add_action( 'wp_enqueue_scripts', array( $this, 'scripts_and_styles' ) );
-			add_action( 'wp_footer', array( $this, 'wa_fronted_toolbar' ) );
-			add_action( 'wp_footer', array( $this, 'wa_fronted_footer' ) );
-			add_action( 'wp_print_footer_scripts', array( $this, 'wa_fronted_footer_scripts' ) );
-			add_filter( 'the_content', array( $this, 'filter_shortcodes' ) );
-			
 			do_action( 'wa_fronted_inited' );
 		}
 
@@ -76,19 +69,29 @@ class WA_Fronted {
 
 	/**
 	 * After wp is fully loaded, get options if on frontend and logged in and check for posted data
+	 * Also adds filters for rendering shortcodes
 	 */
 	public function wa_has_wp(){
 		WA_Fronted::$options = $this->get_options();
 
-		require_once( ABSPATH . '/wp-admin/includes/post.php' );
-		require_once( ABSPATH . '/wp-admin/includes/admin.php' );
+		if(is_array(WA_Fronted::$options) && !empty(WA_Fronted::$options) && WA_Fronted::$options !== false){
+			require_once( ABSPATH . '/wp-admin/includes/post.php' );
+			require_once( ABSPATH . '/wp-admin/includes/admin.php' );
+			
+			add_action( 'wp_enqueue_scripts', array( $this, 'scripts_and_styles' ) );
+			add_action( 'wp_footer', array( $this, 'wa_fronted_toolbar' ) );
+			add_action( 'wp_footer', array( $this, 'wa_fronted_footer' ) );
+			add_action( 'wp_print_footer_scripts', array( $this, 'wa_fronted_footer_scripts' ) );
+			add_filter( 'the_content', array( 'WA_Fronted', 'filter_shortcodes' ) );
+			
 
-		//Check post data and validate form nonce
-		if(isset($_POST['wa_fronted_settings_nonce']) && wp_verify_nonce($_POST['wa_fronted_settings_nonce'], 'wa_fronted_settings_save')){
-			$this->settings_form_save();
+			//Check post data and validate form nonce
+			if(isset($_POST['wa_fronted_settings_nonce']) && wp_verify_nonce($_POST['wa_fronted_settings_nonce'], 'wa_fronted_settings_save')){
+				$this->settings_form_save();
+			}
+
+			do_action( 'wa_fronted_after_init', WA_Fronted::$options );
 		}
-
-		do_action( 'wa_fronted_after_init', WA_Fronted::$options );
 	}
 
 	/**
@@ -195,15 +198,19 @@ class WA_Fronted {
 	 * @return boolean
 	 */
 	protected function check_permission($permission){
-		switch($permission){
-			case 'logged-in':
-				return is_user_logged_in();
-				break;
-			case 'default':
-				return current_user_can('edit_posts');
-				break;
-			default:
-				return in_array($permission, wp_get_current_user()->roles);
+		if(!is_bool($permission)){
+			switch($permission){
+				case 'logged-in':
+					return is_user_logged_in();
+					break;
+				case 'default':
+					return current_user_can('edit_posts');
+					break;
+				default:
+					return in_array($permission, wp_get_current_user()->roles);
+			}
+		}else{
+			return $permission;
 		}
 	}
 
@@ -275,104 +282,101 @@ class WA_Fronted {
 	 * Hookable through action 'wa_fronted_scripts'
 	 */
 	public function scripts_and_styles() {
-		
-		if(is_array(WA_Fronted::$options) && !empty(WA_Fronted::$options) && WA_Fronted::$options !== false){
-			global $post, $wp_version, $tinymce_version, $concatenate_scripts, $compress_scripts;
+		global $post, $wp_version, $tinymce_version, $concatenate_scripts, $compress_scripts;
 
-			if ( ! isset( $concatenate_scripts ) ) {
-				script_concat_settings();
-			}
-
-			require_once( ABSPATH . '/wp-admin/includes/post.php' );
-
-			do_action('wa_fronted_before_scripts', WA_Fronted::$options);
-
-			load_plugin_textdomain( 'wa-fronted', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
-
-			wp_enqueue_media( array('post' => $post) );
-
-			add_thickbox();
-
-			wp_deregister_script( 'tinymce' );
-			wp_enqueue_script( 
-				'tinymce', 
-				includes_url( 'js/tinymce' ) . '/wp-tinymce.php?c=1', 
-				array(), 
-				$tinymce_version, 
-				true 
-			);
-
-			wp_enqueue_script( 'wplink' );
-			wp_localize_script( 'wplink', 'ajaxurl', admin_url( 'admin-ajax.php' ) );
-
-			wp_enqueue_script( 'wp-lists' );
-			wp_localize_script( 'wp-lists', 'ajaxurl', admin_url( 'admin-ajax.php' ) );
-
-			wp_enqueue_script('jquery-ui-core');
-			wp_enqueue_script('jquery-ui-draggable');
-			wp_enqueue_script('jquery-ui-droppable');
-			wp_enqueue_script('jquery-ui-datepicker');
-
-			wp_enqueue_script(
-				'jqueryui-timepicker-addon',
-				plugins_url( '/bower_components/jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js', __FILE__ ),
-				array(
-					'jquery',
-					'jquery-ui-core',
-					'jquery-ui-datepicker'
-				),
-				'1.5.5',
-				true
-			);
-
-			wp_enqueue_script(
-				'wa-fronted-scripts',
-				plugins_url( '/js/min/scripts.min.js', __FILE__ ),
-				array(
-					'jquery',
-					'jquery-ui-core',
-					'jquery-ui-draggable',
-					'jquery-ui-droppable',
-					'jquery-ui-datepicker',
-					'jqueryui-timepicker-addon',
-					'tinymce',
-					'wp-util', 
-					'editor', 
-					'wplink', 
-					'wp-lists'
-				),
-				'0.1',
-				true
-			);
-
-			wp_localize_script(
-				'wa-fronted-scripts',
-				'global_vars',
-				array(
-					'wp_lang'     => get_bloginfo('language'),
-					'i18n'        => $this->get_js_i18n(),
-					'ajax_url'    => admin_url('admin-ajax.php'),
-					'options'     => json_encode(WA_Fronted::$options),
-					'image_sizes' => $this->get_image_sizes(),
-					'nonce'       => wp_create_nonce('wa_fronted_save_nonce')
-				)
-			);
-
-			wp_enqueue_style( 'buttons' );
-			wp_enqueue_style( 'dashicons' );
-			wp_enqueue_style( 'open-sans' );
-
-			wp_enqueue_style(
-				'wa-fronted-timepicker-addon',
-				plugins_url( '/bower_components/jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.css', __FILE__ )
-			);
-			wp_enqueue_style(
-				'wa-fronted-style',
-				plugins_url( '/css/style.css', __FILE__ )
-			);
-
-			do_action('wa_fronted_after_scripts', WA_Fronted::$options);
+		if ( ! isset( $concatenate_scripts ) ) {
+			script_concat_settings();
 		}
+
+		require_once( ABSPATH . '/wp-admin/includes/post.php' );
+
+		do_action('wa_fronted_before_scripts', WA_Fronted::$options);
+
+		load_plugin_textdomain( 'wa-fronted', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
+
+		wp_enqueue_media( array('post' => $post) );
+
+		add_thickbox();
+
+		wp_deregister_script( 'tinymce' );
+		wp_enqueue_script( 
+			'tinymce', 
+			includes_url( 'js/tinymce' ) . '/wp-tinymce.php?c=1', 
+			array(), 
+			$tinymce_version, 
+			true 
+		);
+
+		wp_enqueue_script( 'wplink' );
+		wp_localize_script( 'wplink', 'ajaxurl', admin_url( 'admin-ajax.php' ) );
+
+		wp_enqueue_script( 'wp-lists' );
+		wp_localize_script( 'wp-lists', 'ajaxurl', admin_url( 'admin-ajax.php' ) );
+
+		wp_enqueue_script('jquery-ui-core');
+		wp_enqueue_script('jquery-ui-draggable');
+		wp_enqueue_script('jquery-ui-droppable');
+		wp_enqueue_script('jquery-ui-datepicker');
+
+		wp_enqueue_script(
+			'jqueryui-timepicker-addon',
+			plugins_url( '/bower_components/jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js', __FILE__ ),
+			array(
+				'jquery',
+				'jquery-ui-core',
+				'jquery-ui-datepicker'
+			),
+			'1.5.5',
+			true
+		);
+
+		wp_enqueue_script(
+			'wa-fronted-scripts',
+			plugins_url( '/js/min/scripts.min.js', __FILE__ ),
+			array(
+				'jquery',
+				'jquery-ui-core',
+				'jquery-ui-draggable',
+				'jquery-ui-droppable',
+				'jquery-ui-datepicker',
+				'jqueryui-timepicker-addon',
+				'tinymce',
+				'wp-util', 
+				'editor', 
+				'wplink', 
+				'wp-lists'
+			),
+			'0.1',
+			true
+		);
+
+		wp_localize_script(
+			'wa-fronted-scripts',
+			'global_vars',
+			array(
+				'wp_lang'     => get_bloginfo('language'),
+				'i18n'        => $this->get_js_i18n(),
+				'ajax_url'    => admin_url('admin-ajax.php'),
+				'options'     => json_encode(WA_Fronted::$options),
+				'image_sizes' => $this->get_image_sizes(),
+				'nonce'       => wp_create_nonce('wa_fronted_save_nonce')
+			)
+		);
+
+		wp_enqueue_style( 'buttons' );
+		wp_enqueue_style( 'dashicons' );
+		wp_enqueue_style( 'open-sans' );
+
+		wp_enqueue_style(
+			'wa-fronted-timepicker-addon',
+			plugins_url( '/bower_components/jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.css', __FILE__ )
+		);
+		wp_enqueue_style(
+			'wa-fronted-style',
+			plugins_url( '/css/style.css', __FILE__ )
+		);
+
+		do_action('wa_fronted_after_scripts', WA_Fronted::$options);
 	}
 
 	/**
@@ -382,30 +386,20 @@ class WA_Fronted {
 	 * @param  string $field field key
 	 * @return string $content rerendered content
 	 */
-	public function filter_shortcodes( $content, $post_id = false, $field = false ){
-		if(is_array(WA_Fronted::$options) && !empty(WA_Fronted::$options) && WA_Fronted::$options !== false){
-			$pattern = get_shortcode_regex();
-			preg_match_all( '/'. $pattern .'/s', $content, $matches );
-			if(array_key_exists( 0, $matches )){
-				$shortcodes = $matches[0];
-				$filtered_shortcodes = array();
-				foreach($shortcodes as $shortcode){
-					if(!in_array($shortcode, $filtered_shortcodes)){
-						preg_match('/(?>\\[)([^\\s|^\\]]+)/s', $shortcode, $sub_matches);
-						if($sub_matches[1] !== 'caption'){
-							$content = str_replace($shortcode, '
-								<!-- shortcode -->
-									<div
-										class="wa-shortcode-wrap"
-										data-shortcode-base="' . $sub_matches[1] . '"
-										data-shortcode="' . rawurlencode($shortcode) . '">
-										' . $shortcode . '
-									</div>
-								<!-- /shortcode -->', $content);
-							$filtered_shortcodes[] = $shortcode;
-						}else{
-							$content = str_replace($shortcode, '<div class="mceTemp">' . $shortcode . '</div>', $content);
-						}
+	public static function filter_shortcodes( $content, $post_id = false, $field = false ){
+		$pattern = get_shortcode_regex();
+		preg_match_all( '/'. $pattern .'/s', $content, $matches );
+		if(array_key_exists( 0, $matches )){
+			$shortcodes = $matches[0];
+			$filtered_shortcodes = array();
+			foreach($shortcodes as $shortcode){
+				if(!in_array($shortcode, $filtered_shortcodes)){
+					preg_match('/(?>\\[)([^\\s|^\\]]+)/s', $shortcode, $sub_matches);
+					if($sub_matches[1] !== 'caption'){
+						$content = str_replace($shortcode, '<!-- shortcode --><div class="wa-shortcode-wrap" data-shortcode-base="' . $sub_matches[1] . '" data-shortcode="' . rawurlencode($shortcode) . '">' . $shortcode . '</div><!-- /shortcode -->', $content);
+						$filtered_shortcodes[] = $shortcode;
+					}else{
+						$content = str_replace($shortcode, '<div class="mceTemp">' . $shortcode . '</div>', $content);
 					}
 				}
 			}
@@ -512,11 +506,11 @@ class WA_Fronted {
 
 			if(!empty($autosaves)){
 				usort($autosaves, function($a, $b){
-					return $a->post_date > $b->post_date;
+					return strtotime($a->post_date) > strtotime($b->post_date);
 				});
 
 				$autosave = $autosaves[0];
-				if($autosave->post_date > $last_modified){
+				if(strtotime($autosave->post_date) > strtotime($last_modified)){
 					$return['data'] = apply_filters('wa_fronted_get_autosave', $autosave);
 				}
 			}else{
@@ -759,7 +753,6 @@ class WA_Fronted {
 	 * Output markup for save button and loading spinner
 	 */
 	public function wa_fronted_toolbar(){
-		if(is_array(WA_Fronted::$options) && !empty(WA_Fronted::$options) && WA_Fronted::$options !== false):
 		?>
 			<div id="wa-fronted-toolbar">
 				<button id="wa-fronted-save" title="<?php _e('Save', 'wa-fronted'); ?>">
@@ -783,226 +776,223 @@ class WA_Fronted {
 				<?php do_action('wa_fronted_toolbar', WA_Fronted::$options); ?>
 			</div>
 		<?php
-		endif;
 	}
 
 	/**
 	 * Runs in wp_footer, adds spinner and settings modal
 	 */
 	public function wa_fronted_footer(){
-		if(is_array(WA_Fronted::$options) && !empty(WA_Fronted::$options) && WA_Fronted::$options !== false):
-			global $post;
-			
-			require_once( ABSPATH . '/wp-admin/includes/post.php' );
-			require_once( ABSPATH . '/wp-admin/includes/admin.php' );
-			
-			$field_prefix = 'wa_fronted_';
+		global $post;
+		
+		require_once( ABSPATH . '/wp-admin/includes/post.php' );
+		require_once( ABSPATH . '/wp-admin/includes/admin.php' );
+		
+		$field_prefix = 'wa_fronted_';
 
-			$default_fieldgroups = array(
-				'post_slug',
-				'post_status',
-				'post_date',
-				'post_parent',
-				'sticky',
-				'comment_status',
-				'taxonomies'
-			);
+		$default_fieldgroups = array(
+			'post_slug',
+			'post_status',
+			'post_date',
+			'post_parent',
+			'sticky',
+			'comment_status',
+			'taxonomies'
+		);
 
-			$field_groups = apply_filters('wa_fronted_settings_fields', $default_fieldgroups);
-		?>
-			<div id="wa-fronted-settings-modal">
-				<div class="wa-fronted-modal-inner">
-					<button class="close-wa-fronted-modal"><i class="fa fa-close"></i></button>
+		$field_groups = apply_filters('wa_fronted_settings_fields', $default_fieldgroups);
+	?>
+		<div id="wa-fronted-settings-modal">
+			<div class="wa-fronted-modal-inner">
+				<button class="close-wa-fronted-modal"><i class="fa fa-close"></i></button>
 
-					<form id="wa-fronted-settings" method="POST">
-						<?php
-							if(is_array($field_groups) && !empty($field_groups)):
-								foreach($field_groups as $field_group):
-									switch($field_group):
-										case 'post_slug':
+				<form id="wa-fronted-settings" method="POST">
+					<?php
+						if(is_array($field_groups) && !empty($field_groups)):
+							foreach($field_groups as $field_group):
+								switch($field_group):
+									case 'post_slug':
+										?>
+										<div class="fieldgroup">
+											<label for="<?php echo $field_prefix; ?>post_name"><?php _e('Post slug', 'wa-fronted'); ?></label>
+											<input type="text" name="<?php echo $field_prefix; ?>post_name" id="<?php echo $field_prefix; ?>post_name" value="<?php echo $post->post_name; ?>">
+										</div>
+										<?php
+										break;
+									case 'post_status':
+										$all_statuses        = get_post_statuses();
+										$current_post_status = get_post_status( $post->ID );
+										?>
+										<div class="fieldgroup">
+											<label for="<?php echo $field_prefix; ?>post_status"><?php _e('Post status', 'wa-fronted'); ?></label>
+											<select name="<?php echo $field_prefix; ?>post_status" id="<?php echo $field_prefix; ?>post_status">
+												<?php foreach($all_statuses as $status_key => $status_label): ?>
+													<option value="<?php echo $status_key; ?>" <?php echo ($current_post_status == $status_key) ? 'selected' : ''; ?>>
+														<?php echo $status_label; ?>
+													</option>
+												<?php endforeach; ?>
+											</select>
+										</div>
+										<?php
+										break;
+									case 'post_date':
+										?>
+										<div class="fieldgroup">
+											<label for="<?php echo $field_prefix; ?>post_date"><?php _e('Post date', 'wa-fronted'); ?></label>
+											<input type="text" name="<?php echo $field_prefix; ?>post_date" id="<?php echo $field_prefix; ?>post_date" class="wa_fronted_datepicker" value="<?php echo $post->post_date; ?>">
+										</div>
+										<?php
+										break;
+									case 'post_parent':
+										if(is_post_type_hierarchical($post->post_type)){
+											$all_pages = get_posts(array(
+												'posts_per_page' => -1,
+												'orderby'        => 'title',
+												'post_type'      => $post->post_type,
+												'exclude'        => array( $post->ID )
+											));
 											?>
 											<div class="fieldgroup">
-												<label for="<?php echo $field_prefix; ?>post_name"><?php _e('Post slug', 'wa-fronted'); ?></label>
-												<input type="text" name="<?php echo $field_prefix; ?>post_name" id="<?php echo $field_prefix; ?>post_name" value="<?php echo $post->post_name; ?>">
-											</div>
-											<?php
-											break;
-										case 'post_status':
-											$all_statuses        = get_post_statuses();
-											$current_post_status = get_post_status( $post->ID );
-											?>
-											<div class="fieldgroup">
-												<label for="<?php echo $field_prefix; ?>post_status"><?php _e('Post status', 'wa-fronted'); ?></label>
-												<select name="<?php echo $field_prefix; ?>post_status" id="<?php echo $field_prefix; ?>post_status">
-													<?php foreach($all_statuses as $status_key => $status_label): ?>
-														<option value="<?php echo $status_key; ?>" <?php echo ($current_post_status == $status_key) ? 'selected' : ''; ?>>
-															<?php echo $status_label; ?>
+												<label for="<?php echo $field_prefix; ?>post_parent"><?php _e('Post parent', 'wa-fronted'); ?></label>
+												<select name="<?php echo $field_prefix; ?>post_parent" id="<?php echo $field_prefix; ?>post_parent">
+													<option value="false"><?php _e('No parent', 'wa-fronted'); ?></option>
+													<?php foreach($all_pages as $page): ?>
+														<option value="<?php echo $page->ID; ?>" <?php echo ($page->ID == $post->post_parent) ? 'selected' : ''; ?>>
+															<?php echo $page->post_title; ?>
 														</option>
 													<?php endforeach; ?>
 												</select>
 											</div>
 											<?php
-											break;
-										case 'post_date':
+										}
+										break;
+									case 'sticky':
+									case 'comment_status':
+										if(get_post_type($post) == 'post'){
+											if($field_group == 'comment_status'){
+												$field_label = __('Allow comments','wa-fronted');
+												$is_checked  = ($post->comment_status == 'open');
+											}else{
+												$field_label = __('Set post as sticky','wa-fronted');
+												$is_checked  = is_sticky($post->ID);
+											}
+
+											//If both values are to be displayed, allow for them to be on the same row
+											$target = array(
+												'sticky',
+												'comment_status'
+											);
+											$extra_class = 'checkbox-fieldgroup ';
+											if(count(array_intersect($field_groups, $target)) == count($target)){
+												$extra_class .= 'half';
+											}
 											?>
-											<div class="fieldgroup">
-												<label for="<?php echo $field_prefix; ?>post_date"><?php _e('Post date', 'wa-fronted'); ?></label>
-												<input type="text" name="<?php echo $field_prefix; ?>post_date" id="<?php echo $field_prefix; ?>post_date" class="wa_fronted_datepicker" value="<?php echo $post->post_date; ?>">
-											</div>
-											<?php
-											break;
-										case 'post_parent':
-											if(is_post_type_hierarchical($post->post_type)){
-												$all_pages = get_posts(array(
-													'posts_per_page' => -1,
-													'orderby'        => 'title',
-													'post_type'      => $post->post_type,
-													'exclude'        => array( $post->ID )
-												));
-												?>
-												<div class="fieldgroup">
-													<label for="<?php echo $field_prefix; ?>post_parent"><?php _e('Post parent', 'wa-fronted'); ?></label>
-													<select name="<?php echo $field_prefix; ?>post_parent" id="<?php echo $field_prefix; ?>post_parent">
-														<option value="false"><?php _e('No parent', 'wa-fronted'); ?></option>
-														<?php foreach($all_pages as $page): ?>
-															<option value="<?php echo $page->ID; ?>" <?php echo ($page->ID == $post->post_parent) ? 'selected' : ''; ?>>
-																<?php echo $page->post_title; ?>
-															</option>
-														<?php endforeach; ?>
-													</select>
+												<div class="fieldgroup <?php echo $extra_class; ?>">
+													<input type="checkbox" name="<?php echo $field_prefix . $field_group; ?>" id="<?php echo $field_prefix . $field_group; ?>" value="1" <?php echo ($is_checked) ? 'checked' : ''; ?>>
+													<label for="<?php echo $field_prefix . $field_group; ?>"><?php echo $field_label; ?></label>
 												</div>
-												<?php
-											}
-											break;
-										case 'sticky':
-										case 'comment_status':
-											if(get_post_type($post) == 'post'){
-												if($field_group == 'comment_status'){
-													$field_label = __('Allow comments','wa-fronted');
-													$is_checked  = ($post->comment_status == 'open');
-												}else{
-													$field_label = __('Set post as sticky','wa-fronted');
-													$is_checked  = is_sticky($post->ID);
-												}
+											<?php
+										}
+										break;
+									case 'taxonomies':
 
-												//If both values are to be displayed, allow for them to be on the same row
-												$target = array(
-													'sticky',
-													'comment_status'
-												);
-												$extra_class = 'checkbox-fieldgroup ';
-												if(count(array_intersect($field_groups, $target)) == count($target)){
-													$extra_class .= 'half';
-												}
-												?>
-													<div class="fieldgroup <?php echo $extra_class; ?>">
-														<input type="checkbox" name="<?php echo $field_prefix . $field_group; ?>" id="<?php echo $field_prefix . $field_group; ?>" value="1" <?php echo ($is_checked) ? 'checked' : ''; ?>>
-														<label for="<?php echo $field_prefix . $field_group; ?>"><?php echo $field_label; ?></label>
-													</div>
-												<?php
-											}
-											break;
-										case 'taxonomies':
+										$available_taxonomies = get_object_taxonomies( $post, 'objects' );
+										if(!empty($available_taxonomies)):
+											foreach($available_taxonomies as $taxonomy):
+												if($taxonomy->public && $taxonomy->show_ui):
 
-											$available_taxonomies = get_object_taxonomies( $post, 'objects' );
-											if(!empty($available_taxonomies)):
-												foreach($available_taxonomies as $taxonomy):
-													if($taxonomy->public && $taxonomy->show_ui):
+													$terms = get_terms($taxonomy->name, array(
+														'hide_empty' => false,
+														'fields' => all
+													));
 
-														$terms = get_terms($taxonomy->name, array(
-															'hide_empty' => false,
-															'fields' => all
-														));
+													$set_terms = wp_get_post_terms( $post->ID, $taxonomy->name, array(
+														'fields' => 'ids'
+													));
 
-														$set_terms = wp_get_post_terms( $post->ID, $taxonomy->name, array(
-															'fields' => 'ids'
-														));
+													$data_attrs = array(
+														'data-placeholder="' . __('Select') . ' ' . $taxonomy->labels->name . '"',
+														'data-tags="true"',
+														'data-tax="' . $taxonomy->name . '"',
+														'data-multiple="true"'
+													);
 
-														$data_attrs = array(
-															'data-placeholder="' . __('Select') . ' ' . $taxonomy->labels->name . '"',
-															'data-tags="true"',
-															'data-tax="' . $taxonomy->name . '"',
-															'data-multiple="true"'
-														);
-
-														if($taxonomy->hierarchical):
-															//Taxonomy is "category-type"
-															$data_attrs[] = 'data-hierarchical="true"';
-														else:
-															//Taxonomy is "tag-type"
-														endif;
-
-														?>
-														<div class="fieldgroup">
-															<label for="<?php echo $field_prefix; ?>tax_<?php echo $taxonomy->name; ?>"><?php echo $taxonomy->label; ?></label>
-
-															<select multiple name="<?php echo $field_prefix; ?>tax_<?php echo $taxonomy->name; ?>[]" id="<?php echo $field_prefix; ?>tax_<?php echo $taxonomy->name; ?>" <?php echo implode(' ', $data_attrs); ?>>
-																<?php if(!empty($terms)): ?>
-																	<?php foreach($terms as $term): ?>
-																		<option value="<?php echo $term->term_id; ?>" <?php echo (in_array($term->term_id, $set_terms)) ? 'selected' : ''; ?>>
-																			<?php echo $term->name; ?>
-																		</option>
-																	<?php endforeach; ?>
-																<?php endif; ?>
-															</select>
-														</div>
-														<?php
-
+													if($taxonomy->hierarchical):
+														//Taxonomy is "category-type"
+														$data_attrs[] = 'data-hierarchical="true"';
+													else:
+														//Taxonomy is "tag-type"
 													endif;
-												endforeach;
-											endif;
 
-											break;
-									endswitch;
-								endforeach;
-							endif;
+													?>
+													<div class="fieldgroup">
+														<label for="<?php echo $field_prefix; ?>tax_<?php echo $taxonomy->name; ?>"><?php echo $taxonomy->label; ?></label>
 
-							do_action('wa_fronted_settings_form', WA_Fronted::$options);
-							wp_nonce_field('wa_fronted_settings_save', 'wa_fronted_settings_nonce');
-						?>
+														<select multiple name="<?php echo $field_prefix; ?>tax_<?php echo $taxonomy->name; ?>[]" id="<?php echo $field_prefix; ?>tax_<?php echo $taxonomy->name; ?>" <?php echo implode(' ', $data_attrs); ?>>
+															<?php if(!empty($terms)): ?>
+																<?php foreach($terms as $term): ?>
+																	<option value="<?php echo $term->term_id; ?>" <?php echo (in_array($term->term_id, $set_terms)) ? 'selected' : ''; ?>>
+																		<?php echo $term->name; ?>
+																	</option>
+																<?php endforeach; ?>
+															<?php endif; ?>
+														</select>
+													</div>
+													<?php
 
-						<input type="hidden" name="<?php echo $field_prefix; ?>post_id" id="<?php echo $field_prefix; ?>post_id" value="<?php echo $post->ID; ?>">
+												endif;
+											endforeach;
+										endif;
 
-						<div class="wa-fronted-modal-footer">
-							<button type="submit" class="button button-primary button-large submit-wa-fronted-modal"><i class="dashicons dashicons-yes"></i> Update</button>
-							<?php do_action('wa_fronted_settings_modal_footer', WA_Fronted::$options); ?>
-						</div>
-					</form>
-				</div>
+										break;
+								endswitch;
+							endforeach;
+						endif;
+
+						do_action('wa_fronted_settings_form', WA_Fronted::$options);
+						wp_nonce_field('wa_fronted_settings_save', 'wa_fronted_settings_nonce');
+					?>
+
+					<input type="hidden" name="<?php echo $field_prefix; ?>post_id" id="<?php echo $field_prefix; ?>post_id" value="<?php echo $post->ID; ?>">
+
+					<div class="wa-fronted-modal-footer">
+						<button type="submit" class="button button-primary button-large submit-wa-fronted-modal"><i class="dashicons dashicons-yes"></i> Update</button>
+						<?php do_action('wa_fronted_settings_modal_footer', WA_Fronted::$options); ?>
+					</div>
+				</form>
 			</div>
+		</div>
 
-			<?php if(post_type_supports( $post->post_type, 'revisions' )): ?>
-				<div id="wa-fronted-revisions-modal">
-					<div class="wa-fronted-revisions-modal-inner">
-						<button class="close-wa-fronted-modal"><i class="fa fa-close"></i></button>
+		<?php if(post_type_supports( $post->post_type, 'revisions' )): ?>
+			<div id="wa-fronted-revisions-modal">
+				<div class="wa-fronted-revisions-modal-inner">
+					<button class="close-wa-fronted-modal"><i class="fa fa-close"></i></button>
 
-						<div class="revision-input-container">
-							<h4><?php _e('Step through revisions', 'wa-fronted'); ?></h4>
-							<button id="wa-previous-revision"><i class="fa fa-chevron-left"></i></button>
-							<input type="text" name="wa_fronted_switch_revision" id="wa_fronted_switch_revision" readonly>
-							<button id="wa-next-revision"><i class="fa fa-chevron-right"></i></button>
-						</div>
+					<div class="revision-input-container">
+						<h4><?php _e('Step through revisions', 'wa-fronted'); ?></h4>
+						<button id="wa-previous-revision"><i class="fa fa-chevron-left"></i></button>
+						<input type="text" name="wa_fronted_switch_revision" id="wa_fronted_switch_revision" readonly>
+						<button id="wa-next-revision"><i class="fa fa-chevron-right"></i></button>
 					</div>
 				</div>
-			<?php endif; ?>
-			
-			<div id="wa-fronted-edit-shortcode">
-				<div class="wa-fronted-edit-shortcode-inner">
-					<button id="wa-fronted-edit-shortcode-button" class="show"><i class="dashicons dashicons-edit"></i></button>
-					<button id="wa-fronted-remove-shortcode-button" class="show"><i class="dashicons dashicons-no"></i></button>
-					
-					<div class="shortcode-input-wrapper">
-						<input type="text" name="wa_fronted_shortcode_input" id="wa_fronted_shortcode_input">
-						<button id="submit-shortcode"><i class="dashicons dashicons-yes"></i></button>
-					</div>
+			</div>
+		<?php endif; ?>
+		
+		<div id="wa-fronted-edit-shortcode">
+			<div class="wa-fronted-edit-shortcode-inner">
+				<button id="wa-fronted-edit-shortcode-button" class="show"><i class="dashicons dashicons-edit"></i></button>
+				<button id="wa-fronted-remove-shortcode-button" class="show"><i class="dashicons dashicons-no"></i></button>
+				
+				<div class="shortcode-input-wrapper">
+					<input type="text" name="wa_fronted_shortcode_input" id="wa_fronted_shortcode_input">
+					<button id="submit-shortcode"><i class="dashicons dashicons-yes"></i></button>
 				</div>
 			</div>
+		</div>
 
-			<div id="wa-fronted-spinner">
-				<img src="<?php echo includes_url(); ?>/images/spinner-2x.gif">
-			</div>
-		<?php
-		endif;
+		<div id="wa-fronted-spinner">
+			<img src="<?php echo includes_url(); ?>/images/spinner-2x.gif">
+		</div>
+	<?php
 	}
 
 	/**
@@ -1022,88 +1012,84 @@ class WA_Fronted {
 	 * AJAX function for saving settings form
 	 */
 	protected function settings_form_save(){
-		if(is_array(WA_Fronted::$options) && !empty(WA_Fronted::$options) && WA_Fronted::$options !== false){
+		$field_prefix = 'wa_fronted_';
+		$update_this  = array(
+			'comment_status' => 'closed'
+		);
 
-			$field_prefix = 'wa_fronted_';
-			$update_this  = array(
-				'comment_status' => 'closed'
-			);
+		$update_taxonomies = array();
 
-			$update_taxonomies = array();
-
-			foreach($_POST as $key => $value){
-				switch($key){
-					case $field_prefix . 'post_id':
-						$update_this['ID'] = $value;
-						break;
-					case $field_prefix . 'post_status':
-						$update_this['post_status'] = $value;
-						break;
-					case $field_prefix . 'post_name':
-						$update_this['post_name'] = sanitize_title($value);
-						break;
-					case $field_prefix . 'post_date':
-						$update_this['post_date'] = $value;
-						break;
-					case $field_prefix . 'post_parent':
-						if($value !== false && intval($value)){
-							$update_this['post_parent'] = $value;
-						}else{
-							$update_this['post_parent'] = 0;
-						}
-						break;
-					case $field_prefix . 'comment_status':
-						$update_this['comment_status'] = 'open';
-						break;
-				}
-
-				$tax_name = strpos($key, $field_prefix . 'tax_');
-				if($tax_name !== false){
-					$tax_name = substr($key, strlen($field_prefix . 'tax_'));
-					$update_taxonomies[$tax_name] = array_map('intval', $value);
-				}
+		foreach($_POST as $key => $value){
+			switch($key){
+				case $field_prefix . 'post_id':
+					$update_this['ID'] = $value;
+					break;
+				case $field_prefix . 'post_status':
+					$update_this['post_status'] = $value;
+					break;
+				case $field_prefix . 'post_name':
+					$update_this['post_name'] = sanitize_title($value);
+					break;
+				case $field_prefix . 'post_date':
+					$update_this['post_date'] = $value;
+					break;
+				case $field_prefix . 'post_parent':
+					if($value !== false && intval($value)){
+						$update_this['post_parent'] = $value;
+					}else{
+						$update_this['post_parent'] = 0;
+					}
+					break;
+				case $field_prefix . 'comment_status':
+					$update_this['comment_status'] = 'open';
+					break;
 			}
 
-			if(!empty($update_taxonomies)){
-				foreach($update_taxonomies as $taxonomy => $terms){
-					wp_set_object_terms( $update_this['ID'], $terms, $taxonomy );
-				}
+			$tax_name = strpos($key, $field_prefix . 'tax_');
+			if($tax_name !== false){
+				$tax_name = substr($key, strlen($field_prefix . 'tax_'));
+				$update_taxonomies[$tax_name] = array_map('intval', $value);
 			}
+		}
 
-			if(get_post_type($update_this['ID']) == 'post'){
-				$is_sticky = is_sticky($update_this['ID']);
-				if(isset($_POST[$field_prefix . 'sticky']) && !$is_sticky){
-					//Add sticky
-					$sticky_posts = get_option('sticky_posts');
-					if(!is_array($sticky_posts)){
-						$sticky_posts = array();
-					}
+		if(!empty($update_taxonomies)){
+			foreach($update_taxonomies as $taxonomy => $terms){
+				wp_set_object_terms( $update_this['ID'], $terms, $taxonomy );
+			}
+		}
 
-					if(!in_array((int)$update_this['ID'], $sticky_posts)){
-						$sticky_posts[] = (int)$update_this['ID'];
-						update_option('sticky_posts', $sticky_posts);
-					}
+		if(get_post_type($update_this['ID']) == 'post'){
+			$is_sticky = is_sticky($update_this['ID']);
+			if(isset($_POST[$field_prefix . 'sticky']) && !$is_sticky){
+				//Add sticky
+				$sticky_posts = get_option('sticky_posts');
+				if(!is_array($sticky_posts)){
+					$sticky_posts = array();
+				}
 
-				}else if(!isset($_POST[$field_prefix . 'sticky']) && $is_sticky){
-					//Remove sticky
-					$sticky_posts = get_option('sticky_posts');
-					if(($key = array_search((int)$update_this['ID'], $sticky_posts)) !== false) {
-					    unset($sticky_posts[$key]);
-					}
-
+				if(!in_array((int)$update_this['ID'], $sticky_posts)){
+					$sticky_posts[] = (int)$update_this['ID'];
 					update_option('sticky_posts', $sticky_posts);
 				}
+
+			}else if(!isset($_POST[$field_prefix . 'sticky']) && $is_sticky){
+				//Remove sticky
+				$sticky_posts = get_option('sticky_posts');
+				if(($key = array_search((int)$update_this['ID'], $sticky_posts)) !== false) {
+				    unset($sticky_posts[$key]);
+				}
+
+				update_option('sticky_posts', $sticky_posts);
 			}
+		}
 
-			if(!empty($update_this)){
-				$update = wp_update_post(apply_filters('wa_fronted_settings_values', $update_this), true);
+		if(!empty($update_this)){
+			$update = wp_update_post(apply_filters('wa_fronted_settings_values', $update_this), true);
 
-				do_action('wa_fronted_settings_form_save');
+			do_action('wa_fronted_settings_form_save');
 
-				wp_safe_redirect( get_permalink($update_this['ID']) );
-				exit;
-			}
-
+			wp_safe_redirect( get_permalink($update_this['ID']) );
+			exit;
 		}
 	}
 
@@ -1283,13 +1269,13 @@ class WA_Fronted {
 		$post_id = (isset($_POST['post_id'])) ? $_POST['post_id'] : $post_id;
 		$revisions = apply_filters('wa_fronted_revisions', wp_get_post_revisions($post_id), $post_id);
 
-		add_filter( 'the_content', array( $this, 'filter_shortcodes' ) );
-
 		usort($revisions, function($a, $b) {
-		    return $a->post_date - $b->post_date;
+		    return strtotime($a->post_date) - strtotime($b->post_date);
 		});
 
 		if(!empty($revisions)){
+			add_filter( 'the_content', array( 'WA_Fronted', 'filter_shortcodes' ) );
+	
 			foreach($revisions as $key => $revision){
 				$revisions[$key]->post_content = apply_filters('the_content', $revisions[$key]->post_content);
 			}
@@ -1358,6 +1344,11 @@ if(!function_exists('wa_fronted_init')){
 		//Checks if WooCommerce is installed
 		if(class_exists('WooCommerce')){
 			include_once('extensions/woocommerce/woocommerce.php');
+		}
+
+		//Checks if Shortcake is installed	
+		if(class_exists('Shortcode_UI')){
+			include_once('extensions/shortcake/shortcake.php');
 		}
 
 		new WA_Fronted();
