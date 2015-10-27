@@ -37,6 +37,7 @@ Frontend editor for WordPress, a free and open source project with a goal to enh
 * [x] Ability to edit other common columns from the posts table
 * [x] Ability to set post as featured
 * [x] Ability to set post parent to hierarchical post types
+* [x] Ability to edit custom excerpt
 * [x] Allow/Disable comments
 * [x] Ability to edit fields saved in the wp_options table
 * [x] Edit and add taxonomies (both custom and native)
@@ -47,15 +48,14 @@ Frontend editor for WordPress, a free and open source project with a goal to enh
 ## To do's
 > Things that are planned to be implemented in the near future (in no particular order)
 
-* [ ] Ability to edit custom excerpt
 * [ ] Enable select-dropdown for other fields than meta_select
 * [ ] Optimization for small screens and touch devices
 * [ ] Make it possible to create new posts from frontend
-* [ ] Ability to set multiple user roles in `permission` option
 * [ ] Automatic config of `post_content` and `post_title` if no overrides
-* [ ] Add logged in session check
+* [ ] Check/Set post locks
+* [ ] Submit to official plugin repo
 
-## Proposed features
+## Proposed features/To do's
 > These features requires further discussion, not yet set to be implemented
 
 * [ ] Change common ajax functions to make use of WP Rest API instead (when implemented into core)
@@ -66,6 +66,8 @@ Frontend editor for WordPress, a free and open source project with a goal to enh
 * [ ] More ACF fields support
 * [ ] Mirror style of current WP admin theme
 * [ ] Ability to create child-categories
+* [ ] Ability to create settings-modal for each editor
+* [ ] Break out built-in extensions into separate plugins
 
 ## Proposed extensions
 * [ ] Live SEO analyzis and tips with Yoast integration

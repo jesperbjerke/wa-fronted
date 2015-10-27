@@ -338,6 +338,7 @@ var wa_fronted = window.wa_fronted;
 					directionality : this_options.direction,
 					wpeditimage_html5_captions : true,
 					fronted_options : this_options,
+					wpautop : false,
 					setup: function( editor ) {
 
 						if(this_options.paragraphs !== true){

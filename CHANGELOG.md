@@ -1,10 +1,14 @@
 CHANGELOG
 =========
 ## 1.3
-* Added [Shortcake](https://github.com/fusioneng/Shortcake) integration
+* Added [Shortcake](https://github.com/fusioneng/Shortcake) integration (__requires Shortcake v0.6.0__)
 * Added ability to send boolean through `permission` setting (see issue [#17](https://github.com/jesperbjerke/wa-fronted/issues/17))
+* Added ability to set capability as `permission` setting
+* Added logged in session check
+* Added ability to edit custom excerpt
 * Changed page reload after save to show notification toast instead
 * Changed when scripts are loaded so we only need to check for options once
+* Changed `wpautop` in TinyMCE to `false` to avoid getting shortcode html comments wrapped in p-tags
 * Fixed revisions not sorted by date properly
 * Fixed shortcode rendering and binding when stepping through revisions
 * Fixed autosaving running even though post is already saving

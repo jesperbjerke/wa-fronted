@@ -199,17 +199,24 @@ class WA_Fronted {
 	 */
 	protected function check_permission($permission){
 		if(!is_bool($permission)){
-			switch($permission){
-				case 'logged-in':
-					return is_user_logged_in();
-					break;
-				case 'default':
-					return current_user_can('edit_posts');
-					break;
-				default:
-					return in_array($permission, wp_get_current_user()->roles);
+			if(strpos($permission, 'cap_') !== false){
+				// permission set is a capability
+				return current_user_can(str_replace('cap_', '', $permission));
+			}else{
+				//permission set is either default, logged-in or role
+				switch($permission){
+					case 'logged-in':
+						return is_user_logged_in();
+						break;
+					case 'default':
+						return current_user_can('edit_posts');
+						break;
+					default:
+						return in_array($permission, wp_get_current_user()->roles);
+				}
 			}
 		}else{
+			//permission set is custom
 			return $permission;
 		}
 	}
@@ -317,6 +324,7 @@ class WA_Fronted {
 		wp_enqueue_script('jquery-ui-draggable');
 		wp_enqueue_script('jquery-ui-droppable');
 		wp_enqueue_script('jquery-ui-datepicker');
+		wp_enqueue_script('wp-auth-check');
 
 		wp_enqueue_script(
 			'jqueryui-timepicker-addon',
@@ -363,6 +371,7 @@ class WA_Fronted {
 			)
 		);
 
+		wp_enqueue_style( 'wp-auth-check' );
 		wp_enqueue_style( 'buttons' );
 		wp_enqueue_style( 'dashicons' );
 		wp_enqueue_style( 'open-sans' );
@@ -799,6 +808,10 @@ class WA_Fronted {
 			'taxonomies'
 		);
 
+		if(post_type_supports($post->post_type, 'excerpt')){
+			$default_fieldgroups[] = 'post_excerpt';
+		}
+
 		$field_groups = apply_filters('wa_fronted_settings_fields', $default_fieldgroups);
 	?>
 		<div id="wa-fronted-settings-modal">
@@ -815,6 +828,14 @@ class WA_Fronted {
 										<div class="fieldgroup">
 											<label for="<?php echo $field_prefix; ?>post_name"><?php _e('Post slug', 'wa-fronted'); ?></label>
 											<input type="text" name="<?php echo $field_prefix; ?>post_name" id="<?php echo $field_prefix; ?>post_name" value="<?php echo $post->post_name; ?>">
+										</div>
+										<?php
+										break;
+									case 'post_excerpt':
+										?>
+										<div class="fieldgroup">
+											<label for="<?php echo $field_prefix; ?>post_excerpt"><?php _e('Custom excerpt', 'wa-fronted'); ?></label>
+											<textarea name="<?php echo $field_prefix; ?>post_excerpt" id="<?php echo $field_prefix; ?>post_excerpt"><?php echo $post->post_excerpt; ?></textarea>
 										</div>
 										<?php
 										break;
@@ -1002,9 +1023,9 @@ class WA_Fronted {
 		if ( ! class_exists( '_WP_Editors' ) ) {
 			require( ABSPATH . WPINC . '/class-wp-editor.php' );
 		}
-
 		_WP_Editors::wp_link_dialog();
 
+		wp_auth_check_html();
 		do_action('wa_fronted_footer_scripts');
 	}
 
@@ -1032,6 +1053,9 @@ class WA_Fronted {
 					break;
 				case $field_prefix . 'post_date':
 					$update_this['post_date'] = $value;
+					break;
+				case $field_prefix . 'post_excerpt':
+					$update_this['post_excerpt'] = trim($value);
 					break;
 				case $field_prefix . 'post_parent':
 					if($value !== false && intval($value)){
