@@ -3,7 +3,11 @@
 	Plugin Name: WA-Fronted
 	Plugin URI: http://github.com/jesperbjerke/wa-fronted
 	Description: Edit content directly from fronted in the contents actual place
-	Version: 1.3
+	Version: 1.3.5
+	Tags: frontend, editor, edit, medium
+	Requires at least: 4.0
+	Tested up to: 4.3.1
+	Stable tag: 1.3.5
 	Text Domain: wa-fronted
 	Domain Path: /languages
 	Author: Jesper Bjerke
@@ -11,17 +15,6 @@
 	Network: True
 	License: GPLv2
 */
-
-/**
- * Plugin updater curtesy of @link https://github.com/YahnisElsts
- */
-require_once 'plugin-update-checker/plugin-update-checker.php';
-$Plugin_Updater = PucFactory::getLatestClassVersion('PucGitHubChecker');
-$WA_Fronted_Updater = new $Plugin_Updater(
-    'https://github.com/jesperbjerke/wa-fronted/',
-    __FILE__,
-    'master'
-);
 
 /**
  * Enable automatic background updates for this plugin
@@ -43,6 +36,7 @@ class WA_Fronted {
 
 	static $options;
 	protected $supported_custom_fields;
+	protected $post_lock;
 
 	/**
 	 * Add hooks and actions and registers ajax functions
@@ -65,6 +59,8 @@ class WA_Fronted {
 		add_action( 'wp_ajax_wa_create_image', array( $this, 'wa_create_image' ) );
 		add_action( 'wp_ajax_wa_add_tax_term', array( $this, 'wa_add_tax_term' ) );
 		add_action( 'wp_ajax_wa_get_revisions', array( $this, 'wa_get_revisions' ) );
+		add_action( 'wp_ajax_wa_fronted_set_post_lock', array( $this, 'wa_fronted_set_post_lock' ) );
+		add_filter( 'heartbeat_received', array( $this, 'wa_fronted_check_post_lock'), 10, 3 );
 	}
 
 	/**
@@ -79,18 +75,19 @@ class WA_Fronted {
 			require_once( ABSPATH . '/wp-admin/includes/admin.php' );
 			
 			add_action( 'wp_enqueue_scripts', array( $this, 'scripts_and_styles' ) );
-			add_action( 'wp_footer', array( $this, 'wa_fronted_toolbar' ) );
-			add_action( 'wp_footer', array( $this, 'wa_fronted_footer' ) );
-			add_action( 'wp_print_footer_scripts', array( $this, 'wa_fronted_footer_scripts' ) );
-			add_filter( 'the_content', array( 'WA_Fronted', 'filter_shortcodes' ) );
-			
 
-			//Check post data and validate form nonce
-			if(isset($_POST['wa_fronted_settings_nonce']) && wp_verify_nonce($_POST['wa_fronted_settings_nonce'], 'wa_fronted_settings_save')){
-				$this->settings_form_save();
+			if(!$this->post_lock){
+				add_action( 'wp_footer', array( $this, 'wa_fronted_toolbar' ) );
+				add_action( 'wp_footer', array( $this, 'wa_fronted_footer' ) );
+				add_action( 'wp_print_footer_scripts', array( $this, 'wa_fronted_footer_scripts' ) );
+				add_filter( 'the_content', array( 'WA_Fronted', 'filter_shortcodes' ) );
+				//Check post data and validate form nonce
+				if(isset($_POST['wa_fronted_settings_nonce']) && wp_verify_nonce($_POST['wa_fronted_settings_nonce'], 'wa_fronted_settings_save')){
+					$this->settings_form_save();
+				}
+
+				do_action( 'wa_fronted_after_init', WA_Fronted::$options );
 			}
-
-			do_action( 'wa_fronted_after_init', WA_Fronted::$options );
 		}
 	}
 
@@ -222,31 +219,111 @@ class WA_Fronted {
 	}
 
 	/**
+	 * Response of Heartbeat API call
+	 * @param  array $response
+	 * @param  array $data
+	 * @param  string $screen_id
+	 * @return array $response
+	 */
+	public function wa_fronted_check_post_lock( $response, $data, $screen_id ){
+	    if ( isset( $data['wa_fronted_post_lock'] ) ) {
+	        $response['wa_fronted_post_lock'] = array(
+				'post_id'   => $data['wa_fronted_post_lock']['post_id'],
+				'is_locked' => wp_check_post_lock( $data['wa_fronted_post_lock']['post_id'] )
+	        );
+	    }
+	    return $response;
+	}
+
+	public function wa_fronted_set_post_lock(){
+		$response = array(
+			'success' => false
+		);
+
+		if(isset($_POST['post_id'])){
+			$post_lock = wp_set_post_lock($_POST['post_id']);
+			if($post_lock){
+				$response['success'] = true;
+				$response['data']    = $post_lock;
+			}
+		}
+
+		wp_send_json($response);
+	}
+
+	/**
+	 * Setup basic configuration if nothing is set manually
+	 * @param  array $default_options
+	 * @return array                  auto configured options
+	 */
+	protected function auto_configure($default_options){
+		$post_type = get_post_type();
+		$auto_configurables = array(
+			'title'     => 'post_title',
+			'editor'    => 'post_content',
+			'thumbnail' => 'post_thumbnail'
+		);
+
+		$configured_options = array();
+
+		foreach($auto_configurables as $feature => $field_type){
+			if(post_type_supports($post_type, $feature)){
+				$field_id = 'wa-auto-' . $field_type;
+				switch($field_type){
+					case 'post_title':
+						add_filter( 'the_title', function( $title, $id = null){
+							return '<div id="wa-auto-post_title">' . $title . '</div>';
+						}, 999, 2);
+						break;
+					case 'post_content':
+						add_filter( 'the_content', function( $content ){
+							return '<div id="wa-auto-post_content">' . $content . '</div>';
+						}, 999 );
+						break;
+					case 'post_thumbnail':
+						add_filter( 'post_thumbnail_html', function( $html, $post_id, $post_image_id ){
+							return '<div id="wa-auto-post_thumbnail">' . $html . '</div>';
+						}, 999, 3 );
+						break;
+				}
+
+				$configured_options[] = array(
+					'container'  => '.hentry #' . $field_id,
+					'field_type' => $field_type
+				);
+			}
+		}
+
+		return $configured_options;
+	}
+
+	/**
 	 * Reads config array by applied filter 'wa_fronted_options'
 	 * @return mixed 	returns false if no areas can be edited by current user, else json object with options
 	 */
 	protected function get_options(){
 
+		require_once( ABSPATH . '/wp-admin/includes/post.php' );
+		require_once( ABSPATH . '/wp-admin/includes/admin.php' );
+
 		$options = apply_filters('wa_fronted_options', array());
 
-		if(!is_array($options) || empty($options) || $options == ''){
-			return false;
-		}
-
 		global $post;
+		$this->post_lock = wp_check_post_lock($post->ID);
 
 		$default_options = array(
-			'native'       => true,
-			'direction'    => 'ltr',
-			'media_upload' => true,
-			'toolbar'      => 'full',
-			'post_id'      => $post->ID,
-			'shortcodes'   => false,
-			'field_type'   => false,
-			'permission'   => 'default',
-			'image_size'   => 'post-thumbnail',
-			'paragraphs'   => true,
-			'validation'   => false
+			'native'         => true,
+			'direction'      => 'ltr',
+			'media_upload'   => true,
+			'toolbar'        => 'full',
+			'post_id'        => $post->ID,
+			'shortcodes'     => false,
+			'field_type'     => false,
+			'permission'     => 'default',
+			'image_size'     => 'post-thumbnail',
+			'paragraphs'     => true,
+			'validation'     => false,
+			'auto_configure' => true
 		);
 
 		if(is_front_page() && !is_home()){
@@ -259,6 +336,20 @@ class WA_Fronted {
 
 		if(isset($options['defaults'])){
 			$default_options = array_merge($default_options, $options['defaults']);
+		}
+
+		//Setup basic configuration if nothing is set manually
+		if($default_options['auto_configure'] && !isset($options['post_types'][$post_type]) && $post_type !== 'blog'){
+			$auto_set_options = $this->auto_configure($default_options);
+			if(!empty($auto_set_options)){
+				$options['post_types'][$post_type] = array(
+					'editable_areas' => $auto_set_options
+				);
+			}
+		}
+
+		if(!is_array($options) || empty($options) || $options == ''){
+			return false;
 		}
 
 		$continue = false;
@@ -297,7 +388,9 @@ class WA_Fronted {
 
 		require_once( ABSPATH . '/wp-admin/includes/post.php' );
 
-		do_action('wa_fronted_before_scripts', WA_Fronted::$options);
+		if(!$this->post_lock){
+			do_action('wa_fronted_before_scripts', WA_Fronted::$options);
+		}
 
 		load_plugin_textdomain( 'wa-fronted', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
 
@@ -324,6 +417,7 @@ class WA_Fronted {
 		wp_enqueue_script('jquery-ui-draggable');
 		wp_enqueue_script('jquery-ui-droppable');
 		wp_enqueue_script('jquery-ui-datepicker');
+		wp_enqueue_script('heartbeat');
 		wp_enqueue_script('wp-auth-check');
 
 		wp_enqueue_script(
@@ -348,6 +442,8 @@ class WA_Fronted {
 				'jquery-ui-droppable',
 				'jquery-ui-datepicker',
 				'jqueryui-timepicker-addon',
+				'heartbeat',
+				'wp-auth-check',
 				'tinymce',
 				'wp-util', 
 				'editor', 
@@ -362,12 +458,14 @@ class WA_Fronted {
 			'wa-fronted-scripts',
 			'global_vars',
 			array(
-				'wp_lang'     => get_bloginfo('language'),
-				'i18n'        => $this->get_js_i18n(),
-				'ajax_url'    => admin_url('admin-ajax.php'),
-				'options'     => json_encode(WA_Fronted::$options),
-				'image_sizes' => $this->get_image_sizes(),
-				'nonce'       => wp_create_nonce('wa_fronted_save_nonce')
+				'wp_lang'        => get_bloginfo('language'),
+				'i18n'           => $this->get_js_i18n(),
+				'ajax_url'       => admin_url('admin-ajax.php'),
+				'options'        => json_encode(WA_Fronted::$options),
+				'image_sizes'    => $this->get_image_sizes(),
+				'nonce'          => wp_create_nonce('wa_fronted_save_nonce'),
+				'post_lock'      => $this->post_lock,
+				'global_post_id' => $post->ID
 			)
 		);
 
@@ -376,16 +474,18 @@ class WA_Fronted {
 		wp_enqueue_style( 'dashicons' );
 		wp_enqueue_style( 'open-sans' );
 
-		wp_enqueue_style(
-			'wa-fronted-timepicker-addon',
-			plugins_url( '/bower_components/jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.css', __FILE__ )
-		);
-		wp_enqueue_style(
-			'wa-fronted-style',
-			plugins_url( '/css/style.css', __FILE__ )
-		);
+		if(!$this->post_lock){
+			wp_enqueue_style(
+				'wa-fronted-timepicker-addon',
+				plugins_url( '/bower_components/jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.css', __FILE__ )
+			);
+			wp_enqueue_style(
+				'wa-fronted-style',
+				plugins_url( '/css/style.css', __FILE__ )
+			);
 
-		do_action('wa_fronted_after_scripts', WA_Fronted::$options);
+			do_action('wa_fronted_after_scripts', WA_Fronted::$options);
+		}
 	}
 
 	/**

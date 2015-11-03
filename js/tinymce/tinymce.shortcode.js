@@ -71,7 +71,7 @@ tinymce.PluginManager.add( 'fronted_shortcode', function( editor ) {
 
 			shortcode_button.addClass('show');
 			shortcode_button.off();
-			shortcode_button.one('click', function(e){
+			shortcode_button.on('click', function(e){
 				e.preventDefault();
 				self.show_shortcode_edit(element, editor);
 			});

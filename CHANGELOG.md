@@ -1,5 +1,11 @@
 CHANGELOG
 =========
+## 1.3.5
+* Added automatic config of `post_content`, `post_title` and `post_thumbnail` if no settings is set __requires editable contents to be in a container with class `hentry`__, can be turned off by setting `auto_configure` to `false`
+* Added option `auto_configure`
+* Added check/set post locks
+* Removed [plugin-update-checker](https://github.com/YahnisElsts/plugin-update-checker) in favor for the official plugin repo
+
 ## 1.3
 * Added [Shortcake](https://github.com/fusioneng/Shortcake) integration (__requires Shortcake v0.6.0__)
 * Added ability to send boolean through `permission` setting (see issue [#17](https://github.com/jesperbjerke/wa-fronted/issues/17))

@@ -180,38 +180,59 @@ var wa_fronted = window.wa_fronted;
 			var self = this;
 
 			if(typeof self.options.editable_areas !== 'undefined' && self.options.editable_areas.length !== 0){
+				if(global_vars.post_lock === false || global_vars.post_lock === ''){
 
-				rangy.init();
+					$.post(
+			            global_vars.ajax_url,
+			            {
+							'action'  : 'wa_fronted_set_post_lock',
+							'post_id' : global_vars.post_id
+			            },
+			            function(response){
+				        	wp.heartbeat.enqueue(
+							    'wa_fronted_post_lock',
+							    {
+							    	'post_id' : global_vars.post_id
+							    },
+							    false
+							);
+			            }
+			        );
 
-				var editor_setup = function(index, el){
-					el = $(el);
-					el.addClass('wa-fronted-editor');
-					self.setup_editor(el, self.options.editable_areas[i], self.options);
-					self.data.editable_areas.push({
-						editor  : el,
-						options : self.options.editable_areas[i]
-					});
-				};
+					rangy.init();
 
-				for(var i = 0; i < self.options.editable_areas.length; i++){
-					var editors = $(self.options.editable_areas[i].container);
-					if(editors.length !== 0){
-						$.each(editors, editor_setup);
+					var editor_setup = function(index, el){
+						el = $(el);
+						el.addClass('wa-fronted-editor');
+						self.setup_editor(el, self.options.editable_areas[i], self.options);
+						self.data.editable_areas.push({
+							editor  : el,
+							options : self.options.editable_areas[i]
+						});
+					};
+
+					for(var i = 0; i < self.options.editable_areas.length; i++){
+						var editors = $(self.options.editable_areas[i].container);
+						if(editors.length !== 0){
+							$.each(editors, editor_setup);
+						}
 					}
+
+					//Setup toastr options
+					toastr.options.timeOut       = "7000";
+					toastr.options.positionClass = "toast-bottom-right";
+					toastr.options.closeButton   = true;
+
+					var post_id = $('#wa-fronted-revisions').attr('data-post-id');
+					if(post_id){
+						self.check_autosave(post_id);
+					}
+
+					self.do_action('on_init');
+					self.bind();
+				}else{
+					self.show_post_lock_notice(global_vars.post_lock, global_vars.global_post_id);
 				}
-
-				//Setup toastr options
-				toastr.options.timeOut       = "7000";
-				toastr.options.positionClass = "toast-bottom-right";
-				toastr.options.closeButton   = true;
-
-				var post_id = $('#wa-fronted-revisions').attr('data-post-id');
-				if(post_id){
-					self.check_autosave(post_id);
-				}
-
-				self.do_action('on_init');
-				self.bind();
 			}
 		},
 
@@ -285,6 +306,22 @@ var wa_fronted = window.wa_fronted;
 			});
 
 			self.do_action('on_bind');
+
+			$(document).on( 'heartbeat-tick.wa_fronted_post_lock', function( event, data ) {
+		        if ( data.hasOwnProperty( 'wa_fronted_post_lock' ) ) {
+		            if(data['wa_fronted_post_lock'].is_locked !== false && data['wa_fronted_post_lock'].is_locked !== ''){
+		            	self.show_post_lock_notice(data['wa_fronted_post_lock'].is_locked, global_vars.global_post_id);
+		            }else{
+			   			wp.heartbeat.enqueue(
+						    'wa_fronted_post_lock',
+						    {
+						    	'post_id' : data['wa_fronted_post_lock'].post_id
+						    },
+						    false
+						);
+					}
+		        }
+		    });
 
 			window.onbeforeunload = function(){
 				if(self.data.has_changes && !self.data.is_saving){
@@ -1074,6 +1111,28 @@ var wa_fronted = window.wa_fronted;
 	            }
 	        );
 
+		},
+
+		/**
+		 * Shows notice about current post has been taken over by another user
+		 * @param {Object} lock_info
+		 */
+		show_post_lock_notice: function( lock_info, post_id ){
+			var self = this;
+    		if(confirm(self.i18n('Another user is currently editing this post. Take over?'))){
+				$.post(
+		            global_vars.ajax_url,
+		            {
+						'action'  : 'wa_fronted_set_post_lock',
+						'post_id' : post_id
+		            },
+		            function(response){
+		            	if(response.success && response.data !== false){
+		            		location.reload();
+		            	}
+		            }
+		        );
+    		}
 		},
 
 		/**
