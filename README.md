@@ -44,7 +44,7 @@ WA Fronted (or just “Fronted“) is a frontend editor for WordPress. It’s a 
 * [x] Basic RTL support
 * [x] Choice-based fields with dropdown-select
 * [x] CTRL + click on link in editor to open in new tab/window
-* [x] Automatic config of `post_content`, `post_title` and `post_thumbnail` if no settings is set __requires editable contents to be in a container with class `hentry`__, can be turned off by setting `auto_configure` to `false`
+* [x] Automatic config of `post_content`, `post_title` and `post_thumbnail` if no settings are set __requires editable contents to be in a wrapping container with class `hentry` like `<article class="hentry"><h1 class="entry-title"></h1><div class="entry-content"></entry-content></article>`__, can be turned off by setting `auto_configure` to `false`
 * [x] Check/Set post locks
 
 ## To do's

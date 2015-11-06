@@ -1,9 +1,20 @@
 <h1 id="changelog">CHANGELOG</h1>
+<h2 id="1-3-6">1.3.6</h2>
+<ul>
+<li>Added option <code>init_on_load</code> to set Fronted loading behavior</li>
+<li>Added filter <code>save_extra_data</code></li>
+<li>Added filter <code>autosave_extra_data</code></li>
+<li>Added more specificity to 3rd party libraries to avoid css conflicts</li>
+<li>Changed so that 3rd party javascript libraries will be enqueued separately</li>
+<li>Fixed p-tags being inserted in auto configured post_title</li>
+<li>Fixed post revisions not honoring the constant <code>WP_POST_REVISIONS</code></li>
+</ul>
 <h2 id="1-3-5">1.3.5</h2>
 <ul>
-<li>Added automatic config of <code>post_content</code>, <code>post_title</code> and <code>post_thumbnail</code> if no settings is set <strong>requires editable contents to be in a container with class <code>hentry</code></strong>, can be turned off by setting <code>auto_configure</code> to <code>false</code></li>
+<li>Added automatic config of <code>post_content</code>, <code>post_title</code> and <code>post_thumbnail</code> if no settings are set <strong>requires editable contents to be in a wrapping container with class <code>hentry</code> like <code>&lt;article class=&quot;hentry&quot;&gt;&lt;h1 class=&quot;entry-title&quot;&gt;&lt;/h1&gt;&lt;div class=&quot;entry-content&quot;&gt;&lt;/entry-content&gt;&lt;/article&gt;</code></strong>, can be turned off by setting <code>auto_configure</code> to <code>false</code></li>
 <li>Added option <code>auto_configure</code></li>
 <li>Added check/set post locks</li>
+<li>Removed <a href="https://github.com/YahnisElsts/plugin-update-checker">plugin-update-checker</a> in favor for the official plugin repo</li>
 </ul>
 <h2 id="1-3">1.3</h2>
 <ul>

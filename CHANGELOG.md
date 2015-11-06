@@ -1,7 +1,16 @@
 CHANGELOG
 =========
+## 1.3.6
+* Added option `init_on_load` to set Fronted loading behavior
+* Added filter `save_extra_data`
+* Added filter `autosave_extra_data`
+* Added more specificity to 3rd party libraries to avoid css conflicts
+* Changed so that 3rd party javascript libraries will be enqueued separately
+* Fixed p-tags being inserted in auto configured post_title
+* Fixed post revisions not honoring the constant `WP_POST_REVISIONS`
+
 ## 1.3.5
-* Added automatic config of `post_content`, `post_title` and `post_thumbnail` if no settings is set __requires editable contents to be in a container with class `hentry`__, can be turned off by setting `auto_configure` to `false`
+* Added automatic config of `post_content`, `post_title` and `post_thumbnail` if no settings are set __requires editable contents to be in a wrapping container with class `hentry` like `<article class="hentry"><h1 class="entry-title"></h1><div class="entry-content"></entry-content></article>`__, can be turned off by setting `auto_configure` to `false`
 * Added option `auto_configure`
 * Added check/set post locks
 * Removed [plugin-update-checker](https://github.com/YahnisElsts/plugin-update-checker) in favor for the official plugin repo

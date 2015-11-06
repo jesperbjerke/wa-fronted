@@ -9,10 +9,6 @@
  * 3rd party libs
  */
 //@prepros-prepend 'modernizr.custom.js'
-//@prepros-prepend '../bower_components/tipso/src/tipso.min.js'
-//@prepros-prepend '../bower_components/toastr/toastr.js'
-//@prepros-prepend '../bower_components/select2/dist/js/select2.full.min.js'
-//@prepros-prepend '../bower_components/rangy/rangy-core.min.js'
 
 /**
  * Custom packages
@@ -270,7 +266,10 @@ var wa_fronted = window.wa_fronted;
 
 				var this_dp = $(el),
 					opts = {
-						dateFormat : 'yy-mm-dd'
+						dateFormat : 'yy-mm-dd',
+						beforeShow : function(input, inst){
+							inst.dpDiv.addClass('wa-fronted-datepicker');
+						}
 					};
 
 				if(this_dp.attr('data-time') !== 'false'){
@@ -286,6 +285,7 @@ var wa_fronted = window.wa_fronted;
 
 			$('#wa-fronted-settings-modal select').select2({
 				minimumResultsForSearch : 10,
+				dropdownCssClass: 'wa-fronted-select2',
 				formatNoMatches : function(term){
 					var no_results_string = self.i18n('No results found.');
 
@@ -585,6 +585,9 @@ var wa_fronted = window.wa_fronted;
 		 */
 		autosave: function(editor_container, options){
 			var self = this;
+			if(global_vars.post_revisions === 0){
+				return;
+			}
 			// Setup timer so we dont spam database with autosaves
 			clearTimeout(self.data.timers.autosave);
 			self.data.timers.autosave = setTimeout(function(){
@@ -606,7 +609,8 @@ var wa_fronted = window.wa_fronted;
 
 							save_this.push({
 								'content' : content,
-								'options' : editors[i].options
+								'options' : editors[i].options,
+								'extra'   : self.apply_filters('autosave_extra_data', '', content, editors[i].options)
 							});
 						}
 					}
@@ -655,7 +659,8 @@ var wa_fronted = window.wa_fronted;
 
 						save_this.push({
 							'content' : content,
-							'options' : editors[i].options
+							'options' : editors[i].options,
+							'extra'   : self.apply_filters('save_extra_data', '', content, editors[i].options)
 						});
 					}
 				}

@@ -625,61 +625,6 @@ body{
 	}
 }
 
-.resize_handles{
-	position: absolute;
-	display: none;
-	z-index: 999;
-	cursor: pointer;
-
-	&.show{
-		display: block;
-	}
-
-	.resize_handle{
-		border: 1px solid #fff;
-		background: $wp_admin_color;
-		color: #fff;
-		position: absolute;
-		font-size: 15px;
-		padding: 2px;
-		text-align: center;
-		vertical-align: middle;
-
-		&:hover{
-			background: #333;
-  			color: #45bbe6;
-		}
-
-		&.nw{
-			left: 0;
-			top: 0;
-			cursor: nwse-resize;
-		}
-		
-		&.ne{
-			right: 0;
-			top: 0;
-			cursor: nesw-resize;
-		}
-		
-		&.sw{
-			left: 0;
-			bottom: 0;
-			cursor: nesw-resize;
-		}
-		
-		&.se{
-			right: 0;
-			bottom: 0;
-			cursor: nwse-resize;
-		}
-
-		&:hover{
-			background-color: #444;
-		}
-	}
-}
-
 #wa-fronted-edit-shortcode{
 	position: absolute;
 	margin-top: -42px;
@@ -906,7 +851,7 @@ body{
 	z-index: 160000;
 }
 
-.select2-drop{
+.select2-drop.wa-fronted-select2{
 	border: 0;
 	background: none #333;
 	font-size: 1.4rem;
@@ -997,7 +942,7 @@ body{
 	}
 }
 
-#ui-datepicker-div{
+#ui-datepicker-div.wa-fronted-datepicker{
 	border-radius: 3px;
 	border: 0;
 	box-shadow: 0 1px 5px rgba(#000, 0.2);

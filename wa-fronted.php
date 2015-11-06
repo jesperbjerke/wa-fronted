@@ -3,7 +3,7 @@
 	Plugin Name: WA-Fronted
 	Plugin URI: http://github.com/jesperbjerke/wa-fronted
 	Description: Edit content directly from fronted in the contents actual place
-	Version: 1.3.5
+	Version: 1.3.6
 	Tags: frontend, editor, edit, medium
 	Requires at least: 4.0
 	Tested up to: 4.3.1
@@ -12,7 +12,6 @@
 	Domain Path: /languages
 	Author: Jesper Bjerke
 	Author URI: http://www.westart.se
-	Network: True
 	License: GPLv2
 */
 
@@ -111,6 +110,10 @@ class WA_Fronted {
 		if($field_type == 'post_title'){
 			if(!array_key_exists('toolbar', $new_options)){
 				$compiled_options['toolbar'] = false;
+			}
+
+			if(!array_key_exists('paragraphs', $new_options)){
+				$compiled_options['paragraphs'] = false;
 			}
 		}else if($field_type == 'post_thumbnail'){
 			if(!array_key_exists('media_upload', $new_options)){
@@ -272,7 +275,7 @@ class WA_Fronted {
 				switch($field_type){
 					case 'post_title':
 						add_filter( 'the_title', function( $title, $id = null){
-							return '<div id="wa-auto-post_title">' . $title . '</div>';
+							return '<span id="wa-auto-post_title">' . $title . '</span>';
 						}, 999, 2);
 						break;
 					case 'post_content':
@@ -323,7 +326,8 @@ class WA_Fronted {
 			'image_size'     => 'post-thumbnail',
 			'paragraphs'     => true,
 			'validation'     => false,
-			'auto_configure' => true
+			'auto_configure' => true,
+			'init_on_load'   => true
 		);
 
 		if(is_front_page() && !is_home()){
@@ -369,7 +373,36 @@ class WA_Fronted {
 		}
 
 		if($continue){
-			return $post_type_options;
+			//If Fronted should not be enabled automatically, add button to admin bar and prevent init otherwise continue init
+			if($default_options['init_on_load'] === false && (!isset($_GET['is_editing']) || $_GET['is_editing'] == false)){
+
+				add_action('admin_bar_menu', function($wp_admin_bar){
+					$args = array(
+						'id'    => 'enable-wa-fronted',
+						'title' => __('Edit here', 'wa-fronted'),
+						'href'  => esc_url(add_query_arg('is_editing', 'true', $_SERVER['REQUEST_URI']))
+					);
+					$wp_admin_bar->add_node($args);
+				}, 90);
+
+				wp_add_inline_style( 'admin-bar', '#wpadminbar #wp-admin-bar-enable-wa-fronted a:before{
+				    content: \'\f464\';
+    				top: 2px;
+					position: relative;
+					float: left;
+					font: 400 20px/1 dashicons;
+					speak: none;
+					padding: 4px 0;
+					-webkit-font-smoothing: antialiased;
+					-moz-osx-font-smoothing: grayscale;
+					background-image: none!important;
+					margin-right: 6px;
+				}' );
+
+				return false;
+			}else{
+				return $post_type_options;
+			}
 		}else{
 			return false;
 		}
@@ -433,6 +466,46 @@ class WA_Fronted {
 		);
 
 		wp_enqueue_script(
+			'tipso',
+			plugins_url( '/bower_components/tipso/src/tipso.min.js', __FILE__ ),
+			array(
+				'jquery'
+			),
+			'1.0.6',
+			true
+		);
+
+		wp_enqueue_script(
+			'toastr',
+			plugins_url( '/bower_components/toastr/toastr.js', __FILE__ ),
+			array(
+				'jquery'
+			),
+			'2.1.2',
+			true
+		);
+
+		wp_enqueue_script(
+			'select2',
+			plugins_url( '/bower_components/select2/dist/js/select2.full.min.js', __FILE__ ),
+			array(
+				'jquery'
+			),
+			'4.0.0',
+			true
+		);
+
+		wp_enqueue_script(
+			'rangy',
+			plugins_url( '/bower_components/rangy/rangy-core.min.js', __FILE__ ),
+			array(
+				'jquery'
+			),
+			'1.3.0',
+			true
+		);
+
+		wp_enqueue_script(
 			'wa-fronted-scripts',
 			plugins_url( '/js/min/scripts.min.js', __FILE__ ),
 			array(
@@ -448,7 +521,11 @@ class WA_Fronted {
 				'wp-util', 
 				'editor', 
 				'wplink', 
-				'wp-lists'
+				'wp-lists',
+				'tipso',
+				'toastr',
+				'select2',
+				'rangy'
 			),
 			'0.1',
 			true
@@ -465,7 +542,8 @@ class WA_Fronted {
 				'image_sizes'    => $this->get_image_sizes(),
 				'nonce'          => wp_create_nonce('wa_fronted_save_nonce'),
 				'post_lock'      => $this->post_lock,
-				'global_post_id' => $post->ID
+				'global_post_id' => $post->ID,
+				'post_revisions' => WP_POST_REVISIONS
 			)
 		);
 
@@ -613,7 +691,7 @@ class WA_Fronted {
 					AND `post_name` LIKE '%autosave%'
 			");
 
-			if(!empty($autosaves)){
+			if(!empty($autosaves) && WP_POST_REVISIONS){
 				usort($autosaves, function($a, $b){
 					return strtotime($a->post_date) > strtotime($b->post_date);
 				});
@@ -786,7 +864,7 @@ class WA_Fronted {
 				}
 			}
 
-			do_action('wa_fronted_save', $data);
+			do_action('wa_fronted_save', $database);
 
 		}else{
 			$return['success'] = false;
@@ -875,7 +953,7 @@ class WA_Fronted {
 
 				<?php
 				global $post;
-				if(post_type_supports( $post->post_type, 'revisions' )):
+				if(post_type_supports( $post->post_type, 'revisions' ) && WP_POST_REVISIONS):
 				?>
 					<button id="wa-fronted-revisions" title="<?php _e('Post revisions', 'wa-fronted'); ?>" data-post-id="<?php echo $post->ID; ?>">
 						<i class="dashicons dashicons-backup"></i>
