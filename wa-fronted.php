@@ -7,7 +7,7 @@
 	Tags: frontend, editor, edit, medium
 	Requires at least: 4.0
 	Tested up to: 4.3.1
-	Stable tag: 1.3.5
+	Stable tag: 1.3.6
 	Text Domain: wa-fronted
 	Domain Path: /languages
 	Author: Jesper Bjerke
