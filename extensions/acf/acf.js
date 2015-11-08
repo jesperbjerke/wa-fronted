@@ -62,7 +62,7 @@ var wa_fronted_acf;
 					content_width   = editor_contents.width(),
 					content_pos     = editor_contents.position();
 
-				$('body').prepend('<button id="' + field_object.key + '" title="Edit ' + field_object.type + '" class="edit-acf-field" style="left: ' + (content_pos.left + ((content_width / 2) - 13)) + 'px;"><i class="fa fa-edit"></i></button>');
+				$('body').prepend('<button id="' + field_object.key + '" title="Edit ' + field_object.type + '" class="edit-acf-field" style="left: ' + (content_pos.left + ((content_width / 2) - 13)) + 'px;"><i class="dashicons dashicons-edit"></i></button>');
 				
 				var edit_button = $('#' + field_object.key),
 					acf_button_timeout;
@@ -240,8 +240,14 @@ var wa_fronted_acf;
 				}
 
 				if(!wa_fronted.specific_output_to(this_editor, this_options, response.value.ID, output_content)){
-					this_editor.html(output_content);
+					if(this_options.hasOwnProperty('reload_contents') && this_options.reload_contents){
+						this_editor.load(document.URL +  ' ' + this_options.container);
+					}else{
+						this_editor.html(output_content);
+					}
 				}
+
+				wa_fronted.do_action('acf_refresh_contents', this_editor, this_options);
 
 				self.hide_acf_form();
 			});

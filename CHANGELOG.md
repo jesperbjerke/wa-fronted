@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+## 1.3.7
+* Removed class requirement on auto config
+* Added full ACF support
+
 ## 1.3.6
 * Added option `init_on_load` to set Fronted loading behavior
 * Added filter `save_extra_data`

@@ -3,7 +3,7 @@ Contributors: jesperb
 Tags: frontend, editor, edit, medium, content
 Requires at least: 4.0
 Tested up to: 4.3.1
-Stable tag: 1.3.5
+Stable tag: 1.3.7
 License: GPLv2
 License URI: https://github.com/jesperbjerke/wa-fronted/blob/master/LICENSE.md
 
@@ -50,7 +50,7 @@ A frontend editor for WordPress. Free and open source project with a goal to enh
 * [x] Basic RTL support
 * [x] Choice-based fields with dropdown-select
 * [x] CTRL + click on link in editor to open in new tab/window
-* [x] Automatic config of `post_content`, `post_title` and `post_thumbnail` if no settings are set __requires editable contents to be in a wrapping container with class `hentry` like `<article class="hentry"><h1 class="entry-title"></h1><div class="entry-content"></entry-content></article>`__, can be turned off by setting `auto_configure` to `false`
+* [x] Automatic config of `post_content`, `post_title` and `post_thumbnail` if no settings are set, can be turned off by setting `auto_configure` to `false`
 * [x] Check/Set post locks
 
 == Screenshots ==

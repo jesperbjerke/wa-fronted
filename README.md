@@ -44,7 +44,7 @@ WA Fronted (or just “Fronted“) is a frontend editor for WordPress. It’s a 
 * [x] Basic RTL support
 * [x] Choice-based fields with dropdown-select
 * [x] CTRL + click on link in editor to open in new tab/window
-* [x] Automatic config of `post_content`, `post_title` and `post_thumbnail` if no settings are set __requires editable contents to be in a wrapping container with class `hentry` like `<article class="hentry"><h1 class="entry-title"></h1><div class="entry-content"></entry-content></article>`__, can be turned off by setting `auto_configure` to `false`
+* [x] Automatic config of `post_content`, `post_title` and `post_thumbnail` if no settings are set, can be turned off by setting `auto_configure` to `false`
 * [x] Check/Set post locks
 
 ## To do's
@@ -59,7 +59,6 @@ WA Fronted (or just “Fronted“) is a frontend editor for WordPress. It’s a 
 * [ ] Change common ajax functions to make use of WP Rest API instead (when implemented into core)
 * [ ] Ability to update widget contents
 * [ ] Extended WooCommerce support
-* [ ] More ACF fields support
 * [ ] Mirror style of current WP admin theme
 * [ ] Ability to create child-categories
 * [ ] Ability to create settings-modal for each editor

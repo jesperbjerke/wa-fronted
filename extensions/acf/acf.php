@@ -200,10 +200,12 @@ class WA_Fronted_ACF extends WA_Fronted{
 						break;
 				}
 			}else{
-				if($field_object['field_object']['type'] == ''){
+				if(!$field_object || $field_object['field_object']['type'] == ''){
 					trigger_error('ACF field key "' . $field_type . '" not found', E_USER_ERROR);
 				}else{
-					trigger_error('ACF field type "' . $field_object['field_object']['type'] . '" is not yet supported', E_USER_ERROR);
+					$compiled_options['native']          = false;
+					$compiled_options['toolbar']         = false;
+					$compiled_options['reload_contents'] = true;
 				}
 			}
 		}

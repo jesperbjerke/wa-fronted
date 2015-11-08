@@ -3,11 +3,11 @@
 	Plugin Name: WA-Fronted
 	Plugin URI: http://github.com/jesperbjerke/wa-fronted
 	Description: Edit content directly from fronted in the contents actual place
-	Version: 1.3.6
+	Version: 1.3.7
 	Tags: frontend, editor, edit, medium
 	Requires at least: 4.0
 	Tested up to: 4.3.1
-	Stable tag: 1.3.6
+	Stable tag: 1.3.7
 	Text Domain: wa-fronted
 	Domain Path: /languages
 	Author: Jesper Bjerke
@@ -275,23 +275,32 @@ class WA_Fronted {
 				switch($field_type){
 					case 'post_title':
 						add_filter( 'the_title', function( $title, $id = null){
-							return '<span id="wa-auto-post_title">' . $title . '</span>';
+							if(in_the_loop()){
+								$title = '<span id="wa-auto-post_title">' . $title . '</span>';
+							}
+							return $title;
 						}, 999, 2);
 						break;
 					case 'post_content':
 						add_filter( 'the_content', function( $content ){
-							return '<div id="wa-auto-post_content">' . $content . '</div>';
+							if(in_the_loop()){
+								$content = '<div id="wa-auto-post_content">' . $content . '</div>';
+							}
+							return $content;
 						}, 999 );
 						break;
 					case 'post_thumbnail':
 						add_filter( 'post_thumbnail_html', function( $html, $post_id, $post_image_id ){
-							return '<div id="wa-auto-post_thumbnail">' . $html . '</div>';
+							if(in_the_loop()){
+								$html = '<div id="wa-auto-post_thumbnail">' . $html . '</div>';
+							}
+							return $html;
 						}, 999, 3 );
 						break;
 				}
 
 				$configured_options[] = array(
-					'container'  => '.hentry #' . $field_id,
+					'container'  => '#' . $field_id,
 					'field_type' => $field_type
 				);
 			}
