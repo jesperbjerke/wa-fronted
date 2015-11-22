@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+## 1.3.8
+* Fixed bug where pasting regular content would cast a TypeError and stop executing
+* Fixed Notice when on 404 page
+
 ## 1.3.7
 * Removed class requirement on auto config
 * Added full ACF support

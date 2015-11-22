@@ -62,10 +62,12 @@ WA Fronted (or just “Fronted“) is a frontend editor for WordPress. It’s a 
 * [ ] Mirror style of current WP admin theme
 * [ ] Ability to create child-categories
 * [ ] Ability to create settings-modal for each editor
+* [ ] Ability to change page template
 * [ ] Break out built-in extensions into separate plugins
 
 ## Proposed extensions
 * [ ] Live SEO analyzis and tips with Yoast integration
+* [ ] WPML integration
 * [ ] Markdown parser
 
 ## Requirements

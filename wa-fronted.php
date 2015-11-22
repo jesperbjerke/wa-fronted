@@ -3,11 +3,11 @@
 	Plugin Name: WA-Fronted
 	Plugin URI: http://github.com/jesperbjerke/wa-fronted
 	Description: Edit content directly from fronted in the contents actual place
-	Version: 1.3.7
+	Version: 1.3.8
 	Tags: frontend, editor, edit, medium
 	Requires at least: 4.0
 	Tested up to: 4.3.1
-	Stable tag: 1.3.7
+	Stable tag: 1.3.8
 	Text Domain: wa-fronted
 	Domain Path: /languages
 	Author: Jesper Bjerke
@@ -321,14 +321,17 @@ class WA_Fronted {
 		$options = apply_filters('wa_fronted_options', array());
 
 		global $post;
-		$this->post_lock = wp_check_post_lock($post->ID);
+
+		if($post){
+			$this->post_lock = wp_check_post_lock($post->ID);
+		}
 
 		$default_options = array(
 			'native'         => true,
 			'direction'      => 'ltr',
 			'media_upload'   => true,
 			'toolbar'        => 'full',
-			'post_id'        => $post->ID,
+			'post_id'        => ($post) ? $post->ID : false,
 			'shortcodes'     => false,
 			'field_type'     => false,
 			'permission'     => 'default',
@@ -336,7 +339,12 @@ class WA_Fronted {
 			'paragraphs'     => true,
 			'validation'     => false,
 			'auto_configure' => true,
-			'init_on_load'   => true
+			'init_on_load'   => true,
+			'add_new'        => true,
+			'placeholders'   => array(
+				'post_title'   => __('Enter title here', 'wordpress'),
+				'post_content' => __('Enter post content here', 'wa-fronted')
+			)
 		);
 
 		if(is_front_page() && !is_home()){
@@ -384,37 +392,88 @@ class WA_Fronted {
 		if($continue){
 			//If Fronted should not be enabled automatically, add button to admin bar and prevent init otherwise continue init
 			if($default_options['init_on_load'] === false && (!isset($_GET['is_editing']) || $_GET['is_editing'] == false)){
-
-				add_action('admin_bar_menu', function($wp_admin_bar){
-					$args = array(
-						'id'    => 'enable-wa-fronted',
-						'title' => __('Edit here', 'wa-fronted'),
-						'href'  => esc_url(add_query_arg('is_editing', 'true', $_SERVER['REQUEST_URI']))
-					);
-					$wp_admin_bar->add_node($args);
-				}, 90);
-
-				wp_add_inline_style( 'admin-bar', '#wpadminbar #wp-admin-bar-enable-wa-fronted a:before{
-				    content: \'\f464\';
-    				top: 2px;
-					position: relative;
-					float: left;
-					font: 400 20px/1 dashicons;
-					speak: none;
-					padding: 4px 0;
-					-webkit-font-smoothing: antialiased;
-					-moz-osx-font-smoothing: grayscale;
-					background-image: none!important;
-					margin-right: 6px;
-				}' );
-
+				$this->add_edit_button();
 				return false;
 			}else{
+//				if($default_options['add_new']){
+//					$this->add_new_button($default_options, $post_type_options);
+//				}
 				return $post_type_options;
 			}
 		}else{
 			return false;
 		}
+	}
+
+	/**
+	 * Adds a "edit here" button in admin bar
+	 */
+	private function add_edit_button(){
+		add_action('admin_bar_menu', function($wp_admin_bar){
+			$args = array(
+				'id'    => 'enable-wa-fronted',
+				'title' => __('Edit here', 'wa-fronted'),
+				'href'  => esc_url(add_query_arg('is_editing', 'true', $_SERVER['REQUEST_URI']))
+			);
+			$wp_admin_bar->add_node($args);
+		}, 90);
+
+		wp_add_inline_style( 'admin-bar', '#wpadminbar #wp-admin-bar-enable-wa-fronted a:before{
+			content: \'\f464\';
+			top: 2px;
+			position: relative;
+			float: left;
+			font: 400 20px/1 dashicons;
+			speak: none;
+			padding: 4px 0;
+			-webkit-font-smoothing: antialiased;
+			-moz-osx-font-smoothing: grayscale;
+			background-image: none!important;
+			margin-right: 6px;
+		}' );
+	}
+
+	/**
+	 * Adds a "create new" button in admin bar
+	 */
+	private function add_new_button($default_options, $post_type_options){
+
+		if(isset($_GET['add_new']) && $_GET['add_new']){
+			global $post;
+
+			$new_post_id = wp_insert_post(array(
+				'post_type'    => $post->post_type,
+				'post_status'  => 'draft',
+				'post_title'   => $default_options['placeholders']['post_title'],
+				'post_content' => $default_options['placeholders']['post_content']
+			));
+
+			wp_safe_redirect(add_query_arg('editing_new', 'true', get_the_permalink($new_post_id)));
+			exit;
+		}
+
+		add_action('admin_bar_menu', function($wp_admin_bar){
+			$args = array(
+				'id'    => 'add-new-wa-fronted',
+				'title' => __('Add new here', 'wa-fronted'),
+				'href'  => esc_url(add_query_arg('add_new', 'true', $_SERVER['REQUEST_URI']))
+			);
+			$wp_admin_bar->add_node($args);
+		}, 90);
+
+		wp_add_inline_style( 'admin-bar', '#wpadminbar #wp-admin-bar-add-new-wa-fronted a:before{
+			content: \'\f132\';
+			top: 2px;
+			position: relative;
+			float: left;
+			font: 400 20px/1 dashicons;
+			speak: none;
+			padding: 4px 0;
+			-webkit-font-smoothing: antialiased;
+			-moz-osx-font-smoothing: grayscale;
+			background-image: none!important;
+			margin-right: 6px;
+		}' );
 	}
 
 	/**
@@ -769,7 +828,7 @@ class WA_Fronted {
 			$autosave_data = apply_filters('wa_fronted_autosave_data', $autosave_data, $data);
 
 			foreach($post_ids as $post_id){
-				$new_post_id;
+				$new_post_id = false;
 				$this_autosave_data = $autosave_data[$post_id];
 
 				if(!isset($this_autosave_data['post_content'])){
@@ -951,6 +1010,14 @@ class WA_Fronted {
 	public function wa_fronted_toolbar(){
 		?>
 			<div id="wa-fronted-toolbar">
+
+				<?php if(isset($_GET['editing_new']) && $_GET['editing_new']): ?>
+					<button id="wa-fronted-publish" title="<?php _e('Publish', 'wa-fronted'); ?>">
+						<i class="dashicons dashicons-yes"></i>
+						<?php _e('Publish', 'wa-fronted'); ?>
+					</button>
+				<?php endif; ?>
+
 				<button id="wa-fronted-save" title="<?php _e('Save', 'wa-fronted'); ?>">
 					<i class="fa fa-save"></i>
 					<?php _e('Save', 'wa-fronted'); ?>

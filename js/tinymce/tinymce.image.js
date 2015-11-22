@@ -980,12 +980,13 @@ tinymce.PluginManager.add( 'fronted_image', function( editor ) {
 		if ( cmd === 'mceInsertContent' ) {
 			// When inserting content, if the caret is inside a caption create new paragraph under
 			// and move the caret there
+
 			if ( node = dom.getParent( editor.selection.getNode(), 'div.mceTemp' ) ) {
 				p = dom.create( 'p' );
 				dom.insertAfter( p, node );
 				editor.selection.setCursorLocation( p, 0 );
 				editor.nodeChanged();
-			}else if(event.value.indexOf('[gallery ') !== -1){
+			}else if(!event.value.hasOwnProperty('content') && event.value.indexOf('[gallery ') !== -1){
 				event.preventDefault();
 				wa_fronted.show_loading_spinner();
 				wa_fronted.shortcode_to_html(event.value, true, function(html){

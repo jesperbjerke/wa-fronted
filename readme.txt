@@ -3,7 +3,7 @@ Contributors: jesperb
 Tags: frontend, editor, edit, medium, content
 Requires at least: 4.0
 Tested up to: 4.3.1
-Stable tag: 1.3.7
+Stable tag: 1.3.8
 License: GPLv2
 License URI: https://github.com/jesperbjerke/wa-fronted/blob/master/LICENSE.md
 
