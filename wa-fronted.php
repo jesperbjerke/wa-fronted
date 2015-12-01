@@ -3,11 +3,11 @@
 	Plugin Name: WA-Fronted
 	Plugin URI: http://github.com/jesperbjerke/wa-fronted
 	Description: Edit content directly from fronted in the contents actual place
-	Version: 1.3.8
+	Version: 1.3.9
 	Tags: frontend, editor, edit, medium
 	Requires at least: 4.0
 	Tested up to: 4.3.1
-	Stable tag: 1.3.8
+	Stable tag: 1.3.9
 	Text Domain: wa-fronted
 	Domain Path: /languages
 	Author: Jesper Bjerke
@@ -395,9 +395,9 @@ class WA_Fronted {
 				$this->add_edit_button();
 				return false;
 			}else{
-//				if($default_options['add_new']){
-//					$this->add_new_button($default_options, $post_type_options);
-//				}
+				if($default_options['add_new']){
+					$this->add_new_button($default_options, $post_type_options);
+				}
 				return $post_type_options;
 			}
 		}else{
@@ -452,10 +452,34 @@ class WA_Fronted {
 			exit;
 		}
 
+		if(isset($_GET['editing_new']) && $_GET['editing_new']){
+
+			add_filter( 'get_post_metadata', function ( $value, $post_id, $meta_key, $single ) {
+				// We want to pass the actual _thumbnail_id into the filter, so requires recursion
+				static $is_recursing = false;
+				// Only filter if we're not recursing and if it is a post thumbnail ID
+				if ( ! $is_recursing && $meta_key === '_thumbnail_id' ) {
+					$is_recursing = true; // prevent this conditional when get_post_thumbnail_id() is called
+					$has_thumbnail = (bool) get_post_thumbnail_id( $post_id );
+					$is_recursing = false;
+
+					if(!$has_thumbnail){
+						$value = 'placeholder';
+					}
+
+					if ( ! $single ) {
+						$value = array( $value );
+					}
+				}
+				return $value;
+			}, 10, 4);
+		}
+
 		add_action('admin_bar_menu', function($wp_admin_bar){
+			global $post;
 			$args = array(
 				'id'    => 'add-new-wa-fronted',
-				'title' => __('Add new here', 'wa-fronted'),
+				'title' => sprintf(__('%s here', 'wa-fronted'), get_post_type_object($post->post_type)->labels->add_new_item),
 				'href'  => esc_url(add_query_arg('add_new', 'true', $_SERVER['REQUEST_URI']))
 			);
 			$wp_admin_bar->add_node($args);

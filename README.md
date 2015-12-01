@@ -46,12 +46,12 @@ WA Fronted (or just “Fronted“) is a frontend editor for WordPress. It’s a 
 * [x] CTRL + click on link in editor to open in new tab/window
 * [x] Automatic config of `post_content`, `post_title` and `post_thumbnail` if no settings are set, can be turned off by setting `auto_configure` to `false`
 * [x] Check/Set post locks
+* [x] Possible to create new posts from frontend
 
 ## To do's
 > Things that are planned to be implemented in the near future (in no particular order)
 
 * [ ] Optimization for small screens and touch devices
-* [ ] Make it possible to create new posts from frontend
 
 ## Proposed features/To do's
 > These features requires further discussion, not yet set to be implemented
